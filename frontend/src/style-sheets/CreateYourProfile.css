@@ -1,0 +1,16 @@
+.create-profile-page-container {
+  position: relative;
+  width: 1920px;
+  height: 1080px;
+  background: #F7F9FE;
+}
+
+.create-profile-form-container{
+  position: absolute;
+  width: 855px;
+  height: 1080px;
+  left: 1065px;
+  top: 0px;
+
+  background: #FFFFFF;
+}

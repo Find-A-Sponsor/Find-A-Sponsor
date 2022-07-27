@@ -1,0 +1,262 @@
+.App {
+  position: relative;
+  background: #F7F9FE;
+}
+
+.welcome-user {
+  position: absolute;
+  width: 262px;
+  height: 40px;
+  left: 373px;
+  top: 47px;
+}
+
+.drawer-container {
+  position: absolute;
+  width: 290px;
+  height: 1000px;
+  left: 33px;
+  top: 10px;
+  background: linear-gradient(180deg, #2D87FF 0%, #6099E5 100%);
+  border-radius: 30px;
+}
+
+.logo {
+  position: absolute;
+  width: 109px;
+  height: 69px;
+  left: 90px;
+  top: 40px;
+
+  font-family: 'Logobloqo2';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 60px;
+  line-height: 69px;
+  /* identical to box height */
+
+
+  color: #FFFFFF;
+}
+
+.home-tab {
+  position: absolute;
+  width: 233px;
+  height: 57px;
+  top: 231px;
+}
+
+.home-tab-text {
+  position: absolute;
+  width: 48px;
+  height: 23px;
+  left: 50px;
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 23px;
+  /*  identical to box height */
+
+
+  color: #FFFFFF;
+}
+
+.sponsor-tab-text {
+  position: absolute;
+  width: 119px;
+  height: 23px;
+  left: 50px;
+  top: 331px;
+
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 23px;
+/* identical to box height */
+
+
+  color: #FFFFFF;
+}
+
+.active-tab {
+  position: relative;
+  width: 233px;
+  height: 57px;
+
+  background: linear-gradient(to right,white 0%, white 3%, rgba(255, 255, 255, 0.47) 3%, rgba(255, 255, 255, 0) 93.56%);
+}
+
+.groups-tab-text {
+  position: absolute;
+  width: 59px;
+  height: 23px;
+  left: 50px;
+  top: 417px;
+
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 23px;
+  /* identical to box height */
+
+
+  color: #FFFFFF;
+}
+
+.messages-tab-text {
+  position: absolute;
+width: 79px;
+height: 23px;
+left: 50px;
+top: 501px;
+
+font-family: 'Outfit';
+font-style: normal;
+font-weight: 400;
+font-size: 18px;
+line-height: 23px;
+/* identical to box height */
+
+
+color: #FFFFFF;
+}
+
+.drawer-container-line {
+  position: absolute;
+  width: 150px;
+  left: 20px;
+  top: 578px;
+  height: 1px;
+  background: rgb(107, 167, 235);
+}
+
+.settings-tab {
+  position: absolute;
+width: 63px;
+height: 23px;
+left: 50px;
+top: 629px;
+
+font-family: 'Outfit';
+font-style: normal;
+font-weight: 300;
+font-size: 18px;
+line-height: 23px;
+/* identical to box height */
+
+
+color: #FFFFFF;
+}
+
+.font-awesome-house {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  left: 15px;
+  top: 15px;
+  color: #2D87FF;
+}
+
+.font-awesome-magnifier {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  left: 15px;
+  top: 350px;
+  color: white;
+  opacity: 0.4;
+}
+
+.font-awesome-users {
+  position: absolute;
+  left: 15px;
+  top: 437px;
+  color: white;
+  opacity: 0.4;
+}
+
+.font-awesome-mail {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  left: 15px;
+  top: 517px;
+  color: white;
+  opacity: 0.4;
+}
+
+.font-awesome-gear {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  left: 15px;
+  top: 645px;
+  color: white;
+  opacity: 0.4;
+}
+
+.improve-search {
+  position: absolute;
+  width: 230px;
+  height: 252px;
+  left: 30px;
+  top: 720px;
+  background: #FED340;
+  border-radius: 30px;
+}
+
+.improve-search-header {
+  text-align: center;
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 26px;
+  line-height: 38px;
+  /* or 146% */
+
+  color: #1B1C1F;
+}
+
+.improve-search-text {
+  position: absolute;
+  width: 182px;
+  height: 35px;
+  left: 20px;
+  top: 90px;
+
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 17px;
+  /* or 142% */
+
+  text-align: center;
+
+  color: black;
+}
+
+.no-button {
+  position: absolute;
+  width: 80px;
+  height: 38px;
+
+  background: #FFFFFF;
+  border-radius: 16px;
+  margin-left: 25px;
+  margin-top: 80px;
+}
+
+.yes-button {
+  position: absolute;
+  width: 80px;
+  height: 38px;
+
+  background: #FFFFFF;
+  border-radius: 16px;
+  margin-left: 115px;
+  margin-top: 80px;
+}

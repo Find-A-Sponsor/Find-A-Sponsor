@@ -1,0 +1,186 @@
+.sign-up-page-container {
+  position: relative;
+  width: 1920px;
+  height: 1080px;
+  background: #F7F9FE;
+}
+
+.sign-up-form-container{
+  position: absolute;
+  width: 855px;
+  height: 1080px;
+  left: 1065px;
+  top: 0px;
+
+  background: #FFFFFF;
+}
+
+.sign-up-text {
+  position: absolute;
+  left: 123px;
+
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 36px;
+  line-height: 50px;
+/* identical to box height, or 139% */
+
+  letter-spacing: 1px;
+
+  color: #1F1F1F;
+}
+
+.users-username-input {
+  
+  box-sizing: border-box;
+
+  position: absolute;
+  width: 608px;
+  height: 60px;
+  left: 123px;
+  top: 105px;
+
+  background: #FFFFFF;
+  border: 1px solid #D7E1F0;
+  border-radius: 15px;
+}
+
+.users-name-input {
+  box-sizing: border-box;
+  position: absolute;
+  width: 608px;
+  height: 60px;
+  left: 123px;
+  top: 145px;
+
+  background: #FFFFFF;
+  border: 1px solid #3D8DF8;
+  border-radius: 15px;
+}
+
+.users-email-input {
+  box-sizing: border-box;
+
+  position: absolute;
+  width: 608px;
+  height: 60px;
+  left: 123px;
+  top: 185px;
+
+  background: #FFFFFF;
+  border: 1px solid #D7E1F0;
+  border-radius: 15px;
+}
+
+.users-password-input {
+  box-sizing: border-box;
+
+  position: absolute;
+  width: 608px;
+  height: 60px;
+  left: 123px;
+  top: 225px;
+
+  background: #FFFFFF;
+  border: 1px solid #D7E1F0;
+  border-radius: 15px;
+}
+
+.users-confirmation-password-input {
+  box-sizing: border-box;
+
+  position: absolute;
+  width: 608px;
+  height: 60px;
+  left: 123px;
+  top: 265px;
+
+  background: #FFFFFF;
+  border: 1px solid #D7E1F0;
+  border-radius: 15px;
+}
+
+.users-date-of-birth-input {
+  box-sizing: border-box;
+
+  position: absolute;
+  width: 608px;
+  height: 60px;
+  left: 123px;
+  top: 305px;
+
+  background: #FFFFFF;
+  border: 1px solid #D7E1F0;
+  border-radius: 15px;
+}
+
+.users-location-input {
+  box-sizing: border-box;
+
+  position: absolute;
+  width: 608px;
+  height: 60px;
+  left: 123px;
+  top: 345px;
+
+  background: #FFFFFF;
+  border: 1px solid #D7E1F0;
+  border-radius: 15px;
+}
+
+.submit-button {
+  position: absolute;
+  width: 608px;
+  height: 60px;
+  left: 123px;
+  top: 375px;
+
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 25px;
+  text-align: center;
+  
+  background: linear-gradient(180deg, #2D87FF 0%, #6099E5 100%);
+  border-radius: 60px;
+  border-color: white;
+}
+
+.already-have-an-account-text {
+  position: absolute;
+  width: 230px;
+  height: 20px;
+  left: 323px;
+  top: 875px;
+  
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 20px;
+  
+  color: #1F1F1F;
+}
+
+.bolded-log-in-link {
+
+  color: #398CF9;
+}
+
+.users-username-input-warning-message {
+  position: absolute;
+  left: 367px;
+  top: 70px;
+  color: red;
+  border-color: red !important;
+}
+
+.users-email-input-warning-message{
+  position: absolute;
+  left: 400px;
+  top: 270px;
+  color: red;
+  border-color: red !important;
+}
