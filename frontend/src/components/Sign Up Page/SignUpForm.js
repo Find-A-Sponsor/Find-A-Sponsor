@@ -147,7 +147,7 @@ const SignUpForm = () => {
 
           <CountryOfOrigin state={state}/>
 
-          <Button className="submit-button" sx={{ color: 'white' }} type="submit" disabled={state.users.password && state.users.password.length >= 12 && usernameExists === false && emailExists === false && state.users.password === state.users.confirmationPassword && state.users.username && state.users.name && state.users.location && state.users.dateOfBirth && state.users.dateOfBirth !== 'Invalid Date' && state.users.dateOfBirth.getFullYear() + 18 <= (new Date()).getFullYear() && state.users.dateOfBirth.getFullYear() >= 1900 && state.users.email ? false : true} >Continue</Button>
+          <Button className="submit-button" sx={{ color: 'white' }} type="submit" disabled={state.users.password && state.users.password.length >= 12 && usernameExists === false && emailExists === false && state.users.password === state.users.confirmationPassword && state.users.username && state.users.name && state.users.location && state.users.dateOfBirth && state.users.dateOfBirth.getFullYear() + 18 <= (new Date()).getFullYear() && state.users.dateOfBirth.getFullYear() >= 1900 && state.users.email ? false : true} >Continue</Button>
           <p className="already-have-an-account-text">Already have an account? <b className="bolded-log-in-link" onClick={handleLoginRoute}>Log in</b></p>
         </form>
       </div>
