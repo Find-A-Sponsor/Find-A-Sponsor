@@ -184,3 +184,11 @@
   color: red;
   border-color: red !important;
 }
+
+.users-email-input-valid-email-message {
+  position: absolute;
+  left: 512px;
+  top: 270px;
+  color: red;
+  border-color: red !important;
+}

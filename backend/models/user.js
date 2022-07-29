@@ -7,13 +7,16 @@ const userSchema = mongoose.Schema({
   passwordHash: String,
   dateOfBirth: Date,
   location: String,
-  addictions: String,
+  addictions: Array,
+  groups: Array,
+  biography: String,
   blogs: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Blog'
     }
   ],
+  profileImageURL: String
 })
 
 userSchema.set('toJSON', {

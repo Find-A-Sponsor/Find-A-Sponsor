@@ -3,9 +3,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { createUsers } from "../../reducers/usersReducer";
 import userInformation from "../../services/userInformation";
 import moment from 'moment'
-import {
-  Routes, Route, Link, useNavigate
-} from "react-router-dom"
+import { useNavigate } from 'react-router-dom'
+import validator from 'validator'
 
 import { VectorIllustration } from "./VectorIllustration"
 import '../../style-sheets/SignUpForm.css'
@@ -88,24 +87,24 @@ const SignUpForm = () => {
             )
           }} onChange={(e) => dispatch(createUsers(e.target.value, 'name'))}/>
 
-          {emailExists ? <p className="users-email-input-warning-message">Email is already in use, please enter a different one</p> : ''}
+          {emailExists ? <p className="users-email-input-warning-message">Email is already in use, please enter a different one</p> : !state.users.email || !validator.isEmail(state.users.email) ? <p className="users-email-input-valid-email-message">Please enter a valid email address</p> : ''}
 
           <TextField value={state.users?.email} className="users-email-input" required={true} label='Email' InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
-                {emailExists ? <EmailSharpIcon sx={{ color: 'red'}}/> : <EmailSharpIcon color="primary"/>}
+                {emailExists || (!state.users.email || !validator.isEmail(state.users.email)) ? <EmailSharpIcon sx={{ color: 'red'}}/> : <EmailSharpIcon color="primary"/>}
               </InputAdornment>
             ),
             endAdornment: (
               <InputAdornment>
-                {emailExists ? <Dangerous sx={{ color: 'red' }}/> : ''}
+                {emailExists || (!state.users.email || !validator.isEmail(state.users.email))  ? <Dangerous sx={{ color: 'red' }}/> : ''}
               </InputAdornment>
             ),
             classes: {
-              notchedOutline: emailExists ? 'users-email-input-warning-message' : ''
+              notchedOutline: emailExists ? 'users-email-input-warning-message' : !state.users.email || !validator.isEmail(state.users.email) ? 'users-email-input-valid-email-message' : ''
             }
           }} InputLabelProps={{
-            style: emailExists ? {color: 'red'} : {}
+            style: emailExists || (!state.users.email || !validator.isEmail(state.users.email)) ? {color: 'red'} : {}
           }} onChange={handleEmailCheck}/>
 
           <TextField value={state.users?.password} className="users-password-input" required={true} label='Password' InputProps={{
@@ -147,7 +146,7 @@ const SignUpForm = () => {
 
           <CountryOfOrigin state={state}/>
 
-          <Button className="submit-button" sx={{ color: 'white' }} type="submit" disabled={state.users.password && state.users.password.length >= 12 && usernameExists === false && emailExists === false && state.users.password === state.users.confirmationPassword && state.users.username && state.users.name && state.users.location && state.users.dateOfBirth && state.users.dateOfBirth.getFullYear() + 18 <= (new Date()).getFullYear() && state.users.dateOfBirth.getFullYear() >= 1900 && state.users.email ? false : true} >Continue</Button>
+          <Button className="submit-button" sx={{ color: 'white' }} type="submit" disabled={state.users.password && state.users.password.length >= 12 && usernameExists === false && emailExists === false && state.users.password === state.users.confirmationPassword && state.users.username && state.users.name && state.users.location && state.users.dateOfBirth && state.users.dateOfBirth.getFullYear() + 18 <= (new Date()).getFullYear() && state.users.dateOfBirth.getFullYear() >= 1900 && state.users.email && validator.isEmail(state.users.email) ? false : true} >Continue</Button>
           <p className="already-have-an-account-text">Already have an account? <b className="bolded-log-in-link" onClick={handleLoginRoute}>Log in</b></p>
         </form>
       </div>

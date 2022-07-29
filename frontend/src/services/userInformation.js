@@ -3,7 +3,7 @@ const baseUrl = 'http://localhost:3001'
 
 const getAll = async () => {
   const response = await axios.get(`${baseUrl}/api/users`)
-  return response.json()
+  return response
 }
 
 const newUser = async (req, checker = '') => {
@@ -24,7 +24,7 @@ const newUser = async (req, checker = '') => {
     }
   }
 
-  const { username, name, email, password, dateOfBirth, location } = req
+  const { username, name, email, password, dateOfBirth, location, profileImageURL, biography, addictions, groups } = req
 
   const object = {
     username,
@@ -32,11 +32,15 @@ const newUser = async (req, checker = '') => {
     email,
     password,
     dateOfBirth,
-    location
+    location,
+    profileImageURL,
+    biography,
+    addictions,
+    groups
   }
   const response = await axios.post(`${baseUrl}/api/users`, object)
 
-  return response.json()
+  return response
 }
 
 export default {

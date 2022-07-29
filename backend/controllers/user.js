@@ -38,8 +38,7 @@ usersRouter.post('/', async (req, res) => {
     }
   }
   
-  const { username, name, email, password, dateOfBirth, location } = req.body
-
+  const { username, name, email, password, dateOfBirth, location, profileImageURL, biography, addictions, groups } = req.body
   const saltRounds = 10
   const passwordHash = await bcrypt.hash(password, saltRounds)
 
@@ -49,7 +48,11 @@ usersRouter.post('/', async (req, res) => {
     email,
     passwordHash,
     dateOfBirth,
-    location
+    location,
+    profileImageURL,
+    biography,
+    addictions,
+    groups
   })
 
   const savedUser = await user.save()

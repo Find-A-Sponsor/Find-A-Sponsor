@@ -14,3 +14,34 @@
 
   background: #FFFFFF;
 }
+
+.profile-image-upload-text{
+  position: absolute;
+  left: 38%;
+  top: 28%;
+}
+
+.profile-image-vertical {
+  position: absolute; 
+  width: 132px; 
+  top: 15%; 
+  left: 30%; 
+  transform: rotate(90deg)
+}
+
+.profile-image-vertical-text {
+  position: absolute; 
+  width: 132px; 
+  top: 9%; 
+  left: 28.5%; 
+  transform: rotate(-90deg);
+  font-family: cursive;
+}
+
+.addiction-selector {
+  top: 46%;
+}
+
+.group-selector {
+  top: 54%;
+}
