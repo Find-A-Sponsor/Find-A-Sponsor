@@ -13,16 +13,9 @@ const userSlice = createSlice({
         }
       },
       prepare(...args) {
-        let content;
-        let key;
+        let content = args[0];
+        let key = args[1];
         console.log(args)
-        if (typeof(args[0]) === 'string') {
-          content = args[0]
-          key = args[1]
-        } else if (args[0].toString() === 'Invalid Date'){
-          content = args[0].toString()
-          key = 'Invalidation message'
-        }
         return {
           payload: {
             content,

@@ -1,5 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
+import { useReward } from 'react-rewards'
 
 import { VectorIllustration } from "./VectorIllustration";
 import { Avatar, Text, Loading } from '@nextui-org/react'
@@ -15,6 +16,7 @@ import userInformation from "../../services/userInformation";
 import { useState } from "react";
 
 const CreateYourProfile = () => {
+  const { reward, isAnimating } = useReward('rewardId', 'confetti')
   const [loading, setLoading] = useState(false)
   const state = useSelector(state => state)
   const dispatch = useDispatch()
@@ -34,8 +36,7 @@ const CreateYourProfile = () => {
   }
 
   const handlePostUserToServer = async () => {
-    const response = await userInformation.newUser(state.users)
-    console.log(response)
+    await userInformation.newUser(state.users)
   }
 
   const listOfAddictions = [{value: 'Alcohol', label: 'Alcohol'}, {value: 'Lust (Porn, sex, etc.)', label: 'Lust (Porn, sex, etc.)'}, {value:'Gambling', label: 'Gambling'}, {value: 'Food', label: 'Food'}, {value: 'Drugs', label: 'Drugs'}, {value: 'Nicotine', label: 'Nicotine'}, {value: 'Work', label: 'Work'}, {value: 'Pills', label: 'Pills'},
@@ -49,7 +50,7 @@ const CreateYourProfile = () => {
   return (
     <div className="create-profile-page-container">
       <VectorIllustration />
-      <div className="create-profile-form-container">   
+      <div className="create-profile-form-container"> 
           <input
             accept="image/*"
             id="contained-button-file"
@@ -98,7 +99,9 @@ const CreateYourProfile = () => {
           className='group-selector'
           onChange={(e) => dispatch(createUsers(e.map(group => group?.value), 'groups'))}
         />
-        <Button className="submit-button" sx={{ position: 'absolute', color: 'white', top: '90%' }} type='submit' onClick={handlePostUserToServer}>Submit</Button>
+        <Button id="rewardId" className="submit-button" sx={{ position: 'absolute', color: 'white', top: '90%' }} type='submit' onClick={(e) => {
+          handlePostUserToServer(e)
+          reward()}} disabled={loading ? true : isAnimating ? true : false}>Submit</Button>
         </div>
     </div>
   )
