@@ -17,7 +17,6 @@ const newUser = async (req, checker = '') => {
   } else if (checker === 'email') {
     try {
       const response = await axios.post(`${baseUrl}/api/users`, {req, checker})
-      console.log(response)
       return response
     } catch (err) {
       return 'Email is already in use'

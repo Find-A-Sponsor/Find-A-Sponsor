@@ -15,7 +15,6 @@ const userSlice = createSlice({
       prepare(...args) {
         let content = args[0];
         let key = args[1];
-        console.log(args)
         return {
           payload: {
             content,

@@ -1,9 +1,8 @@
-import { useState } from "react";
 import { useDispatch, useSelector } from 'react-redux'
 import { createUsers } from "../../reducers/usersReducer";
 import userInformation from "../../services/userInformation";
 import moment from 'moment'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import validator from 'validator'
 
 import { VectorIllustration } from "./VectorIllustration"
@@ -24,23 +23,15 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 const SignUpForm = () => {
   const dispatch = useDispatch();
   const state = useSelector(state => state);
-  const [usernameExists, setUsernameExists] = useState()
-  const [emailExists, setEmailExists] = useState()
   const navigate = useNavigate()
-  console.log(state)
-
-  const handleLoginRoute = (e) => {
-    e.preventDefault()
-    console.log('hi')
-  }
 
   const handleUsernameCheck = async (e) => {
     dispatch(createUsers(e.target.value, 'username'))
     const checkIfUserExists = await userInformation.newUser(e.target.value, 'username')
     if (checkIfUserExists === 'Username is already taken') {
-      setUsernameExists(true)
+      dispatch(createUsers(true, 'usernameExists'))
     } else {
-      setUsernameExists(false)
+      dispatch(createUsers(false, 'usernameExists'))
     }
   }
 
@@ -48,9 +39,9 @@ const SignUpForm = () => {
     dispatch(createUsers(e.target.value, 'email'))
     const checkIfEmailExists = await userInformation.newUser(e.target.value, 'email')
     if (checkIfEmailExists === 'Email is already in use') {
-      setEmailExists(true)
+      dispatch(createUsers(true, 'emailExists'))
     } else {
-      setEmailExists(false)
+      dispatch(createUsers(false, 'emailExists'))
     }
   }
 
@@ -59,24 +50,24 @@ const SignUpForm = () => {
       <VectorIllustration />
       <div className="sign-up-form-container">
         <h1 className="sign-up-text">Sign Up</h1>
-        <form onSubmit={() => navigate('/signup/1')}>
+        <form id="signup-handler" onSubmit={() => navigate('/signup/1')}>
 
-          {usernameExists ? <p className="users-username-input-warning-message">Username is already taken, please choose a different one</p> : ''}
+          {state.users.usernameExists ? <p className="users-username-input-warning-message">Username is already taken, please choose a different one</p> : ''}
 
           <TextField value={state.users?.username} required={true} className='users-username-input' label='Username' InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
-                {usernameExists ? <AlternateEmailSharpIcon sx={{color: 'red'}}/> : <AlternateEmailSharpIcon color="primary"/>}
+                {state.users.usernameExists ? <AlternateEmailSharpIcon sx={{color: 'red'}}/> : <AlternateEmailSharpIcon color="primary"/>}
               </InputAdornment>
             ),
             endAdornment: (
-              usernameExists ? <Dangerous sx={{color: 'red'}} /> : ''
+              state.users.usernameExists ? <Dangerous sx={{color: 'red'}} /> : ''
             ),
             classes: {
-              notchedOutline: usernameExists ? 'users-username-input-warning-message' : ''
+              notchedOutline: state.users.usernameExists ? 'users-username-input-warning-message' : ''
             }
           }} InputLabelProps={{
-            style: usernameExists ? {color: 'red'} : {}
+            style: state.users.usernameExists ? {color: 'red'} : {}
           }} onChange={handleUsernameCheck} />
 
           <TextField value={state.users?.name} className="users-name-input" required={true} label='Name' InputProps={{
@@ -87,24 +78,24 @@ const SignUpForm = () => {
             )
           }} onChange={(e) => dispatch(createUsers(e.target.value, 'name'))}/>
 
-          {emailExists ? <p className="users-email-input-warning-message">Email is already in use, please enter a different one</p> : !state.users.email || !validator.isEmail(state.users.email) ? <p className="users-email-input-valid-email-message">Please enter a valid email address</p> : ''}
+          {state.users.emailExists ? <p className="users-email-input-warning-message">Email is already in use, please enter a different one</p> : !state.users.email || !validator.isEmail(state.users.email) ? <p className="users-email-input-valid-email-message">Please enter a valid email address</p> : ''}
 
           <TextField value={state.users?.email} className="users-email-input" required={true} label='Email' InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
-                {emailExists || (!state.users.email || !validator.isEmail(state.users.email)) ? <EmailSharpIcon sx={{ color: 'red'}}/> : <EmailSharpIcon color="primary"/>}
+                {state.users.emailExists || (!state.users.email || !validator.isEmail(state.users.email)) ? <EmailSharpIcon sx={{ color: 'red'}}/> : <EmailSharpIcon color="primary"/>}
               </InputAdornment>
             ),
             endAdornment: (
               <InputAdornment>
-                {emailExists || (!state.users.email || !validator.isEmail(state.users.email))  ? <Dangerous sx={{ color: 'red' }}/> : ''}
+                {state.users.emailExists || (!state.users.email || !validator.isEmail(state.users.email))  ? <Dangerous sx={{ color: 'red' }}/> : ''}
               </InputAdornment>
             ),
             classes: {
-              notchedOutline: emailExists ? 'users-email-input-warning-message' : !state.users.email || !validator.isEmail(state.users.email) ? 'users-email-input-valid-email-message' : ''
+              notchedOutline: state.user?.emailExists ? 'users-email-input-warning-message' : !state.users.email || !validator.isEmail(state.users.email) ? 'users-email-input-valid-email-message' : ''
             }
           }} InputLabelProps={{
-            style: emailExists || (!state.users.email || !validator.isEmail(state.users.email)) ? {color: 'red'} : {}
+            style: state.users.emailExists || (!state.users.email || !validator.isEmail(state.users.email)) ? {color: 'red'} : {}
           }} onChange={handleEmailCheck}/>
 
           <TextField value={state.users?.password} className="users-password-input" required={true} label='Password' InputProps={{
@@ -128,7 +119,7 @@ const SignUpForm = () => {
             ),
             endAdornment: (
               <InputAdornment position="end">
-                {state.users.password === state.users.confirmationPassword ? <CheckCircleIcon color="success"/> : <Dangerous sx={{ color: 'red' }}/>}
+                {state.users.confirmationPassword?.length >= 12 && state.users.confirmationPassword && state.users.password === state.users.confirmationPassword ? <CheckCircleIcon color="success"/> : <Dangerous sx={{ color: 'red' }}/>}
               </InputAdornment>
             )
           }} onChange={(e) => dispatch(createUsers(e.target.value, 'confirmationPassword'))}/>
@@ -145,10 +136,9 @@ const SignUpForm = () => {
           </LocalizationProvider>
 
           <CountryOfOrigin state={state}/>
-
-          <Button className="submit-button" sx={{ color: 'white' }} type="submit" disabled={state.users.password && state.users.password.length >= 12 && usernameExists === false && emailExists === false && state.users.password === state.users.confirmationPassword && state.users.username && state.users.name && state.users.location && state.users.dateOfBirth && state.users.dateOfBirth.getFullYear() + 18 <= (new Date()).getFullYear() && state.users.dateOfBirth.getFullYear() >= 1900 && state.users.email && validator.isEmail(state.users.email) ? false : true} >Continue</Button>
-          <p className="already-have-an-account-text">Already have an account? <b className="bolded-log-in-link" onClick={handleLoginRoute}>Log in</b></p>
-        </form>
+          </form>
+          <Button form='signup-handler' className="submit-button" sx={{ color: 'white' }} type="submit" disabled={state.users.password?.length >= 12 && state.users.usernameExists === false && state.users.emailExists === false && state.users.password === state.users.confirmationPassword && state.users.dateOfBirth?.getFullYear() + 18 <= (new Date()).getFullYear() && state.users.dateOfBirth?.getFullYear() >= 1900 && validator.isEmail(state.users.email) ? false : true} >Continue</Button> {/*Stack overflow submitted for reasoning behind why button gets disabled when I hit back button to return back to this page and everything is still filled out.*/}
+          <p className="already-have-an-account-text">Already have an account? <Link className="bolded-log-in-link" to='/'>Log in</Link></p>
       </div>
     </div>
   )

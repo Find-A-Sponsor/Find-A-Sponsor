@@ -5,7 +5,7 @@ import Modal from '@mui/material/Modal';
 
 import '../../style-sheets/LoginForm.css'
 import VectorIllustration from './VectorIllustration';
-import { TextField, InputAdornment, Button, IconButton } from '@mui/material'
+import { TextField, InputAdornment, Button, IconButton, FormControl } from '@mui/material'
 import Visibility from '@material-ui/icons/Visibility'
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import EmailSharpIcon from '@mui/icons-material/EmailSharp';
@@ -53,14 +53,18 @@ const LoginForm = () => {
       <VectorIllustration />
       <div className='log-in-page-form-container'>
         <h1 className='log-in-text'>Log in</h1>
-        <TextField value={email} style={{position: 'absolute', top: '35%', left: '15%', width: '70%'}} required={true} label='Email' InputProps={{
+        <form id='login-handler' onSubmit={(e) => e.preventDefault()}>
+          <FormControl style={{position: 'absolute', top: '35%', left: '15%', width: '70%'}}>
+        <TextField value={email} required={true} label='Email' InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
                 <EmailSharpIcon color="primary"/>
               </InputAdornment>
             )
           }} onChange={(e) => setEmail(e.target.value)}/>
-          <TextField variant='outlined' type={showPassword ? "text" : "password"} value={password} style={{position: 'absolute', top: '45%', left: '15%', width: '70%'}} required={true} label='Password' InputProps={{
+          </FormControl>
+          <FormControl style={{position: 'absolute', top: '45%', left: '15%', width: '70%'}}>
+          <TextField variant='outlined' type={showPassword ? "text" : "password"} value={password} required={true} label='Password' InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
                 <IconButton
@@ -72,7 +76,9 @@ const LoginForm = () => {
               </InputAdornment>
             )
           }} onChange={(e) => setPassword(e.target.value)}/>
-          <Button className='submit-button-log-in' sx={{ color: 'white' }} type="submit">Log in</Button>
+          </FormControl>
+          </form>
+          <Button form='login-handler' className='submit-button-log-in' sx={{ color: 'white' }} type="submit">Log in</Button>
           <Fragment>
             <Button onClick={handleOpen} style={{position: 'absolute', top: '50%', left: '65%'}}>Forgot Password?</Button>
             <Modal
@@ -92,7 +98,7 @@ const LoginForm = () => {
               )
             }} onChange={(e) => setEmailRecoveryLink(e.target.value)}/>
             <Button className='close-button-modal' sx={{color: 'white'}} onClick={handleClose}>Close</Button>
-            <Button className='submit-button-send-email' sx={{color: 'white'}} onClick={handleEmailRecoveryLink}>Send</Button>
+            <Button className='submit-button-send-email' sx={{color: 'white'}} onClick={handleEmailRecoveryLink} disabled={emailSent}>Send</Button>
             </Box>
             </Modal>
           </Fragment>
