@@ -1,11 +1,14 @@
 import { useState, Fragment } from 'react';
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
+import { keyframes } from '@mui/system';
+
+import loginInformaion from '../../services/loginInformation'
 
 import '../../style-sheets/LoginForm.css'
 import VectorIllustration from './VectorIllustration';
-import { TextField, InputAdornment, Button, IconButton, FormControl } from '@mui/material'
+import { TextField, InputAdornment, Button, IconButton } from '@mui/material'
 import Visibility from '@material-ui/icons/Visibility'
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import EmailSharpIcon from '@mui/icons-material/EmailSharp';
@@ -24,13 +27,23 @@ const style = {
   pb: 3,
 };
 
+const shake = keyframes`
+  0% { transform: translateX(0) }
+  25% { transform: translateX(5px) }
+  50% { transform: translateX(-5px) }
+  75% { transform: translateX(5px) }
+  100% { transform: translateX(0) }`;
+
 const LoginForm = () => {
   const [password, setPassword] = useState('')
   const [email, setEmail] = useState('')
   const [emailRecoveryLink, setEmailRecoveryLink] = useState('')
   const [emailSent, setEmailSent] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
   const [showPassword, setShowPassword] = useState(false);
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+
   const handleOpen = () => {
     setOpen(true);
   };
@@ -47,38 +60,67 @@ const LoginForm = () => {
     }, 5000)
   }
 
+  const handleLogin = async (e) => {
+    e.preventDefault()
+    const object = {
+      email,
+      password
+    }
+    try {
+    const user = await loginInformaion.login(object)
+    window.localStorage.setItem(
+      'loggedAppUser', JSON.stringify(user) //Setting localStorage allows user to make posts on account later and the posts requests will be sent to different route and that route will contain a verify function to verify that the user is authenticated to make posts. This implementation will occur whenever I get the home page up and running and I can grab the token via a localstore.getItem()
+    )
+    if (user) {
+      navigate('/home')
+    }
+    } catch (err) {
+      setErrorMessage(err.response.data.error)
+      setTimeout(() => {
+        setErrorMessage('')
+      }, 3000)
+    }
+  }
+
 
   return (
     <div className='log-in-page-container'>
       <VectorIllustration />
       <div className='log-in-page-form-container'>
         <h1 className='log-in-text'>Log in</h1>
-        <form id='login-handler' onSubmit={(e) => e.preventDefault()}>
-          <FormControl style={{position: 'absolute', top: '35%', left: '15%', width: '70%'}}>
-        <TextField value={email} required={true} label='Email' InputProps={{
+        {errorMessage ? <p style={{position: 'absolute', top: '30%', left: '35%', color: 'red'}}>{errorMessage}</p> : ''}
+        <form id='login-handler' onSubmit={handleLogin}>
+        <TextField sx={ errorMessage ? {position: 'absolute', top: '35%', left: '15%', width: '70%', animation: `${shake} 0.1s`, animationIterationCount: '4'} : {position: 'absolute', top: '35%', left: '15%', width: '70%'}} value={email} required={true} label='Email' InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
-                <EmailSharpIcon color="primary"/>
+                {errorMessage ? <EmailSharpIcon style={{color: 'red'}} /> : <EmailSharpIcon color="primary"/>}
               </InputAdornment>
-            )
+            ),
+            classes: {
+              notchedOutline: errorMessage ? 'users-username-input-warning-message' : ''
+            },
+          }} InputLabelProps={{
+            style: errorMessage ? {color: 'red'} : {}
           }} onChange={(e) => setEmail(e.target.value)}/>
-          </FormControl>
-          <FormControl style={{position: 'absolute', top: '45%', left: '15%', width: '70%'}}>
-          <TextField variant='outlined' type={showPassword ? "text" : "password"} value={password} required={true} label='Password' InputProps={{
+          <TextField sx={ errorMessage ? {position: 'absolute', top: '45%', left: '15%', width: '70%', animation: `${shake} 0.1s`, animationIterationCount: '4'} : {position: 'absolute', top: '45%', left: '15%', width: '70%'}} variant='outlined' type={showPassword ? "text" : "password"} value={password} required={true} label='Password' InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
                 <IconButton
                 aria-label='toggle password visibility'
                 onClick={handleClickShowPassword}
                 onMouseDown={handleMouseDownPassword}>
-                  {showPassword ? <Visibility color='primary' /> : <VisibilityOff color='primary' />}
+                  {showPassword && errorMessage ? <Visibility style={{color: 'red'}} /> : !showPassword && !errorMessage ? <VisibilityOff color='primary' /> : errorMessage ? <VisibilityOff style={{color: 'red'}} /> : <Visibility color='primary' />}
                 </IconButton>
               </InputAdornment>
-            )
+            ),
+            classes: {
+              notchedOutline: errorMessage ? 'users-username-input-warning-message' : ''
+            }
+          }} InputLabelProps={{
+            style: errorMessage ? {color: 'red'} : {}
           }} onChange={(e) => setPassword(e.target.value)}/>
-          </FormControl>
           </form>
-          <Button form='login-handler' className='submit-button-log-in' sx={{ color: 'white' }} type="submit">Log in</Button>
+          <Button form='login-handler' className='submit-button-log-in' sx={{ color: 'white' }} type="submit" disabled={errorMessage}>Log in</Button>
           <Fragment>
             <Button onClick={handleOpen} style={{position: 'absolute', top: '50%', left: '65%'}}>Forgot Password?</Button>
             <Modal

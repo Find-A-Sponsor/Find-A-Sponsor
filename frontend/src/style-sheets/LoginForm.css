@@ -110,3 +110,11 @@
   
   color: #1F1F1F;
 }
+
+.users-username-input-warning-message {
+  position: absolute;
+  left: 367px;
+  top: 70px;
+  color: red;
+  border-color: red !important;
+}

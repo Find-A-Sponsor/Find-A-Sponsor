@@ -4,12 +4,12 @@ import { useReward } from 'react-rewards'
 
 import { VectorIllustration } from "./VectorIllustration";
 import { Avatar, Text, Loading } from '@nextui-org/react'
-import { Button, IconButton, InputAdornment, TextField } from "@mui/material";
+import { Button, IconButton, InputAdornment, InputLabel, TextField } from "@mui/material";
 import '../../style-sheets/CreateYourProfile.css'
 import { createUsers } from "../../reducers/usersReducer";
-import AddAPhotoIcon from '@mui/icons-material/AddAPhoto';
+import AddAPhotoTwoToneIcon from '@mui/icons-material/AddAPhotoTwoTone';
 import AvatarPicture from '../../images/AvatarPicture.png'
-import DescriptionIcon from '@mui/icons-material/Description';
+import DescriptionTwoToneIcon from '@mui/icons-material/DescriptionTwoTone';
 import Select from 'react-select';
 import makeAnimated from 'react-select/animated';
 import userInformation from "../../services/userInformation";
@@ -56,21 +56,20 @@ const CreateYourProfile = () => {
             id="contained-button-file"
             type="file"
             hidden
-            aria-disabled={true}
             onChange={handleImageSubmit}
           />
-        <label htmlFor="contained-button-file">
-          <IconButton style={{left: '40%', top: '10%'}} component='span'>
+          <InputLabel htmlFor="contained-button-file" style={{padding: '13.45%', pointerEvents: 'none'}}>
+          <IconButton style={{left: '37%', top: '10%', pointerEvents: 'auto'}} component='span'>
             {loading ? <Loading size="xl" style={{width: '132px', height: '132px'}}/> : state.users.profileImageURL ? <Avatar src={state.users.profileImageURL} text={state.users.name} style={{width: '132px', height: '132px'}}/> : <Avatar src={AvatarPicture} text={state.users.name} style={{width: '132px', height: '132px'}}/>}
           </IconButton>
-          <Button component='span' startIcon={<AddAPhotoIcon />} size='medium' style={{position: 'absolute', left: '35%', top: '25%'}}>Upload Profile Picture</Button>
-        </label>
+          <Button component='span' startIcon={<AddAPhotoTwoToneIcon />} size='medium' style={{position: 'absolute', left: '36%', top: '80%', pointerEvents: 'auto'}}>Upload Profile Picture</Button>
+          </InputLabel>
         <TextField multiline rows={5} label='Briefly Describe Yourself' style={{position: 'absolute', top: '35%', left: '32%', width: '300px', backgroundColor: 'white'}} inputProps={{
           maxLength: 250
         }} InputProps={{
           endAdornment: (
             <InputAdornment>
-              <DescriptionIcon color="primary"/>
+              <DescriptionTwoToneIcon color="primary"/>
             </InputAdornment>
           )
         }}  onChange={(e) => {
