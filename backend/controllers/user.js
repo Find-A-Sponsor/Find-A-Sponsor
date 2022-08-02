@@ -1,14 +1,23 @@
 const bcrypt = require('bcrypt')
 const express = require('express')
+const { validateToken } = require('../middleware/validateToken')
 const usersRouter = require('express').Router()
 const User = require('../models/user')
 usersRouter.use(express.json())
+const jwt = require('jsonwebtoken')
 
-usersRouter.get('/', async (req, res) => {
-  const users = await User
-  .find({})
-
-  res.json(users)
+usersRouter.post('/findUser', validateToken, async (req, res) => {
+  if (req.authenticated) {
+    const email = req.email
+    try {
+    const user = await User.findOne({email: {$eq: email}})
+    return res.status(200).json({user})
+    } catch (err) {
+      return res.status(404).json({err: err})
+    }
+  } else {
+    return res.status(400).json({err: 'You are not authenticated'})
+  }
 })
 
 usersRouter.post('/', async (req, res) => {
@@ -42,6 +51,13 @@ usersRouter.post('/', async (req, res) => {
   const saltRounds = 10
   const passwordHash = await bcrypt.hash(password, saltRounds)
 
+  const userForToken = {
+    email: email,
+    username: username,
+  }
+
+  const token = jwt.sign(userForToken, process.env.SECRET)
+
   const user = new User({
     username,
     name,
@@ -50,14 +66,16 @@ usersRouter.post('/', async (req, res) => {
     dateOfBirth,
     location,
     profileImageURL,
+    following: 0,
+    followers: 0,
     biography,
     addictions,
     groups
   })
 
-  const savedUser = await user.save()
+  await user.save()
 
-  return res.status(201).json(savedUser)
+  return res.status(201).json({ token, user })
 
 })
 

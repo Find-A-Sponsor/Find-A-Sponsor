@@ -15,5 +15,5 @@ const login = async (req) => {
 }
 
 export default {
-  login
+  login,
 }

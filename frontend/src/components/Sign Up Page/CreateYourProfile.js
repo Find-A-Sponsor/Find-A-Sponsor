@@ -1,12 +1,13 @@
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import { useReward } from 'react-rewards'
+import { useNavigate } from "react-router";
 
 import { VectorIllustration } from "./VectorIllustration";
 import { Avatar, Text, Loading } from '@nextui-org/react'
 import { Button, IconButton, InputAdornment, InputLabel, TextField } from "@mui/material";
 import '../../style-sheets/CreateYourProfile.css'
-import { createUsers } from "../../reducers/usersReducer";
+import { createUsers, storeUserInformation } from "../../reducers/usersReducer";
 import AddAPhotoTwoToneIcon from '@mui/icons-material/AddAPhotoTwoTone';
 import AvatarPicture from '../../images/AvatarPicture.png'
 import DescriptionTwoToneIcon from '@mui/icons-material/DescriptionTwoTone';
@@ -20,6 +21,7 @@ const CreateYourProfile = () => {
   const [loading, setLoading] = useState(false)
   const state = useSelector(state => state)
   const dispatch = useDispatch()
+  const navigate = useNavigate()
   const animatedComponents = makeAnimated();
   console.log(state)
 
@@ -36,7 +38,11 @@ const CreateYourProfile = () => {
   }
 
   const handlePostUserToServer = async () => {
-    await userInformation.newUser(state.users)
+    const user = await userInformation.newUser(state.users)
+    window.localStorage.setItem(
+      'loggedAppUser', JSON.stringify(user.data) //Setting localStorage allows user to make posts on account later and the posts requests will be sent to different route and that route will contain a verify function to verify that the user is authenticated to make posts. This implementation will occur whenever I get the home page up and running and I can grab the token via a localstore.getItem()
+    )
+    navigate('/home')
   }
 
   const listOfAddictions = [{value: 'Alcohol', label: 'Alcohol'}, {value: 'Lust (Porn, sex, etc.)', label: 'Lust (Porn, sex, etc.)'}, {value:'Gambling', label: 'Gambling'}, {value: 'Food', label: 'Food'}, {value: 'Drugs', label: 'Drugs'}, {value: 'Nicotine', label: 'Nicotine'}, {value: 'Work', label: 'Work'}, {value: 'Pills', label: 'Pills'},

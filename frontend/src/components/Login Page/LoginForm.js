@@ -9,9 +9,9 @@ import loginInformaion from '../../services/loginInformation'
 import '../../style-sheets/LoginForm.css'
 import VectorIllustration from './VectorIllustration';
 import { TextField, InputAdornment, Button, IconButton } from '@mui/material'
-import Visibility from '@material-ui/icons/Visibility'
-import VisibilityOff from '@material-ui/icons/VisibilityOff';
-import EmailSharpIcon from '@mui/icons-material/EmailSharp';
+import VisibilityTwoToneIcon from '@mui/icons-material/VisibilityTwoTone';
+import VisibilityOffTwoToneIcon from '@mui/icons-material/VisibilityOffTwoTone';
+import EmailTwoToneIcon from '@mui/icons-material/EmailTwoTone';
 
 const style = {
   position: 'absolute',
@@ -69,7 +69,7 @@ const LoginForm = () => {
     try {
     const user = await loginInformaion.login(object)
     window.localStorage.setItem(
-      'loggedAppUser', JSON.stringify(user) //Setting localStorage allows user to make posts on account later and the posts requests will be sent to different route and that route will contain a verify function to verify that the user is authenticated to make posts. This implementation will occur whenever I get the home page up and running and I can grab the token via a localstore.getItem()
+      'loggedAppUser', JSON.stringify(user.data) //Setting localStorage allows user to make posts on account later and the posts requests will be sent to different route and that route will contain a verify function to verify that the user is authenticated to make posts. This implementation will occur whenever I get the home page up and running and I can grab the token via a localstore.getItem()
     )
     if (user) {
       navigate('/home')
@@ -93,7 +93,7 @@ const LoginForm = () => {
         <TextField sx={ errorMessage ? {position: 'absolute', top: '35%', left: '15%', width: '70%', animation: `${shake} 0.1s`, animationIterationCount: '4'} : {position: 'absolute', top: '35%', left: '15%', width: '70%'}} value={email} required={true} label='Email' InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
-                {errorMessage ? <EmailSharpIcon style={{color: 'red'}} /> : <EmailSharpIcon color="primary"/>}
+                {errorMessage ? <EmailTwoToneIcon style={{color: 'red'}} /> : <EmailTwoToneIcon color="primary"/>}
               </InputAdornment>
             ),
             classes: {
@@ -109,7 +109,7 @@ const LoginForm = () => {
                 aria-label='toggle password visibility'
                 onClick={handleClickShowPassword}
                 onMouseDown={handleMouseDownPassword}>
-                  {showPassword && errorMessage ? <Visibility style={{color: 'red'}} /> : !showPassword && !errorMessage ? <VisibilityOff color='primary' /> : errorMessage ? <VisibilityOff style={{color: 'red'}} /> : <Visibility color='primary' />}
+                  {showPassword && errorMessage ? <VisibilityTwoToneIcon style={{color: 'red'}} /> : !showPassword && !errorMessage ? <VisibilityOffTwoToneIcon color='primary' /> : errorMessage ? <VisibilityOffTwoToneIcon style={{color: 'red'}} /> : <VisibilityTwoToneIcon color='primary' />}
                 </IconButton>
               </InputAdornment>
             ),
@@ -135,7 +135,7 @@ const LoginForm = () => {
             <TextField value={emailRecoveryLink} variant='outlined' style={{width: '100%'}} InputProps={{
               startAdornment: (
                 <InputAdornment>
-                  <EmailSharpIcon color='primary'/>
+                  <EmailTwoToneIcon color='primary'/>
                 </InputAdornment>
               )
             }} onChange={(e) => setEmailRecoveryLink(e.target.value)}/>

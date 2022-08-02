@@ -13,7 +13,7 @@ loginRouter.post('/', async (req, res) => {
 
   if (!(user && passwordCorrect)) {
     return res.status(401).json({
-      error: 'Invalid email or password, please try again.'
+      error: 'invalid email or password'
     })
   }
 
@@ -22,13 +22,11 @@ loginRouter.post('/', async (req, res) => {
     id: user._id,
   }
 
-  const token = jwt.sign(userForToken, process.env.SECRET, {
-    expiresIn: 60 * 60 * 24 * 30 * 1000
-  })
+  const token = jwt.sign(userForToken, process.env.SECRET)
 
   res
     .status(200)
-    .send({ token, email: user.email, name: user.name })
+    .send({ token, user: user })
 })
 
 module.exports = loginRouter

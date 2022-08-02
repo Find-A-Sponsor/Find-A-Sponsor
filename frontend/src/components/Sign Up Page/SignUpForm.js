@@ -149,12 +149,15 @@ const SignUpForm = () => {
 
           <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DesktopDatePicker minDate={moment('01/01/1900').toDate()} renderInput={(params) => <TextField required={true} {...params} className='users-date-of-birth-input' sx={{ svg: {color: '#1976d2'}}} onChange={(e) => {
-              dispatch(createUsers(new Date([...e.currentTarget.value].reverse().join(''))), 'dateOfBirth')}} value={state.users?.dateOfBirth} />} components={{
+              if (e.currentTarget.value.length === 10) {
+              dispatch(createUsers((new Date(e.currentTarget.value)).toString(), 'dateOfBirth'))}}} value={state.users?.dateOfBirth} />} components={{
                 OpenPickerIcon: CalendarMonthTwoToneIcon
-              }} inputFormat='MM/dd/yyyy' value={state.users.dateOfBirth} onChange={(e) => dispatch(createUsers(e, 'dateOfBirth'))} label='Date of birth' InputAdornmentProps={{ position: 'start' }} InputProps={{
+              }} inputFormat='MM/dd/yyyy' value={state.users.dateOfBirth} onChange={(e) => {
+                if (e?.getFullYear() >= 1900) {
+                dispatch(createUsers(e.toString(), 'dateOfBirth'))}}} label='Date of birth' InputAdornmentProps={{ position: 'start' }} InputProps={{
               endAdornment: (
                 <InputAdornment>
-                  {state.users.dateOfBirth && state.users.dateOfBirth.getFullYear() + 18 > (new Date()).getFullYear() ? 'Must be 18 years or older to register' : ''}
+                  {state.users.dateOfBirth && (new Date(state.users.dateOfBirth)).getFullYear() + 18 > (new Date()).getFullYear() ? 'Must be 18 years or older to register' : ''}
                 </InputAdornment>
               )
             }} />
@@ -162,7 +165,7 @@ const SignUpForm = () => {
 
           <CountryOfOrigin state={state}/>
           </form>
-          <Button form='signup-handler' className="submit-button" sx={{ color: 'white' }} type="submit" disabled={state.users.password?.length >= 12 && state.users.usernameExists === false && state.users.emailExists === false && state.users.password === state.users.confirmationPassword && state.users.dateOfBirth?.getFullYear() + 18 <= (new Date()).getFullYear() && state.users.dateOfBirth?.getFullYear() >= 1900 && validator.isEmail(state.users.email) ? false : true} >Continue</Button> {/*Stack overflow submitted for reasoning behind why button gets disabled when I hit back button to return back to this page and everything is still filled out.*/}
+          <Button form='signup-handler' className="submit-button" sx={{ color: 'white' }} type="submit" disabled={state.users.password?.length >= 12 && state.users.usernameExists === false && state.users.emailExists === false && state.users.password === state.users.confirmationPassword && (new Date(state.users.dateOfBirth)).getFullYear() + 18 <= (new Date()).getFullYear() && (new Date(state.users.dateOfBirth)).getFullYear() >= 1900 && validator.isEmail(state.users.email) && state.users.location ? false : true} >Continue</Button>
           <p className="already-have-an-account-text">Already have an account? <Link className="bolded-log-in-link" to='/'>Log in</Link></p>
       </div>
     </div>

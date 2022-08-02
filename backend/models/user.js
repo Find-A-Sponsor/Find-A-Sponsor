@@ -16,7 +16,9 @@ const userSchema = mongoose.Schema({
       ref: 'Blog'
     }
   ],
-  profileImageURL: String
+  profileImageURL: String,
+  following: Number,
+  followers: Number
 })
 
 userSchema.set('toJSON', {
