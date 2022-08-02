@@ -22,17 +22,38 @@ const storeInformationSlice = createSlice({
           }
         }
       }
+    },
+    storePostURLs: {
+      reducers(state, action) {
+        const { content, key } = action.payload
+        return {
+          ...state,
+          [key]: content
+        }
+
+      },
+      prepare(...args) {
+        console.log(args)
+        let content = args[0]
+        let key = args[1]
+        return {
+          payload: {
+            content,
+            key
+          }
+        }
+      }
     }
-  }
-})
+    }
+  })
 
 
 
-export const storeUser = (content) => {
+export const storeUser = (content, key) => {
   return async dispatch => {
-    dispatch(storeUserInformation(content))
+    dispatch(storeUserInformation(content, key))
   }
 }
 
-export const { storeUserInformation } = storeInformationSlice.actions
+export const { storeUserInformation, storePostURLs } = storeInformationSlice.actions
 export default storeInformationSlice.reducer

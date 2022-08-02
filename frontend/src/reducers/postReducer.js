@@ -1,10 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const userSlice = createSlice({
-  name: 'users',
+const postSlice = createSlice({
+  name: 'post',
   initialState: {},
   reducers: {
-    createUser: {
+    createPosts: {
       reducer(state, action) {
         const { content, key } = action.payload
         return {
@@ -26,13 +26,13 @@ const userSlice = createSlice({
     resetState(state, action) {
       state = {}
       return state
-    }
+    },
   },
 })
 
-export const createUsers = (content, key) => {
+export const createPost = (content, key) => {
   return async dispatch => {
-    dispatch(createUser(content, key))
+    dispatch(createPosts(content, key))
   }
 }
 
@@ -42,5 +42,5 @@ export const resetter = () => {
   }
 }
 
-export const { createUser, resetState } = userSlice.actions
-export default userSlice.reducer
+export const { createPosts, resetState } = postSlice.actions
+export default postSlice.reducer
