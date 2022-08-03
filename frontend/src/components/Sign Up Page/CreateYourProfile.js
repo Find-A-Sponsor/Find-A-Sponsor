@@ -30,7 +30,7 @@ const CreateYourProfile = () => {
     formData.append('file', e.target.files[0]);
     formData.append('upload_preset', process.env.REACT_APP_CLOUDINARY_PRESET)
     formData.append('api_key', process.env.REACT_APP_CLOUDINARY_APIKEY)
-    const response = await axios.post(process.env.REACT_APP_CLOUDINARY_URL, formData).finally(() => {
+    const response = await axios.post(process.env.REACT_APP_CLOUDINARY_IMAGE_URL, formData).finally(() => {
       setLoading(false)
     })
     dispatch(createUsers(response.data.secure_url, 'profileImageURL'))

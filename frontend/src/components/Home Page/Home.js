@@ -24,9 +24,11 @@ import { Loading } from '@nextui-org/react'
 import ErrorTwoToneIcon from '@mui/icons-material/ErrorTwoTone';
 import CheckBoxTwoToneIcon from '@mui/icons-material/CheckBoxTwoTone';
 import DeleteForeverTwoToneIcon from '@mui/icons-material/DeleteForeverTwoTone';
+import postInformation from "../../services/postInformation";
 
 const Home = () => {
   const state = useSelector(state => state)
+  const [user, setUser] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [contentError, setContentError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -35,11 +37,11 @@ const Home = () => {
   const [deleteDocument, setDeleteDocument] = useState(false)
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  console.log(state)
+
 
   useEffect(() => {
-    const user = JSON.parse(window.localStorage.getItem('loggedAppUser'))
     async function findUserWithToken() {
+      setUser(await JSON.parse(window.localStorage.getItem('loggedAppUser')))
       userInformation.setToken(user.token)
       const response = await userInformation.findUser(user.user.email)
       const arrayOfKeys = Object.keys(response.data.user)
@@ -69,16 +71,13 @@ const handleNewPost = async (e) => {
         await axios.post(process.env.REACT_APP_CLOUDINARY_IMAGE_URL, formData).finally(el => {
           setLoading(false)
         })
-        dispatch(createPosts('', arrayOfKeys[i]))
         
       } else {
           await axios.post(process.env.REACT_APP_CLOUDINARY_VIDEO_URL, formData).finally(el => {
             setLoading(false)
           })
-          dispatch(createPosts('', arrayOfKeys[i]))
         }
       } catch (err) {
-        console.log(err)
         setErrorMessage('An error has occurred!')
         setContentError(arrayOfKeys[i])
         setTimeout(() => {
@@ -86,9 +85,14 @@ const handleNewPost = async (e) => {
           setContentError('')
           setLoading(false)
         }, 5000)
+      } finally {
+        postInformation.makeAPost(state.newPost, user)
+        arrayOfKeys.forEach((key) => {
+          dispatch(createPosts('', key))
+        })
+        setLoading(false)
       }
     } else if (arrayOfKeys[i] !== 'text' && state.newPost[arrayOfKeys[i]]){
-      console.log(state.newPost)
       setErrorMessage('Video files must be 100MB or less, images and documents must be 10MB or less.')
       setContentError(arrayOfKeys[i])
       setTimeout(() => {
@@ -139,31 +143,34 @@ const handleNewPost = async (e) => {
       }} />}  
 
 
-      {state.newPost.image ? <Button onMouseLeave={() => setDeleteItem(!deleteItem)} onMouseEnter={() => setDeleteItem(!deleteItem)} onClick={(e) => {
+      {/* {All three buttons currently have an issue where they automatically turn red upon submission of a file, I will fix this soon.} */}
+      {state.newPost.image ? <Button onMouseEnter={() => setDeleteItem(!deleteItem)} onMouseLeave={() => setDeleteItem(!deleteItem)} onClick={(e) => {
         e.preventDefault();
         dispatch(createPosts('', 'image'))
-      }} startIcon={deleteItem ? <DeleteForeverTwoToneIcon /> : <CheckBoxTwoToneIcon />} variant='contained' color={deleteItem ? "error" : "success"} style={{position: 'absolute', left: '78%', top: '53%', borderRadius: '16px'}}>1 Image</Button> : <Button startIcon={contentError === 'image' ? <ImageTwoToneIcon style={{color: 'red'}}/> : <ImageTwoToneIcon />} variant="outlined" style={{position: 'absolute', left: '77%', top: '53%', background: 'rgba(255, 255, 255, 0.32)', border: '1px solid rgba(45, 135, 255, 0.3)', borderRadius: '16px', color: contentError === 'image' ? 'red' : '', borderColor: contentError === 'image' ? 'red' : ''}} disabled={loading} component='label'>Add Image <input accept="image/*" type='file' hidden onChange={(e) => {
-        dispatch(createPosts(e.target.files[0], 'image'))
+      }} startIcon={deleteItem ? <DeleteForeverTwoToneIcon /> : <CheckBoxTwoToneIcon />} variant='contained' color={deleteItem ? "error" : "success"} style={{position: 'absolute', left: '78%', top: '53%', borderRadius: '16px'}}>1 Image</Button> : <Button startIcon={contentError === 'image' ? <ImageTwoToneIcon style={{color: 'red'}}/> : <ImageTwoToneIcon />} variant="outlined" style={{position: 'absolute', left: '77%', top: '53%', background: 'rgba(255, 255, 255, 0.32)', border: '1px solid rgba(45, 135, 255, 0.3)', borderRadius: '16px', color: contentError === 'image' ? 'red' : '', borderColor: contentError === 'image' ? 'red' : ''}} disabled={loading} component='label'>Add Image <input style={{pointerEvents: 'none'}} accept="image/*" type='file' hidden onChange={(e) => {
         setDeleteItem(false)
+        dispatch(createPosts(e.target.files[0], 'image'))
       }}/></Button>}
 
 
       {state.newPost.video ? <Button onMouseLeave={() => setDeleteVideo(!deleteVideo)} onMouseEnter={() => setDeleteVideo(!deleteVideo)} onClick={(e) => {
         e.preventDefault();
         dispatch(createPosts('', 'video'))
-      }} startIcon={deleteVideo ? <DeleteForeverTwoToneIcon /> : <CheckBoxTwoToneIcon />} variant='contained' color={deleteVideo ? "error" : "success"} style={{position: 'absolute', left: '85%', top: '53%', borderRadius: '16px'}}>1 Video</Button> : <Button startIcon={contentError === 'video' ? <VideocamTwoToneIcon style={{color: 'red'}}/> : <VideocamTwoToneIcon />} variant="outlined" style={{position: 'absolute', left: '85%', top: '53%', background: 'rgba(255, 255, 255, 0.32)', border: '1px solid rgba(45, 135, 255, 0.3)', borderRadius: '16px', color: contentError === 'video' ? 'red' : '', borderColor: contentError === 'video' ? 'red' : ''}} disabled={loading} component='label'>Add Video <input accept='video/*' type='file' hidden onChange={(e) => {
-        dispatch(createPosts(e.target.files[0], 'video'))
+      }} startIcon={deleteVideo ? <DeleteForeverTwoToneIcon /> : <CheckBoxTwoToneIcon />} variant='contained' color={deleteVideo ? "error" : "success"} style={{position: 'absolute', left: '85%', top: '53%', borderRadius: '16px'}}>1 Video</Button> : <Button startIcon={contentError === 'video' ? <VideocamTwoToneIcon style={{color: 'red'}}/> : <VideocamTwoToneIcon />} variant="outlined" style={{position: 'absolute', left: '85%', top: '53%', background: 'rgba(255, 255, 255, 0.32)', border: '1px solid rgba(45, 135, 255, 0.3)', borderRadius: '16px', color: contentError === 'video' ? 'red' : '', borderColor: contentError === 'video' ? 'red' : ''}} disabled={loading} component='label'>Add Video <input style={{pointerEvents: 'none'}} accept='video/*' type='file' hidden onChange={(e) => {
         setDeleteVideo(false)
+        dispatch(createPosts(e.target.files[0], 'video'))
       }}/></Button>}
 
 
       {state.newPost.document ? <Button onMouseLeave={() => setDeleteDocument(!deleteDocument)} onMouseEnter={() => setDeleteDocument(!deleteDocument)} onClick={(e) => {
         e.preventDefault();
         dispatch(createPosts('', 'document'))
-      }} startIcon={deleteDocument ? <DeleteForeverTwoToneIcon /> : <CheckBoxTwoToneIcon />} variant='contained' color={deleteDocument ? "error" : "success"} style={{position: 'absolute', left: '92.5%', top: '53%', borderRadius: '16px'}}>1 File</Button> : <Button startIcon={contentError === 'document' ? <AttachFileTwoToneIcon style={{color: 'red'}}/> : <AttachFileTwoToneIcon />} variant="outlined" style={{position: 'absolute', left: '93%', top: '53%', background: 'rgba(255, 255, 255, 0.32)', border: '1px solid rgba(45, 135, 255, 0.3)', borderRadius: '16px', color: contentError === 'document' ? 'red' : '', borderColor: contentError === 'document' ? 'red' : ''}} disabled={loading} component='label'>File <input accept=".pdf" type='file' hidden onChange={(e) => {
-        dispatch(createPosts(e.target.files[0], 'document'))
+      }} startIcon={deleteDocument ? <DeleteForeverTwoToneIcon /> : <CheckBoxTwoToneIcon />} variant='contained' color={deleteDocument ? "error" : "success"} style={{position: 'absolute', left: '92.5%', top: '53%', borderRadius: '16px'}}>1 File</Button> : <Button startIcon={contentError === 'document' ? <AttachFileTwoToneIcon style={{color: 'red'}}/> : <AttachFileTwoToneIcon />} variant="outlined" style={{position: 'absolute', left: '93%', top: '53%', background: 'rgba(255, 255, 255, 0.32)', border: '1px solid rgba(45, 135, 255, 0.3)', borderRadius: '16px', color: contentError === 'document' ? 'red' : '', borderColor: contentError === 'document' ? 'red' : '', pointerEvents: 'visibleFill'}} disabled={loading} component='label'>File <input accept=".pdf" type='file' hidden onChange={(e) => {
         setDeleteDocument(false)
-      }}/></Button>}      
+        dispatch(createPosts(e.target.files[0], 'document'))
+      }}/></Button>}
+
+
       {loading ? <Button disabled startIcon={<Loading style={{fontSize: '175%'}} color='white'/>} variant="outlined" style={{position: 'absolute', left: '77%', top: '58%', background: 'linear-gradient(180deg, #2D87FF 0%, #6099E5 100%)', borderRadius: '60px', color: 'white', width: '20.5%', height: '5%'}}>Loading</Button> : errorMessage ? <Button disabled startIcon={<ErrorTwoToneIcon color="white"/>} variant="outlined" style={{position: 'absolute', left: '77%', top: '58%', background: 'linear-gradient(180deg, #2D87FF 0%, #6099E5 100%)', borderRadius: '60px', color: 'white', width: '20.5%', height: '5%'}}>Error</Button> : <Button type="submit" startIcon={<SendTwoToneIcon style={{fontSize: '175%'}} />} variant="outlined" style={{position: 'absolute', left: '77%', top: '58%', background: 'linear-gradient(180deg, #2D87FF 0%, #6099E5 100%)', borderRadius: '60px', color: 'white', width: '20.5%', height: '5%'}}>Post</Button>}
       </form>
       </div>

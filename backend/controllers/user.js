@@ -51,13 +51,6 @@ usersRouter.post('/', async (req, res) => {
   const saltRounds = 10
   const passwordHash = await bcrypt.hash(password, saltRounds)
 
-  const userForToken = {
-    email: email,
-    username: username,
-  }
-
-  const token = jwt.sign(userForToken, process.env.SECRET)
-
   const user = new User({
     username,
     name,
@@ -73,7 +66,14 @@ usersRouter.post('/', async (req, res) => {
     groups
   })
 
-  await user.save()
+  const response = await user.save()
+
+  const userForToken = {
+    email: email,
+    id: response._id,
+  }
+
+  const token = jwt.sign(userForToken, process.env.SECRET)
 
   return res.status(201).json({ token, user })
 

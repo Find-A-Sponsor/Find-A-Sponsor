@@ -6,6 +6,7 @@ const mongoose = require('mongoose')
 require('dotenv').config()
 const loginRouter = require('./controllers/login')
 const usersRouter = require('./controllers/user')
+const postRouter = require('./controllers/post')
 
 console.log('connecting to', process.env.MONGODB_URI)
 
@@ -17,5 +18,6 @@ app.use(cookieParser())
 
 app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)
+app.use('/api/posts', postRouter)
 
 module.exports = app
