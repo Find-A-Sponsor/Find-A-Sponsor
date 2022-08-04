@@ -56,14 +56,13 @@ const Home = () => {
     findUserWithToken()
 }, [])
 
-const handleNewPost = async (e) => { //I need to refactor handleNewPost to take into account all error messages sent from cloudinary.
+const handleNewPost = async (e) => { //I need to refactor handleNewPost to take into account all error messages sent from cloudinary and print out those different messages.
   e.preventDefault();
   const arrayOfKeys = Object.keys(state.newPost)
   for (let i = 0; i <= arrayOfKeys.length; i++) {
     const formData = new FormData()
     if (arrayOfKeys[i] !== 'text' && ((arrayOfKeys[i] === 'image' && state.newPost[arrayOfKeys[i]].size < 10485760) || 
     (arrayOfKeys[i] === 'document' && state.newPost[arrayOfKeys[i]].size < 10485760))) {
-      try {
         setLoading(true) 
         formData.append('file', state.newPost[arrayOfKeys[i]]);
         formData.append('upload_preset', process.env.REACT_APP_CLOUDINARY_PRESET)
@@ -72,15 +71,6 @@ const handleNewPost = async (e) => { //I need to refactor handleNewPost to take 
           setLoading(false)
         })
         ref.current = await {...ref.current, [arrayOfKeys[i]]: response.data.secure_url}
-      } catch (err) {
-        setErrorMessage('An error has occurred!')
-        setContentError(arrayOfKeys[i])
-        setTimeout(() => {
-          setErrorMessage('')
-          setContentError('')
-          setLoading(false)
-        }, 5000)
-      }
     } else if (arrayOfKeys[i] === 'video' && state.newPost[arrayOfKeys[i]].size < 104857600) {
       setLoading(true)
       formData.append('file', state.newPost[arrayOfKeys[i]]);
@@ -105,6 +95,7 @@ const handleNewPost = async (e) => { //I need to refactor handleNewPost to take 
     dispatch(createPosts('', key))
   })
   setLoading(false)
+  ref.current = ''
 }
 
 

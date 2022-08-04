@@ -15,6 +15,7 @@ const makeAPost = async (req, token) => {
     video,
     document
   }
+  
   const response = await axios.post(`${baseUrl}/api/posts`, object, config)
   return response
 }
