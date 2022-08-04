@@ -5,8 +5,8 @@ const User = require('../models/user')
 
 const getTokenFrom = request => {
   const authorization = request.get('Authorization')
-  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
-    return authorization.substring(7)
+  if (authorization) {
+    return authorization
   }
   return null
 }
@@ -37,7 +37,7 @@ postRouter.post('/', async(req, res) => {
   user.posts = user.posts.concat(savedPost._id)
   await user.save()
 
-  res.json(savedPost)
+  res.status(200).json(savedPost)
 
 
 })

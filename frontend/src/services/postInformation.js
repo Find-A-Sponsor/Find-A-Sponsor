@@ -2,8 +2,10 @@ import axios from "axios";
 const baseUrl = 'http://localhost:3001'
 
 const makeAPost = async (req, token) => {
-  console.log(req)
-  console.log(token)
+  const config = {headers: {
+    Authorization: token.token
+  },}
+
   const { text, image, video, document } = req
 
 
@@ -13,8 +15,7 @@ const makeAPost = async (req, token) => {
     video,
     document
   }
-
-  const response = await axios.post(`${baseUrl}/api/posts`, object)
+  const response = await axios.post(`${baseUrl}/api/posts`, object, config)
   return response
 }
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import userInformation from "../../services/userInformation";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -29,6 +29,7 @@ import postInformation from "../../services/postInformation";
 const Home = () => {
   const state = useSelector(state => state)
   const [user, setUser] = useState('')
+  const ref = useRef();
   const [errorMessage, setErrorMessage] = useState('')
   const [contentError, setContentError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -55,28 +56,22 @@ const Home = () => {
     findUserWithToken()
 }, [])
 
-const handleNewPost = async (e) => {
+const handleNewPost = async (e) => { //I need to refactor handleNewPost to take into account all error messages sent from cloudinary.
   e.preventDefault();
   const arrayOfKeys = Object.keys(state.newPost)
-  for (let i = 0; i < arrayOfKeys.length; i++) {
-    if (arrayOfKeys[i] in state.newPost && arrayOfKeys[i] !== 'text' && ((arrayOfKeys[i] === 'image' && state.newPost[arrayOfKeys[i]].size < 10485760) || (arrayOfKeys[i] === 'video' && state.newPost[arrayOfKeys[i]].size < 104857600) || 
+  for (let i = 0; i <= arrayOfKeys.length; i++) {
+    const formData = new FormData()
+    if (arrayOfKeys[i] !== 'text' && ((arrayOfKeys[i] === 'image' && state.newPost[arrayOfKeys[i]].size < 10485760) || 
     (arrayOfKeys[i] === 'document' && state.newPost[arrayOfKeys[i]].size < 10485760))) {
       try {
         setLoading(true) 
-        const formData = new FormData()
         formData.append('file', state.newPost[arrayOfKeys[i]]);
         formData.append('upload_preset', process.env.REACT_APP_CLOUDINARY_PRESET)
         formData.append('api_key', process.env.REACT_APP_CLOUDINARY_APIKEY)
-        if (arrayOfKeys[i] === 'image' || arrayOfKeys[i] === 'document') {
-        await axios.post(process.env.REACT_APP_CLOUDINARY_IMAGE_URL, formData).finally(el => {
+        const response = await axios.post(process.env.REACT_APP_CLOUDINARY_IMAGE_URL, formData).finally(el => {
           setLoading(false)
         })
-        
-      } else {
-          await axios.post(process.env.REACT_APP_CLOUDINARY_VIDEO_URL, formData).finally(el => {
-            setLoading(false)
-          })
-        }
+        ref.current = await {...ref.current, [arrayOfKeys[i]]: response.data.secure_url}
       } catch (err) {
         setErrorMessage('An error has occurred!')
         setContentError(arrayOfKeys[i])
@@ -85,13 +80,16 @@ const handleNewPost = async (e) => {
           setContentError('')
           setLoading(false)
         }, 5000)
-      } finally {
-        postInformation.makeAPost(state.newPost, user)
-        arrayOfKeys.forEach((key) => {
-          dispatch(createPosts('', key))
-        })
-        setLoading(false)
       }
+    } else if (arrayOfKeys[i] === 'video' && state.newPost[arrayOfKeys[i]].size < 104857600) {
+      setLoading(true)
+      formData.append('file', state.newPost[arrayOfKeys[i]]);
+      formData.append('upload_preset', process.env.REACT_APP_CLOUDINARY_PRESET)
+      formData.append('api_key', process.env.REACT_APP_CLOUDINARY_APIKEY)
+      const response = await axios.post(process.env.REACT_APP_CLOUDINARY_VIDEO_URL, formData).finally(el => {
+        setLoading(false)
+      })
+      ref.current = {...ref.current, [arrayOfKeys[i]]: response.data.secure_url}
     } else if (arrayOfKeys[i] !== 'text' && state.newPost[arrayOfKeys[i]]){
       setErrorMessage('Video files must be 100MB or less, images and documents must be 10MB or less.')
       setContentError(arrayOfKeys[i])
@@ -101,6 +99,12 @@ const handleNewPost = async (e) => {
       }, 5000)
     }
   }
+  ref.current = {...ref.current, 'text': state.newPost.text}
+  await postInformation.makeAPost(ref.current, user)
+  arrayOfKeys.forEach((key) => {
+    dispatch(createPosts('', key))
+  })
+  setLoading(false)
 }
 
 
