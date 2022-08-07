@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken')
 const postRouter = require('express').Router()
 const Post = require('../models/post')
 const User = require('../models/user')
+const { validateToken } = require('../middleware/validateToken.js')
 
 const getTokenFrom = request => {
   const authorization = request.get('Authorization')
@@ -28,6 +29,7 @@ postRouter.post('/', async(req, res) => {
     document: body.document,
     date: new Date(),
     owner: user._id,
+    username: user.username,
     likes: 0,
     shares: 0,
     comments: 0 
@@ -38,8 +40,19 @@ postRouter.post('/', async(req, res) => {
   await user.save()
 
   res.status(200).json(savedPost)
+})
 
+postRouter.get('/', async (req, res) => {
+  const token = getTokenFrom(req)
+  const verifiedToken = jwt.verify(token, process.env.SECRET)
 
+  if (!verifiedToken.id) {
+    return res.status(401).json({error: 'token missing or invalid'})
+  }
+
+  const posts = await Post.find({})
+
+  res.status(200).json(posts)
 })
 
 
