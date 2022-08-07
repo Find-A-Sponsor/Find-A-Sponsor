@@ -50,9 +50,9 @@ const Home = () => {
   const [reply, setReply] = useState(false)
   const [numberOfPosts, setNumberOfPosts] = useState(Array.from({ length: 5}))
   const [hasMore, setHasMore] = useState(true)
-  const [arrayOfPosts, setArrayOfPosts] = useState()
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  console.log(state)
 
   const initializer = useCallback(async () => {
     const user = await JSON.parse(window.localStorage.getItem('loggedAppUser'))
@@ -74,7 +74,7 @@ const Home = () => {
 
       useEffect(() => {
         initializer()
-      }, [initializer])
+      }, [])
 
 const handleNewPost = async (e) => {
   e.preventDefault();
@@ -130,8 +130,7 @@ const handleNewPost = async (e) => {
 }
 
 const fetchMoreData = () => {
-  console.log(arrayOfPosts.length)
-  if (numberOfPosts.length >= arrayOfPosts.length) {
+  if (numberOfPosts.length >= (Object.entries(state.posts)).length) {
     setHasMore(false)
     return;
   }
@@ -223,14 +222,14 @@ const fetchMoreData = () => {
         alignItems="center"
         spacing={45}
       >
-      {numberOfPosts.map(key => {
+      {numberOfPosts.map((key, i) => {
       return (
         <Grid container item>
         <div id="post-container" style={{margin: '5%', position: 'absolute', width: '90%', height: '40%', backgroundColor: 'white', borderRadius: '30px', overflow: 'auto'}}>
           <Avatar src={<AvatarPicture/>} style={{position: 'absolute', left: '1%', top: '3%', height: '60px', width: '60px'}} size='lg'></Avatar>
           <p style={{position: 'absolute', left: '9%', top: '-5%', fontFamily: 'Outfit', fontStyle: 'normal', fontWeight: '500', fontSize: '20px', lineHeight: '25px', overflow: 'auto'}}>@{state.storage.username}</p>
           <p style={{position: 'absolute', left: '9%', top: '10%', fontFamily: 'Outfit', fontStyle: 'normal', fontWeight: '400', fontSize: '16px', lineHeight: '20px', color: '#6D7683'}}>{state.storage.location}</p>
-          <p style={{position: 'absolute', left: '20%', top: '10%', fontFamily: 'Outfit', fontStyle: 'normal', fontWeight: '400', fontSize: '16px', lineHeight: '20px', color: '#2D87FF'}}>time</p>
+          <p style={{position: 'absolute', left: '20%', top: '10%', fontFamily: 'Outfit', fontStyle: 'normal', fontWeight: '400', fontSize: '16px', lineHeight: '20px', color: '#2D87FF'}}>{state.posts[i]?.date}</p>
           <div id="text-container" style={{position: 'absolute', top: '30%', left: '5%', backgroundColor: '#FFFBEE', height: '30%', width: '90%', borderRadius: '16px'}}></div>
           <TextField InputProps={{
             startAdornment: (
