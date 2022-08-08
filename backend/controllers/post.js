@@ -2,7 +2,6 @@ const jwt = require('jsonwebtoken')
 const postRouter = require('express').Router()
 const Post = require('../models/post')
 const User = require('../models/user')
-const { validateToken } = require('../middleware/validateToken.js')
 
 const getTokenFrom = request => {
   const authorization = request.get('Authorization')
@@ -32,7 +31,8 @@ postRouter.post('/', async(req, res) => {
     username: user.username,
     likes: 0,
     shares: 0,
-    comments: 0 
+    comments: 0,
+    location: user.location
   })
 
   const savedPost = await post.save()
