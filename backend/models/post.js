@@ -5,9 +5,9 @@ const postSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  image: String,
+  images: Array,
   video: String,
-  document: String,
+  gif: String,
   date: Date,
   tags: String,
   likes: Number,

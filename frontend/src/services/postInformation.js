@@ -6,14 +6,14 @@ const makeAPost = async (req, token) => {
     Authorization: token.token
   },}
 
-  const { text, image, video, document } = req
+  const { text, images, video, gif } = req
 
 
   const object = {
     text,
-    image,
+    images,
     video,
-    document
+    gif
   }
 
   const response = await axios.post(`${baseUrl}/api/posts`, object, config)

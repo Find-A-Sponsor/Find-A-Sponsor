@@ -23,9 +23,9 @@ postRouter.post('/', async(req, res) => {
 
   const post = new Post({
     text: body.text,
-    image: body.image,
+    images: body.images,
     video: body.video,
-    document: body.document,
+    gif: body.gif,
     date: new Date(),
     owner: user._id,
     username: user.username,

@@ -11,12 +11,11 @@ import PageviewTwoToneIcon from '@mui/icons-material/PageviewTwoTone';
 import GroupsTwoToneIcon from '@mui/icons-material/GroupsTwoTone';
 import EmailTwoToneIcon from '@mui/icons-material/EmailTwoTone';
 import SettingsApplicationsTwoToneIcon from '@mui/icons-material/SettingsApplicationsTwoTone';
-import { Button, IconButton, Input, InputAdornment } from "@mui/material";
+import { Dialog, Button, IconButton, ImageList, ImageListItem, InputAdornment, DialogTitle } from "@mui/material";
 import { TextField, Grid } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { storeUserInformation } from "../../reducers/storeInformationReducer";
 import { Loading } from '@nextui-org/react'
-import postInformation from "../../services/postInformation";
 import '../../style-sheets/Home.css'
 import FavoriteBorderTwoToneIcon from '@mui/icons-material/FavoriteBorderTwoTone';
 import FavoriteIcon from '@mui/icons-material/Favorite';
@@ -24,7 +23,6 @@ import HeartBrokenIcon from '@mui/icons-material/HeartBroken';
 import MessageIcon from '@mui/icons-material/Message';
 import IosShareOutlinedIcon from '@mui/icons-material/IosShareOutlined';
 import MessageOutlinedIcon from '@mui/icons-material/MessageOutlined';
-import { storePostInformation } from "../../reducers/storePostReducer";
 import InfiniteScroll from 'react-infinite-scroll-component'
 import ViewProfileBox from "./ViewProfileBox";
 
@@ -36,9 +34,10 @@ const Home = () => {
   const [replies, setReplies] = useState([])
   const [numberOfPosts, setNumberOfPosts] = useState(Array.from({ length: 5}))
   const [hasMore, setHasMore] = useState(true)
+  const [open, setOpen] = useState(false)
+  const [imageToView, setImageToView] = useState('')
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
 
 
       useEffect(() => {
@@ -69,10 +68,30 @@ const Home = () => {
 
     const handleReplies = (index) => {
       setReplies(replies.map((val, i) => index === i ? !val : val));
-  }
+    }
+
+    const handleOpen = (e) => {
+      setOpen(true)
+      setImageToView(e)
+    }
+
+    const handleClose = () => setOpen(false)
+    const style = {
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      width: 400,
+      bgcolor: 'background.paper',
+      border: '2px solid #000',
+      boxShadow: 24,
+      p: 4,
+    };
 
 
 const fetchMoreData = () => {
+  console.log(state.posts)
+  console.log(numberOfPosts.length)
     if ((Object.entries(state.posts)).length - numberOfPosts.length < 5) {
       setTimeout(() => {
         setNumberOfPosts(numberOfPosts.concat(Array.from({length: ((Object.entries(state.posts)).length - numberOfPosts)})))
@@ -138,17 +157,17 @@ const fetchMoreData = () => {
       {numberOfPosts.map((key, i) => {
       return (
         <Grid container item>
-      <Grid item xs={12} container style={{backgroundColor: 'white', paddingTop: '10px'}}>
+      <Grid item xs={12} container style={{backgroundColor: 'white', paddingTop: '20px'}}>
         {/* avatar, username, etc */}
         <Grid item xs={1} container style={{ justifyContent: "center" }}>
           <Avatar src={AvatarPicture} />
         </Grid>
         <Grid item container xs={11} style={{ gap: "10px" }}>
           <Grid item xs={11}>
-            @{state.posts[i].username}
+            @{state.posts[i]?.username}
           </Grid>
           <Grid item xs={11}>
-            {state.posts[i].location} <a href="/">{state.posts[i].date}</a>
+            {state.posts[i]?.location} {state.posts[i]?.date}
           </Grid>
         </Grid>
       </Grid>
@@ -163,49 +182,89 @@ const fetchMoreData = () => {
             margin: '1%'
           }}
         >
-          {state.posts[i].text}
+          {state.posts[i]?.text}
         </p>
       </Grid>
-      {state.posts[i].video && (
+      {state.posts[i]?.video && (
         <Grid item xs={12} className="indent2" style={{backgroundColor: 'white'}}>
           {/* post video */}
-          <ReactPlayer url={state.posts[i].video} controls width="320px" height="180px" />
+          <ReactPlayer url={state.posts[i].video} controls width='100%'/>
         </Grid>
       )}
+      <Grid container wrap="nowrap">
+      {state.posts[i]?.images && (
+        <Grid item xs={12} className="indent2" style={{backgroundColor: 'white'}}>
+        {/* post image */}
+        <ImageList sx={{overflowX: 'auto' }} rowHeight={200}>
+        <ImageListItem sx={{display: 'flex', flexDirection: 'row'}}>
+            {state.posts[i].images.map(image => {
+              return (
+                <img
+                src={image}
+                alt='title'
+                loading='lazy'
+                style={{paddingRight: '1em', objectFit: 'contain'}}
+                onClick={(e) => handleOpen(e.target.src)}
+                />
+              )
+            })}
+            <Dialog
+                  open={open}
+                  onClose={handleClose}
+                  style={{ maxWidth: "100%", maxHeight: "100%" }}
+                  BackdropProps={{invisible: true}}
+                >
+                  <img
+                    style={{ width: 'auto', height: '100%' }}
+                    src={imageToView}
+                    alt="image"
+                  />
+                </Dialog>
+            </ImageListItem>
+        </ImageList>
+      </Grid>
+      )}
+      {state.posts[i]?.gif && (
+        <Grid item xs={12} className="indent2" style={{backgroundColor: 'white'}} width='50%'>
+        {/* post gif */}
+        <img src={state.posts[i].gif} />
+      </Grid>
+      )}
+      </Grid>
       <Grid item xs={12} className="indent2" style={{backgroundColor: 'white'}}>
         {/* icon bar */}
         <Grid container style={{ padding: 12, gap: 20 }}>
           <Grid item>
             <IconButton
-              onClick={handleLike}
+              onClick={() => handleLike(i)}
               onMouseLeave={() => setMouseOver(false)}
               onMouseOver={() => setMouseOver(true)}
             >
-              {like && mouseOver ? (
+              {like[i]&& mouseOver ? (
                 <HeartBrokenIcon style={{ color: "red" }} />
-              ) : like ? (
+              ) : like[i] ? (
                 <FavoriteIcon style={{ color: "red" }} />
               ) : (
                 <FavoriteBorderTwoToneIcon />
               )}
             </IconButton>{" "}
-            {state.posts[i].likes}
+            {state.posts[i]?.likes}
           </Grid>
           <Grid item>
-            <IconButton onClick={handleReplies}>
-              {replies ? (
+            <IconButton onClick={() => handleReplies(i)}>
+              {replies[i] ? (
                 <MessageIcon color="primary" />
               ) : (
                 <MessageOutlinedIcon />
               )}
             </IconButton>{" "}
-            {state.posts[i].comments}
+            {state.posts[i]?.comments}
           </Grid>
           <Grid item>
             <IconButton>
               <IosShareOutlinedIcon />
             </IconButton>{" "}
-            {state.posts[i].shares}
+            {state.posts[i]?.shares}
           </Grid>
         </Grid>
       </Grid>
