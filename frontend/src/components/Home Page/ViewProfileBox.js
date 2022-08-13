@@ -4,8 +4,8 @@ import { useSelector, useDispatch } from "react-redux";
 import postInformation from "../../services/postInformation";
 import { storePostInformation } from "../../reducers/storePostReducer";
 
-import { Loading, StyledImageSkeleton } from '@nextui-org/react'
-import { TextField, Button, IconButton } from "@mui/material";
+import { Loading } from '@nextui-org/react'
+import { TextField, Button } from "@mui/material";
 import ImageTwoToneIcon from '@mui/icons-material/ImageTwoTone';
 import VideocamTwoToneIcon from '@mui/icons-material/VideocamTwoTone';
 import SendTwoToneIcon from '@mui/icons-material/SendTwoTone';
@@ -15,7 +15,7 @@ import DeleteForeverTwoToneIcon from '@mui/icons-material/DeleteForeverTwoTone';
 import { createPosts } from "../../reducers/postReducer";
 import MovieFilterIcon from '@mui/icons-material/MovieFilter';
 
-const ViewProfileBox = ({ savedUser }) => {
+const ViewProfileBox = ({ savedUser, handleLike }) => {
   const ref = useRef()
   const state = useSelector(state => state)
   const dispatch = useDispatch();
@@ -37,7 +37,7 @@ const ViewProfileBox = ({ savedUser }) => {
       })
     }
   grabPosts()
-  }, [ref.current])
+  }, [ref.current, handleLike])
 
   const uploadToServer = async (URL, arrayOfKeys, i) => {
     setLoading(true)
@@ -72,15 +72,13 @@ const ViewProfileBox = ({ savedUser }) => {
             setLoading(false)
         })
           ref.current = {'images': ref.current?.images ? ref.current.images.concat(response.data.secure_url) : [].concat(response.data.secure_url)}
-          console.log(ref.current)
       } catch (err) {
-            console.log(err)
             setErrorMessage(err.message)
         }
       }} else if ((arrayOfKeys[i] === 'video' && state.newPost[arrayOfKeys[i]].size < 104857600)) {
-          uploadToServer(process.env.REACT_APP_CLOUDINARY_VIDEO_URL, arrayOfKeys, i)
+          await uploadToServer(process.env.REACT_APP_CLOUDINARY_VIDEO_URL, arrayOfKeys, i)
       } else if ((arrayOfKeys[i] === 'gif' && state.newPost[arrayOfKeys[i]].size < 10485760)) {
-        uploadToServer(process.env.REACT_APP_CLOUDINARY_IMAGE_URL, arrayOfKeys, i)
+        await uploadToServer(process.env.REACT_APP_CLOUDINARY_IMAGE_URL, arrayOfKeys, i)
       } else if (arrayOfKeys[i] !== 'text' && state.newPost[arrayOfKeys[i]]){
         setErrorMessage('Video files must be 100MB or less, images and gifs must be 10MB or less.')
         setContentError(arrayOfKeys[i])
@@ -107,14 +105,15 @@ const ViewProfileBox = ({ savedUser }) => {
   <form onSubmit={handleNewPost}>
         {contentError ? <TextField disabled size="large" rows={5} inputProps={{maxLength: 500}} multiline style={{position: 'absolute', left: '77%', top: '38%', width: '20%', color: 'red'}} value={errorMessage} /> : <TextField required size="large" rows={5} inputProps={{maxLength: 500}} multiline style={{position: 'absolute', left: '77%', top: '38%', width: '20%'}} placeholder='How are you feeling?' value={textInput} disabled={loading} onChange={(e) => {
           setTextInput(e.target.value)
-          }} />}  
+          }} />}
+        
 
         {/* Add the ability to disable all buttons while loading is taking place, right now they still display while loading */}
         
         {state.newPost.images ? <Button onMouseOver={() => setDeleteItem(true)} onMouseLeave={() => setDeleteItem(false)} onClick={(e) => {
           e.preventDefault();
           dispatch(createPosts('', 'images'))
-        }} startIcon={deleteItem ? <DeleteForeverTwoToneIcon /> : <CheckBoxTwoToneIcon />} disabled={loading || errorMessage} variant='contained' color={deleteItem ? "error" : "success"} style={{position: 'absolute', left: '78%', top: '53%', borderRadius: '16px'}}>1 Image</Button> : <Button startIcon={contentError === 'images' ? <ImageTwoToneIcon style={{color: 'red'}}/> : <ImageTwoToneIcon />} variant="outlined" style={{position: 'absolute', left: '77%', top: '53%', background: 'rgba(255, 255, 255, 0.32)', border: '1px solid rgba(45, 135, 255, 0.3)', borderRadius: '16px', color: contentError === 'images' ? 'red' : '', borderColor: contentError === 'images' ? 'red' : ''}} disabled={loading || errorMessage} component='label'>Add Image <input multiple style={{pointerEvents: 'none'}} accept="image/*" type='file' hidden onChange={(e) => {
+        }} startIcon={deleteItem ? <DeleteForeverTwoToneIcon /> : <CheckBoxTwoToneIcon />} disabled={loading || errorMessage || state.newPost.video || state.newPost.gif} variant='contained' color={deleteItem ? "error" : "success"} style={{position: 'absolute', left: '78%', top: '53%', borderRadius: '16px'}}>{state.newPost.images.length} Image/s</Button> : <Button startIcon={contentError === 'images' ? <ImageTwoToneIcon style={{color: 'red'}}/> : <ImageTwoToneIcon />} variant="outlined" style={{position: 'absolute', left: '77%', top: '53%', background: 'rgba(255, 255, 255, 0.32)', border: '1px solid rgba(45, 135, 255, 0.3)', borderRadius: '16px', color: contentError === 'images' ? 'red' : '', borderColor: contentError === 'images' ? 'red' : ''}} disabled={loading || errorMessage || state.newPost.video || state.newPost.gif} component='label'>Add Image <input multiple style={{pointerEvents: 'none'}} accept="image/*" type='file' hidden onChange={(e) => {
           setDeleteItem(false)
           const arrayOfImages = e.target.files
           dispatch(createPosts(arrayOfImages, 'images'))
@@ -124,7 +123,7 @@ const ViewProfileBox = ({ savedUser }) => {
         {state.newPost.video ? <Button onMouseLeave={() => setDeleteVideo(false)} onMouseOver={() => setDeleteVideo(true)} onClick={(e) => {
           e.preventDefault();
           dispatch(createPosts('', 'video'))
-        }} startIcon={deleteVideo ? <DeleteForeverTwoToneIcon /> : <CheckBoxTwoToneIcon />} disabled={loading || errorMessage} variant='contained' color={deleteVideo ? "error" : "success"} style={{position: 'absolute', left: '85%', top: '53%', borderRadius: '16px'}}>1 Video</Button> : <Button startIcon={contentError === 'video' ? <VideocamTwoToneIcon style={{color: 'red'}}/> : <VideocamTwoToneIcon />} variant="outlined" style={{position: 'absolute', left: '85%', top: '53%', background: 'rgba(255, 255, 255, 0.32)', border: '1px solid rgba(45, 135, 255, 0.3)', borderRadius: '16px', color: contentError === 'video' ? 'red' : '', borderColor: contentError === 'video' ? 'red' : ''}} disabled={loading || errorMessage} component='label'>Add Video <input style={{pointerEvents: 'none'}} accept='video/*' type='file' hidden onChange={(e) => {
+        }} startIcon={deleteVideo ? <DeleteForeverTwoToneIcon /> : <CheckBoxTwoToneIcon />} disabled={loading || errorMessage || state.newPost.images || state.newPost.gif} variant='contained' color={deleteVideo ? "error" : "success"} style={{position: 'absolute', left: '85%', top: '53%', borderRadius: '16px'}}>1 Video</Button> : <Button startIcon={contentError === 'video' ? <VideocamTwoToneIcon style={{color: 'red'}}/> : <VideocamTwoToneIcon />} variant="outlined" style={{position: 'absolute', left: '85%', top: '53%', background: 'rgba(255, 255, 255, 0.32)', border: '1px solid rgba(45, 135, 255, 0.3)', borderRadius: '16px', color: contentError === 'video' ? 'red' : '', borderColor: contentError === 'video' ? 'red' : ''}} disabled={loading || errorMessage || state.newPost.images || state.newPost.gif} component='label'>Add Video <input style={{pointerEvents: 'none'}} accept='video/*' type='file' hidden onChange={(e) => {
           setDeleteVideo(false)
           dispatch(createPosts(e.target.files[0], 'video'))
         }}/></Button>}
@@ -132,7 +131,7 @@ const ViewProfileBox = ({ savedUser }) => {
         {state.newPost.gif ? <Button onMouseLeave={() => setDeleteGif(false)} onMouseOver={() => setDeleteGif(true)} onClick={(e) => {
           e.preventDefault();
           dispatch(createPosts('', 'gif'))
-        }} startIcon={deleteGif ? <DeleteForeverTwoToneIcon /> : <CheckBoxTwoToneIcon />} disabled={loading || errorMessage} variant='contained' color={deleteGif ? "error" : "success"} style={{position: 'absolute', left: '92.5%', top: '53%', borderRadius: '16px'}}>1 GIF</Button> : <Button startIcon={contentError === 'gif' ? <MovieFilterIcon style={{color: 'red'}}/> : <MovieFilterIcon color="primary"/>} variant="outlined" style={{position: 'absolute', left: '93%', top: '53%', background: 'rgba(255, 255, 255, 0.32)', border: '1px solid rgba(45, 135, 255, 0.3)', borderRadius: '16px', color: contentError === 'gif' ? 'red' : '', borderColor: contentError === 'gif' ? 'red' : ''}} disabled={loading || errorMessage} component='label'>Gif <input accept='image/gif' type='file' hidden onChange={(e) => {
+        }} startIcon={deleteGif ? <DeleteForeverTwoToneIcon /> : <CheckBoxTwoToneIcon />} disabled={loading || errorMessage || state.newPost.images || state.newPost.video} variant='contained' color={deleteGif ? "error" : "success"} style={{position: 'absolute', left: '92.5%', top: '53%', borderRadius: '16px'}}>1 GIF</Button> : <Button startIcon={contentError === 'gif' ? <MovieFilterIcon style={{color: 'red'}}/> : <MovieFilterIcon color="primary"/>} variant="outlined" style={{position: 'absolute', left: '93%', top: '53%', background: 'rgba(255, 255, 255, 0.32)', border: '1px solid rgba(45, 135, 255, 0.3)', borderRadius: '16px', color: contentError === 'gif' ? 'red' : '', borderColor: contentError === 'gif' ? 'red' : ''}} disabled={loading || errorMessage || state.newPost.images || state.newPost.video} component='label'>Gif <input accept='image/gif' type='file' hidden onChange={(e) => {
           setDeleteGif(false)
           dispatch(createPosts(e.target.files[0], 'gif'))
         }}/></Button>}

@@ -21,7 +21,11 @@ const postSchema = new mongoose.Schema({
   replies: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Replies"
-  }
+  },
+  likedBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  }]
 })
 
 const Post = mongoose.model('Post', postSchema)

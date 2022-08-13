@@ -31,7 +31,24 @@ const getPosts = async (token) => {
   return response;
 }
 
+const configurePost = async (postId, token, likes, action) => {
+  const config = {
+    headers: {
+      'Authorization': token.token
+    }
+  }
+  if (action === 'increase') {
+    likes = likes + 1
+  } else if (action === 'decrease') {
+    likes = likes - 1
+  }
+
+  const response = await axios.put(`${baseUrl}/api/posts/${postId}`, {likes, action}, config)
+  return response;
+}
+
 export default {
   makeAPost,
-  getPosts
+  getPosts,
+  configurePost
 }
