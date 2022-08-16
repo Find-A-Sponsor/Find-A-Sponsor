@@ -63,7 +63,7 @@ usersRouter.post('/', async (req, res) => {
     followers: 0,
     biography,
     addictions,
-    groups
+    groups,
   })
 
   const response = await user.save()

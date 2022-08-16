@@ -15,7 +15,7 @@ import DeleteForeverTwoToneIcon from '@mui/icons-material/DeleteForeverTwoTone';
 import { createPosts } from "../../reducers/postReducer";
 import MovieFilterIcon from '@mui/icons-material/MovieFilter';
 
-const ViewProfileBox = ({ savedUser, handleLike }) => {
+const ViewProfileBox = ({ savedUser }) => {
   const ref = useRef()
   const state = useSelector(state => state)
   const dispatch = useDispatch();
@@ -37,7 +37,7 @@ const ViewProfileBox = ({ savedUser, handleLike }) => {
       })
     }
   grabPosts()
-  }, [ref.current, handleLike])
+  }, [ref.current])
 
   const uploadToServer = async (URL, arrayOfKeys, i) => {
     setLoading(true)

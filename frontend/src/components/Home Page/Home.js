@@ -1,8 +1,9 @@
-import { useEffect, useState, useMemo, useRef, useCallback } from "react";
+import { useEffect, useState } from "react";
 import userInformation from "../../services/userInformation";
 import { Link, useNavigate } from "react-router-dom";
 import ReactPlayer from 'react-player'
 import { configureLikes } from "../../reducers/storePostReducer";
+import { createComment, storeComments } from "../../reducers/commentReducer";
 
 import VectorIllustration from "./VectorIllustration";
 import AvatarPicture from '../../images/AvatarPicture.png'
@@ -12,7 +13,7 @@ import PageviewTwoToneIcon from '@mui/icons-material/PageviewTwoTone';
 import GroupsTwoToneIcon from '@mui/icons-material/GroupsTwoTone';
 import EmailTwoToneIcon from '@mui/icons-material/EmailTwoTone';
 import SettingsApplicationsTwoToneIcon from '@mui/icons-material/SettingsApplicationsTwoTone';
-import { Dialog, Button, IconButton, ImageList, ImageListItem, InputAdornment, DialogTitle } from "@mui/material";
+import { Dialog, Button, IconButton, ImageList, ImageListItem, InputAdornment, DialogTitle, Box } from "@mui/material";
 import { TextField, Grid } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { storeUserInformation } from "../../reducers/storeInformationReducer";
@@ -27,20 +28,20 @@ import MessageOutlinedIcon from '@mui/icons-material/MessageOutlined';
 import InfiniteScroll from 'react-infinite-scroll-component'
 import ViewProfileBox from "./ViewProfileBox";
 import postInformation from "../../services/postInformation";
+import AddCommentTwoToneIcon from '@mui/icons-material/AddCommentTwoTone';
+import commentInformation from "../../services/commentInformation";
 
 const Home = () => {
   const state = useSelector(state => state)
   const [savedUser, setSavedUser] = useState()
-  const [like, setLike] = useState([])
-  const [mouseOver, setMouseOver] = useState(false)
-  const [replies, setReplies] = useState([])
+  const [mouseOver, setMouseOver] = useState()
+  const [replies, setReplies] = useState(false)
   const [numberOfPosts, setNumberOfPosts] = useState(Array.from({ length: 5}))
   const [hasMore, setHasMore] = useState(true)
   const [open, setOpen] = useState(false)
   const [imageToView, setImageToView] = useState('')
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  console.log(state)
 
 
       useEffect(() => {
@@ -60,29 +61,16 @@ const Home = () => {
         initializer()
       }, [])
 
-      useEffect(() => {
-        setLike(numberOfPosts.map((post, i) => (like[i] === undefined ? false : like[i])))
-        setReplies(numberOfPosts.map((post, i) => (replies[i] === undefined ? false : replies[i])))
-      }, [numberOfPosts])
-
-      const handleLike = useCallback(async (message, index) => { //I need to figure out why this function does not recognize state.posts[index]._id on the first iteration but it recognizes it on the second...
+      const handleLike = async (message, index) => { //I need to figure out why this function does not recognize state.posts[index]._id on the first iteration but it recognizes it on the second...
+        const currentId = state.storage.id
         const object = {
           index,
-          message
+          message,
+          currentId
         }
-        if (message === 'increase') {
-          setLike(like.map((val, i) => index === i ? !val : val));
-          dispatch(configureLikes(object))
-        } else if (message === 'decrease') {
-          setLike(like.map((val, i) => index === i ? !val : val));
-          dispatch(configureLikes(object))
-        }
+        dispatch(configureLikes(object))
 
         await postInformation.configurePost(state.posts[index]._id, savedUser, state.posts[index].likes, message)
-    }, [like])
-
-    const handleReplies = (index) => {
-      setReplies(replies.map((val, i) => index === i ? !val : val));
     }
 
     const handleOpen = (e) => {
@@ -90,18 +78,25 @@ const Home = () => {
       setImageToView(e)
     }
 
+    const handleReplies = async (index) => {
+      setReplies(replies => ({
+        ...replies,
+        [index]: !replies[index]
+      }))
+      const response = await commentInformation.getComments(savedUser)
+      const storage = response.data
+      const object = {
+        storage
+      }
+      dispatch(storeComments(object))
+    }
+
     const handleClose = () => setOpen(false)
-    const style = {
-      position: 'absolute',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      width: 400,
-      bgcolor: 'background.paper',
-      border: '2px solid #000',
-      boxShadow: 24,
-      p: 4,
-    };
+
+    const handlePostingComment = (e) => {
+      e.preventDefault()
+      commentInformation.postComment(state.comments.newComment, savedUser)
+    }
 
 
 const fetchMoreData = () => {
@@ -152,7 +147,7 @@ const fetchMoreData = () => {
       <h1 style={{position: 'absolute', top: '28%', left: '83.6%', fontFamily: 'Outfit', fontStyle: 'normal', fontWeight: '500', fontSize: '20px', lineHeight: '25px', textAlign: 'center'}}>{state.storage.name}</h1>
       <p style={{position: 'absolute', width: '360px', height: '54px', left: '77.6%', top: '33%', fontFamily: 'Outfit', fontStyle: 'normal', fontWeight: '300', fontSize: '14px', lineHeight: '18px', textAlign: 'center', color: '#6D7683'}}>{state.storage.biography}</p>
 
-      <ViewProfileBox savedUser={savedUser} handleLike={handleLike}/>
+      <ViewProfileBox savedUser={savedUser}/>
 
       {(Object.values(state.posts)).length !== 0 ? 
       <InfiniteScroll height='100%' dataLength={numberOfPosts.length} next={fetchMoreData} hasMore={hasMore} loader={<Loading style={{position: 'absolute', left: '50%'}}/>}
@@ -250,37 +245,40 @@ const fetchMoreData = () => {
         {/* icon bar */}
         <Grid container style={{ padding: 12, gap: 20 }}>
           <Grid item>
-              {like[i]&& mouseOver ? (
+              {mouseOver === i && state.posts[i].likedBy.includes(state.storage.id) ? (
                 <IconButton
+                key={i}
                 onClick={() => handleLike('decrease', i)}
-                onMouseLeave={() => setMouseOver(false)}
-                onMouseOver={() => setMouseOver(true)}
+                onMouseLeave={() => setMouseOver(-1)}
+                onMouseOver={() => setMouseOver(i)}
               >
-                <HeartBrokenIcon style={{ color: "red" }} />
+                  <HeartBrokenIcon style={{ color: "red" }} />
                 </IconButton>
-              ) : like[i] ? (
+              ) : state.posts[i].likedBy.includes(state.storage.id) ? (
                 <IconButton
-                  onMouseLeave={() => setMouseOver(false)}
-                  onMouseOver={() => setMouseOver(true)}
+                  onMouseLeave={() => setMouseOver(-1)}
+                  onMouseOver={() => setMouseOver(i)}
                 >
-                <FavoriteIcon style={{ color: "red" }} />
+                  <FavoriteIcon style={{ color: "red" }} />
                 </IconButton>
               ) : (
                 <IconButton onClick={() => handleLike('increase', i)}>
-                <FavoriteBorderTwoToneIcon />
+                  <FavoriteBorderTwoToneIcon />
                 </IconButton>
               )}
             {" "}
             {state.posts[i]?.likes}
           </Grid>
           <Grid item>
-            <IconButton onClick={() => handleReplies(i)}>
               {replies[i] ? (
-                <MessageIcon color="primary" />
+                <IconButton onClick={() => handleReplies(i)}>
+                  <MessageIcon color="primary" />
+                </IconButton>
               ) : (
-                <MessageOutlinedIcon />
-              )}
-            </IconButton>{" "}
+                <IconButton onClick={() => handleReplies(i)}>
+                  <MessageOutlinedIcon />
+                </IconButton>
+              )}{" "}
             {state.posts[i]?.comments}
           </Grid>
           <Grid item>
@@ -300,17 +298,33 @@ const fetchMoreData = () => {
                 <Avatar src={state.storage.profileImageURL} style={{ marginRight: 12 }} />
               </InputAdornment>
             ),
+            endAdornment: (
+              <IconButton onClick={handlePostingComment}>
+                <AddCommentTwoToneIcon color="primary" />
+              </IconButton>
+            ),
             classes: {
               notchedOutline: "notched-outline-border-radius"
-            },
+            }
+          }}
+          inputProps={{
             maxLength: 500
           }}
-          maxRows={10}
+          rows={replies[i] ? 5 : 1}
           multiline
           placeholder="Write your comment"
           style={{ width: "100%" }}
+          onChange={(e) => dispatch(createComment(e.target.value, 'newComment'))}
         />
       </Grid>
+      {replies[i] ?
+      <Grid container wrap='nowrap'>
+        <Grid item xs={12} className='indent2' style={{backgroundColor: 'white', borderRadius: '16px'}} textAlign='center'>
+          <Box sx={{ display: 'block'}}>
+            <h1>There seems to be no comments on this post :/</h1>
+          </Box>
+        </Grid>
+      </Grid> : ''}
     </Grid>
       )})}
       </Grid>

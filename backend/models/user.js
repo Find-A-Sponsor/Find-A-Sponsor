@@ -16,6 +16,12 @@ const userSchema = mongoose.Schema({
       ref: 'Post'
     }
   ],
+  commentsMade: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Comment',
+    }
+  ],
   profileImageURL: String,
   following: Number,
   followers: Number
