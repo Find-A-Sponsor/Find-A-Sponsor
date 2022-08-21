@@ -1,7 +1,7 @@
 import axios from "axios";
 const baseUrl = 'http://localhost:3001'
 
-const postComment = async (req, token) => {
+const postComment = async (req, postId, token) => {
   const newComment  = req
 
   const config = {
@@ -11,7 +11,8 @@ const postComment = async (req, token) => {
   }
 
   const object = {
-    newComment
+    newComment,
+    postId
   }
 
   const response = await axios.post(`${baseUrl}/api/comments`, object, config)
@@ -31,7 +32,25 @@ const getComments = async (token) => {
   return response
 }
 
+const configureComment = async (commentId, token, likes, action) => {
+  const config = {
+    headers: {
+      'Authorization': token.token
+    }
+  }
+
+  if (action === 'increase') {
+    likes = likes + 1
+  } else if (action === 'decrease') {
+    likes = likes - 1
+  }
+
+  const response = await axios.put(`${baseUrl}/api/comments/${commentId}`, {likes, action}, config)
+  return response;
+}
+
 export default {
   postComment,
-  getComments
+  getComments,
+  configureComment
 }

@@ -2,12 +2,18 @@ import axios from 'axios'
 const baseUrl = 'http://localhost:3001'
 
 let token = null;
+
 const setToken = newToken => {
   token = `bearer ${newToken}`
 }
 
 const getAll = async () => {
-  const response = await axios.get(`${baseUrl}/api/users`)
+  const config = {
+    headers: {
+      'authorization': token
+    }
+  }
+  const response = await axios.get(`${baseUrl}/api/users`, config)
   return response
 }
 

@@ -7,7 +7,7 @@ const commentSchema = new mongoose.Schema({
   },
   images: Array,
   gif: String,
-  date: Date,
+  date: String,
   likes: Number,
   comments: Number,
   nestedPosition: Number, //nestedPosition of 1 represents the first comment made in a series of comments and replies to that comment
@@ -16,14 +16,8 @@ const commentSchema = new mongoose.Schema({
     ref: "User"
   },
   username: String,
-  replies: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Replies"
-  },
-  likedBy: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User"
-  }]
+  likedBy: Array,
+  belongsToPost: String
 })
 
 const Comment = mongoose.model('Comment', commentSchema)

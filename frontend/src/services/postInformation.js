@@ -47,8 +47,21 @@ const configurePost = async (postId, token, likes, action) => {
   return response;
 }
 
+const getSpecficPost = async (req, token) => {
+  const config = {
+    headers: {
+      Authorization: token.token
+    }
+  }
+
+  const response = await axios.get(`${baseUrl}/api/posts/${req}`, config)
+
+  return response
+}
+
 export default {
   makeAPost,
   getPosts,
+  getSpecficPost,
   configurePost
 }

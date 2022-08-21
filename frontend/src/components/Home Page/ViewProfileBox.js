@@ -25,7 +25,6 @@ const ViewProfileBox = ({ savedUser }) => {
   const [deleteItem, setDeleteItem] = useState(false)
   const [deleteVideo, setDeleteVideo] = useState(false)
   const [deleteGif, setDeleteGif] = useState(false)
-  const [textInput, setTextInput] = useState('')
   console.log(state)
 
   useEffect(() => {
@@ -57,7 +56,6 @@ const ViewProfileBox = ({ savedUser }) => {
 
   const handleNewPost = async (e) => {
     e.preventDefault();
-    dispatch(createPosts(textInput, 'text'))
     const arrayOfKeys = Object.keys(state.newPost)
     for (let i = 0; i <= arrayOfKeys.length; i++) {
       if (arrayOfKeys[i] === 'images') {
@@ -82,20 +80,17 @@ const ViewProfileBox = ({ savedUser }) => {
       } else if (arrayOfKeys[i] !== 'text' && state.newPost[arrayOfKeys[i]]){
         setErrorMessage('Video files must be 100MB or less, images and gifs must be 10MB or less.')
         setContentError(arrayOfKeys[i])
-        setTextInput('')
-        dispatch(createPosts('', 'text'))
         setTimeout(() => {
           setErrorMessage('')
           setContentError('')
         }, 5000)
       }
     }
-    ref.current = {...ref.current, 'text': textInput}
+    ref.current = {...ref.current, 'text': state.newPost.text}
     await postInformation.makeAPost(ref.current, savedUser)
     arrayOfKeys.forEach((key) => {
       dispatch(createPosts('', key))
     })
-    setTextInput('')
     setLoading(false)
     ref.current = ''
   }
@@ -103,9 +98,7 @@ const ViewProfileBox = ({ savedUser }) => {
 
   return (
   <form onSubmit={handleNewPost}>
-        {contentError ? <TextField disabled size="large" rows={5} inputProps={{maxLength: 500}} multiline style={{position: 'absolute', left: '77%', top: '38%', width: '20%', color: 'red'}} value={errorMessage} /> : <TextField required size="large" rows={5} inputProps={{maxLength: 500}} multiline style={{position: 'absolute', left: '77%', top: '38%', width: '20%'}} placeholder='How are you feeling?' value={textInput} disabled={loading} onChange={(e) => {
-          setTextInput(e.target.value)
-          }} />}
+        {contentError ? <TextField disabled size="large" rows={5} inputProps={{maxLength: 500}} multiline style={{position: 'absolute', left: '77%', top: '38%', width: '20%', color: 'red'}} value='' placeholder={errorMessage}/> : <TextField required size="large" rows={5} inputProps={{maxLength: 500}} multiline style={{position: 'absolute', left: '77%', top: '38%', width: '20%'}} placeholder='How are you feeling?' defaultValue='' disabled={loading} onBlur={(e) => dispatch(createPosts(e.target.value, 'text'))} />}
         
 
         {/* Add the ability to disable all buttons while loading is taking place, right now they still display while loading */}

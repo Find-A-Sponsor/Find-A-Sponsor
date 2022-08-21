@@ -79,4 +79,13 @@ usersRouter.post('/', async (req, res) => {
 
 })
 
+usersRouter.get('/', validateToken, async (req, res) => {
+  if (req.authenticated) {
+    const users = await User.find({})
+    return res.status(200).json({users})
+  } else {
+    return res.status(400).json({err: 'You are not authenticated'})
+  }
+})
+
 module.exports = usersRouter

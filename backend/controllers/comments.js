@@ -2,7 +2,9 @@ const jwt = require('jsonwebtoken')
 const commentRouter = require('express').Router()
 const Comment = require('../models/comment')
 const User = require('../models/user')
+const Post = require('../models/post')
 const ObjectId = require('mongodb').ObjectId
+const moment = require('moment')
 
 const getTokenFrom = request => {
   const authorization = request.get('Authorization')
@@ -21,18 +23,20 @@ commentRouter.post('/', async(req, res) => {
   }
 
   const user = await User.findById(verifiedToken.id)
+  const post = await Post.findById(body.postId)
 
   const comment = new Comment({
     text: body.newComment,
     images: body.images,
     gif: body.gif,
-    date: new Date(),
+    date: (moment(new Date()).format('LLLL')).toString(),
     owner: user._id,
     username: user.username,
     likes: 0,
     comments: 0,
     likedBy: [],
-    nestedPosition: 1
+    nestedPosition: 1,
+    belongsToPost: post._id
   })
 
   const savedComment = await comment.save()

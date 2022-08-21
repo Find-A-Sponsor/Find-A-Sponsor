@@ -13,7 +13,7 @@ import PageviewTwoToneIcon from '@mui/icons-material/PageviewTwoTone';
 import GroupsTwoToneIcon from '@mui/icons-material/GroupsTwoTone';
 import EmailTwoToneIcon from '@mui/icons-material/EmailTwoTone';
 import SettingsApplicationsTwoToneIcon from '@mui/icons-material/SettingsApplicationsTwoTone';
-import { Dialog, Button, IconButton, ImageList, ImageListItem, InputAdornment, DialogTitle, Box } from "@mui/material";
+import { Dialog, Button, IconButton, ImageList, ImageListItem, InputAdornment, Box } from "@mui/material";
 import { TextField, Grid } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { storeUserInformation } from "../../reducers/storeInformationReducer";
@@ -30,6 +30,8 @@ import ViewProfileBox from "./ViewProfileBox";
 import postInformation from "../../services/postInformation";
 import AddCommentTwoToneIcon from '@mui/icons-material/AddCommentTwoTone';
 import commentInformation from "../../services/commentInformation";
+import Comment from "./Comment";
+import { createUsers } from "../../reducers/usersReducer";
 
 const Home = () => {
   const state = useSelector(state => state)
@@ -42,6 +44,7 @@ const Home = () => {
   const [imageToView, setImageToView] = useState('')
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  console.log(state)
 
 
       useEffect(() => {
@@ -57,9 +60,17 @@ const Home = () => {
           dispatch(storeUserInformation(arrayOfValues[i], element))
           i++
         });
+        const response2 = await userInformation.getAll()
+        response2.data.users.map((eachUser, i) => {
+          dispatch(createUsers(eachUser, i))
+        })
       }
         initializer()
       }, [])
+
+      useEffect(() => {
+
+      })
 
       const handleLike = async (message, index) => { //I need to figure out why this function does not recognize state.posts[index]._id on the first iteration but it recognizes it on the second...
         const currentId = state.storage.id
@@ -93,9 +104,16 @@ const Home = () => {
 
     const handleClose = () => setOpen(false)
 
-    const handlePostingComment = (e) => {
+    const handlePostingComment = async (e, postId) => {
       e.preventDefault()
-      commentInformation.postComment(state.comments.newComment, savedUser)
+      await commentInformation.postComment(state.comments.newComment, postId, savedUser)
+      const response = await commentInformation.getComments(savedUser)
+      const storage = response.data
+      const object = {
+        storage
+      }
+      dispatch(storeComments(object))
+      dispatch(createComment('', 'newComment'))
     }
 
 
@@ -263,7 +281,7 @@ const fetchMoreData = () => {
                 </IconButton>
               ) : (
                 <IconButton onClick={() => handleLike('increase', i)}>
-                  <FavoriteBorderTwoToneIcon />
+                  <FavoriteBorderTwoToneIcon color="primary" />
                 </IconButton>
               )}
             {" "}
@@ -276,14 +294,14 @@ const fetchMoreData = () => {
                 </IconButton>
               ) : (
                 <IconButton onClick={() => handleReplies(i)}>
-                  <MessageOutlinedIcon />
+                  <MessageOutlinedIcon color="primary" />
                 </IconButton>
               )}{" "}
             {state.posts[i]?.comments}
           </Grid>
           <Grid item>
             <IconButton>
-              <IosShareOutlinedIcon />
+              <IosShareOutlinedIcon color='primary' />
             </IconButton>{" "}
             {state.posts[i]?.shares}
           </Grid>
@@ -299,7 +317,9 @@ const fetchMoreData = () => {
               </InputAdornment>
             ),
             endAdornment: (
-              <IconButton onClick={handlePostingComment}>
+              <IconButton onClick={(e) => {
+                handleReplies(i)
+                handlePostingComment(e, state.posts[i]._id)}}>
                 <AddCommentTwoToneIcon color="primary" />
               </IconButton>
             ),
@@ -310,19 +330,24 @@ const fetchMoreData = () => {
           inputProps={{
             maxLength: 500
           }}
+          defaultValue=''
           rows={replies[i] ? 5 : 1}
           multiline
           placeholder="Write your comment"
           style={{ width: "100%" }}
-          onChange={(e) => dispatch(createComment(e.target.value, 'newComment'))}
+          onBlur={(e) => dispatch(createComment(e.target.value, 'newComment'))}
+          onClick={() => handleReplies(i)}
         />
       </Grid>
       {replies[i] ?
       <Grid container wrap='nowrap'>
         <Grid item xs={12} className='indent2' style={{backgroundColor: 'white', borderRadius: '16px'}} textAlign='center'>
+          {state.comments.storage ? 
+          state.comments.storage.map(eachComment => eachComment.belongsToPost === state.posts[i]._id ? 
+          <Comment eachComment={eachComment} savedUser={savedUser}/> : '') :
           <Box sx={{ display: 'block'}}>
             <h1>There seems to be no comments on this post :/</h1>
-          </Box>
+          </Box>}
         </Grid>
       </Grid> : ''}
     </Grid>
