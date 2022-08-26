@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import userInformation from "../../services/userInformation";
 import { Link, useNavigate } from "react-router-dom";
 import ReactPlayer from 'react-player'
-import { configureLikes } from "../../reducers/storePostReducer";
+import { configureLikes, storePostInformation } from "../../reducers/storePostReducer";
 import { createComment, storeComments } from "../../reducers/commentReducer";
+import { sortBy } from 'lodash'
 
 import VectorIllustration from "./VectorIllustration";
 import AvatarPicture from '../../images/AvatarPicture.png'
@@ -32,18 +33,22 @@ import AddCommentTwoToneIcon from '@mui/icons-material/AddCommentTwoTone';
 import commentInformation from "../../services/commentInformation";
 import Comment from "./Comment";
 import { createUsers } from "../../reducers/usersReducer";
+import { numberOfCommentsRemaining } from "../../reducers/numberOfCommentsRemainingReducer";
 
 const Home = () => {
   const state = useSelector(state => state)
+  const stateOfPosts = useSelector(state => state.posts)
+  const posts = sortBy(stateOfPosts, 'date').reverse()
   const [savedUser, setSavedUser] = useState()
   const [mouseOver, setMouseOver] = useState()
   const [replies, setReplies] = useState(false)
   const [numberOfPosts, setNumberOfPosts] = useState(Array.from({ length: 5}))
-  const [hasMore, setHasMore] = useState(true)
+  const [hasMorePosts, setHasMorePosts] = useState(true)
   const [open, setOpen] = useState(false)
   const [imageToView, setImageToView] = useState('')
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  console.log(posts)
   console.log(state)
 
 
@@ -64,15 +69,27 @@ const Home = () => {
         response2.data.users.map((eachUser, i) => {
           dispatch(createUsers(eachUser, i))
         })
-      }
+        const comments = await commentInformation.getComments(user)
+        const storage = comments.data
+        const object = {
+          storage
+        }
+        dispatch(storeComments(object))
+        }
         initializer()
       }, [])
 
-      useEffect(() => {
+      const fetchMoreComments = (i) => {
+        if (state.posts[i].comments - state.commentsRemaining?.length >= 10) {
+          dispatch(numberOfCommentsRemaining(Array.from({length: 10})))
+        } else if (state.posts[i].comments - state.commentsRemaining?.length < 10 && state.posts[i].comments - state.commentsRemaining?.length > 0) {
+          dispatch(numberOfCommentsRemaining(Array.from({length: (state.posts[i].comments - state.commentsRemaining.length)}), 'concat'))
+        } else {
+          dispatch(numberOfCommentsRemaining(Array.from({length: 0})))
+        }
+      }
 
-      })
-
-      const handleLike = async (message, index) => { //I need to figure out why this function does not recognize state.posts[index]._id on the first iteration but it recognizes it on the second...
+      const handleLike = async (message, index) => {
         const currentId = state.storage.id
         const object = {
           index,
@@ -81,7 +98,7 @@ const Home = () => {
         }
         dispatch(configureLikes(object))
 
-        await postInformation.configurePost(state.posts[index]._id, savedUser, state.posts[index].likes, message)
+        await postInformation.configurePost(posts[index]._id, savedUser, posts[index].likes, message)
     }
 
     const handleOpen = (e) => {
@@ -104,32 +121,42 @@ const Home = () => {
 
     const handleClose = () => setOpen(false)
 
-    const handlePostingComment = async (e, postId) => {
+    const handlePostingComment = async (e, postId, commentAmount) => {
       e.preventDefault()
       await commentInformation.postComment(state.comments.newComment, postId, savedUser)
+      await postInformation.configurePost(postId, savedUser, commentAmount, 'increaseCommentCount')
+      const allPosts = await postInformation.getPosts(savedUser.token)
       const response = await commentInformation.getComments(savedUser)
       const storage = response.data
       const object = {
         storage
       }
+      await allPosts.data.map((post, i) => {
+      dispatch(storePostInformation(post, i))
+      })
       dispatch(storeComments(object))
       dispatch(createComment('', 'newComment'))
     }
 
 
-const fetchMoreData = () => {
-    if ((Object.entries(state.posts)).length - numberOfPosts.length < 5) {
-      setTimeout(() => {
-        setNumberOfPosts(numberOfPosts.concat(Array.from({length: ((Object.entries(state.posts)).length - numberOfPosts)})))
-      }, 1500)
-      setHasMore(false)
-      return;
-    } else {
-      setTimeout(() => {
-        setNumberOfPosts(numberOfPosts.concat(Array.from({length: 5})))
-      }, 1500)
+    const fetchMorePosts = () => {
+      if ((Object.entries(state.posts)).length - numberOfPosts.length >= 5 || numberOfPosts.length < 5) {
+        setTimeout(() => {
+          setNumberOfPosts(numberOfPosts.concat(Array.from({length: 5})))
+        }, 1500)
+      } else if ((Object.entries(state.posts)).length - numberOfPosts.length < 5 && (Object.entries(state.posts)).length - numberOfPosts.length > 0) {
+        setTimeout(() => {
+          setNumberOfPosts(numberOfPosts.concat(Array.from({length: Object.entries(state.posts).length - numberOfPosts.length})))
+        }, 1500)
+      } else {
+        console.log('hi')
+        setTimeout(() => {
+          setNumberOfPosts(numberOfPosts.concat(Array.from({length: ((Object.entries(state.posts)).length - numberOfPosts)})))
+        }, 1500)
+        setHasMorePosts(false)
+        return;
+      }
     }
-}
 
 
   return (
@@ -165,10 +192,10 @@ const fetchMoreData = () => {
       <h1 style={{position: 'absolute', top: '28%', left: '83.6%', fontFamily: 'Outfit', fontStyle: 'normal', fontWeight: '500', fontSize: '20px', lineHeight: '25px', textAlign: 'center'}}>{state.storage.name}</h1>
       <p style={{position: 'absolute', width: '360px', height: '54px', left: '77.6%', top: '33%', fontFamily: 'Outfit', fontStyle: 'normal', fontWeight: '300', fontSize: '14px', lineHeight: '18px', textAlign: 'center', color: '#6D7683'}}>{state.storage.biography}</p>
 
-      <ViewProfileBox savedUser={savedUser}/>
+      <ViewProfileBox savedUser={savedUser} setNumberOfPosts={setNumberOfPosts} numberOfPosts={numberOfPosts}/>
 
       {(Object.values(state.posts)).length !== 0 ? 
-      <InfiniteScroll height='100%' dataLength={numberOfPosts.length} next={fetchMoreData} hasMore={hasMore} loader={<Loading style={{position: 'absolute', left: '50%'}}/>}
+      <InfiniteScroll height='100%' dataLength={numberOfPosts.length} next={fetchMorePosts} hasMore={hasMorePosts} loader={<Loading style={{position: 'absolute', left: '50%'}}/>}
        id='all-post-container' scrollThreshold={0.5} endMessage={<p style={{ textAlign: "center" }}>
        <b>That's all folks!</b>
      </p>}
@@ -180,7 +207,8 @@ const fetchMoreData = () => {
         alignContent="center"
         spacing={15}
       >
-      {numberOfPosts.map((key, i) => {
+      {state.comments.storage && numberOfPosts.map((key, i) => {
+      if (posts[i]) {
       return (
         <Grid container item>
       <Grid item xs={12} container style={{backgroundColor: 'white', paddingTop: '20px'}}>
@@ -190,10 +218,10 @@ const fetchMoreData = () => {
         </Grid>
         <Grid item container xs={11} style={{ gap: "10px" }}>
           <Grid item xs={11}>
-            @{state.posts[i]?.username}
+            @{posts[i]?.username}
           </Grid>
           <Grid item xs={11}>
-            {state.posts[i]?.location} {state.posts[i]?.date}
+            {posts[i]?.location} {posts[i]?.date}
           </Grid>
         </Grid>
       </Grid>
@@ -208,30 +236,30 @@ const fetchMoreData = () => {
             margin: '1%'
           }}
         >
-          {state.posts[i]?.text}
+          {posts[i]?.text}
         </p>
       </Grid>
-      {state.posts[i].video && (
+      {posts[i]?.video && (
         <Grid item xs={12} className="indent2" style={{backgroundColor: 'white'}}>
           {/* post video */}
-          <ReactPlayer url={state.posts[i].video} controls width='100%'/>
+          <ReactPlayer url={posts[i].video} controls width='100%'/>
         </Grid>
       )}
       <Grid container wrap="nowrap">
-      {state.posts[i].gif && (
+      {posts[i]?.gif && (
         <Grid item xs={12} className="indent2" style={{backgroundColor: 'white'}}>
         {/* post gif */}
-        <img src={state.posts[i].gif} style={{objectFit: 'contain'}} />
+        <img src={posts[i].gif} style={{objectFit: 'contain'}} />
       </Grid>
       )}
       </Grid>
       <Grid container wrap="nowrap">
-      {state.posts[i].images.length > 0 && (
+      {posts[i]?.images.length > 0 && (
         <Grid item xs={12} className="indent2" style={{backgroundColor: 'white'}}>
         {/* post image */}
         <ImageList sx={{overflowX: 'auto'}} rowHeight={200}>
         <ImageListItem sx={{display: 'flex', flexDirection: 'row'}}>
-            {state.posts[i].images.map(image => {
+            {posts[i].images.map(image => {
               return (
                 <img
                 src={image}
@@ -263,7 +291,7 @@ const fetchMoreData = () => {
         {/* icon bar */}
         <Grid container style={{ padding: 12, gap: 20 }}>
           <Grid item>
-              {mouseOver === i && state.posts[i].likedBy.includes(state.storage.id) ? (
+              {mouseOver === i && posts[i]?.likedBy.includes(state.storage.id) ? (
                 <IconButton
                 key={i}
                 onClick={() => handleLike('decrease', i)}
@@ -272,7 +300,7 @@ const fetchMoreData = () => {
               >
                   <HeartBrokenIcon style={{ color: "red" }} />
                 </IconButton>
-              ) : state.posts[i].likedBy.includes(state.storage.id) ? (
+              ) : posts[i]?.likedBy.includes(state.storage.id) ? (
                 <IconButton
                   onMouseLeave={() => setMouseOver(-1)}
                   onMouseOver={() => setMouseOver(i)}
@@ -285,7 +313,7 @@ const fetchMoreData = () => {
                 </IconButton>
               )}
             {" "}
-            {state.posts[i]?.likes}
+            {posts[i]?.likes}
           </Grid>
           <Grid item>
               {replies[i] ? (
@@ -297,13 +325,13 @@ const fetchMoreData = () => {
                   <MessageOutlinedIcon color="primary" />
                 </IconButton>
               )}{" "}
-            {state.posts[i]?.comments}
+            {posts[i]?.comments}
           </Grid>
           <Grid item>
             <IconButton>
               <IosShareOutlinedIcon color='primary' />
             </IconButton>{" "}
-            {state.posts[i]?.shares}
+            {posts[i]?.shares}
           </Grid>
         </Grid>
       </Grid>
@@ -319,7 +347,7 @@ const fetchMoreData = () => {
             endAdornment: (
               <IconButton onClick={(e) => {
                 handleReplies(i)
-                handlePostingComment(e, state.posts[i]._id)}}>
+                handlePostingComment(e, posts[i]._id, posts[i].comments)}}>
                 <AddCommentTwoToneIcon color="primary" />
               </IconButton>
             ),
@@ -331,31 +359,35 @@ const fetchMoreData = () => {
             maxLength: 500
           }}
           defaultValue=''
-          rows={replies[i] ? 5 : 1}
           multiline
           placeholder="Write your comment"
           style={{ width: "100%" }}
           onBlur={(e) => dispatch(createComment(e.target.value, 'newComment'))}
-          onClick={() => handleReplies(i)}
         />
       </Grid>
-      {replies[i] ?
-      <Grid container wrap='nowrap'>
+      <Grid container wrap='nowrap' maxHeight='205px' overflow='auto'>
         <Grid item xs={12} className='indent2' style={{backgroundColor: 'white', borderRadius: '16px'}} textAlign='center'>
-          {state.comments.storage ? 
-          state.comments.storage.map(eachComment => eachComment.belongsToPost === state.posts[i]._id ? 
-          <Comment eachComment={eachComment} savedUser={savedUser}/> : '') :
+        {posts[i]?.comments <= 10 ?
+        state?.comments.storage.map(eachComment => eachComment.belongsToPost === posts[i]._id ?
+        <Comment eachComment={eachComment} savedUser={savedUser}/> :
+        '')
+        : posts[i]?.comments > 10 ? 
+        state.commentsRemaining.map((eachComment, index) => state?.comments.storage[index]?.belongsToPost === posts[i]._id ?
+        <Comment eachComment={state.comments.storage[index]} savedUser={savedUser}/> :
+        '') :
           <Box sx={{ display: 'block'}}>
             <h1>There seems to be no comments on this post :/</h1>
           </Box>}
+          {posts[i]?.comments - state.commentsRemaining.length > 0 && posts[i] ? <Button onClick={() => fetchMoreComments(i)}>Show {posts[i].comments - state.commentsRemaining.length} more comments</Button>
+          : ''} 
         </Grid>
-      </Grid> : ''}
-    </Grid>
-      )})}
       </Grid>
-      </InfiniteScroll> : <div id='content-loader' style={{position: 'absolute', top: '25%', left: '20%', backgroundColor: '#F7F9FE', height: '72%', width: "54%", borderRadius: '30px'}}><Loading size='lg' style={{position: 'absolute', left: '50%', top: '50%'}}/></div>}
-      </div>
-    </>
+    </Grid>
+      )}})}
+    </Grid>
+    </InfiniteScroll> : <div id='content-loader' style={{position: 'absolute', top: '25%', left: '20%', backgroundColor: '#F7F9FE', height: '72%', width: "54%", borderRadius: '30px'}}><Loading size='lg' style={{position: 'absolute', left: '50%', top: '50%'}}/></div>}
+    </div>
+  </>
   )
 }
 

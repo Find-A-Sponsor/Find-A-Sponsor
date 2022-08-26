@@ -15,7 +15,7 @@ import DeleteForeverTwoToneIcon from '@mui/icons-material/DeleteForeverTwoTone';
 import { createPosts } from "../../reducers/postReducer";
 import MovieFilterIcon from '@mui/icons-material/MovieFilter';
 
-const ViewProfileBox = ({ savedUser }) => {
+const ViewProfileBox = ({ savedUser, setNumberOfPosts, numberOfPosts }) => {
   const ref = useRef()
   const state = useSelector(state => state)
   const dispatch = useDispatch();
@@ -25,18 +25,19 @@ const ViewProfileBox = ({ savedUser }) => {
   const [deleteItem, setDeleteItem] = useState(false)
   const [deleteVideo, setDeleteVideo] = useState(false)
   const [deleteGif, setDeleteGif] = useState(false)
-  console.log(state)
 
   useEffect(() => {
+    console.log('use effect')
     const grabPosts = async () => {
       const user = await JSON.parse(window.localStorage.getItem('loggedAppUser'))
       const posts = await postInformation.getPosts(user.token)
       await posts.data.map((post, i) => {
       dispatch(storePostInformation(post, i))
       })
+      setNumberOfPosts(numberOfPosts.concat(Array.from({length: 1})))
     }
   grabPosts()
-  }, [ref.current])
+  }, [state.newPost.text])
 
   const uploadToServer = async (URL, arrayOfKeys, i) => {
     setLoading(true)

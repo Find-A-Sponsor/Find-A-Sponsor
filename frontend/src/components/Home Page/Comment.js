@@ -14,7 +14,6 @@ import AddCommentTwoToneIcon from '@mui/icons-material/AddCommentTwoTone';
 
 
 const Comment = ({eachComment, savedUser}) => {
-  const [liked, setLiked] = useState(false)
   const [mouseOver, setMouseOver] = useState(false)
   const [open, setOpen] = useState(false)
   const state = useSelector(state => state)
@@ -22,26 +21,28 @@ const Comment = ({eachComment, savedUser}) => {
   const dispatch = useDispatch()
   const arrayOfUsers = Object.values(eachUser)
 
-  useEffect(() => {
-    const grabComments = async () => {
-      const response = await commentInformation.getComments(savedUser)
-      const storage = response.data
-      const object = {
-        storage
-      }
-      dispatch(storeComments(object))
-    }
-    grabComments()
-  }, [liked])
-
   const handleIncreasedLike = async () => {
     await commentInformation.configureComment(eachComment._id, savedUser, eachComment.likes, 'increase')
-    setLiked(!liked)
+    const response = await commentInformation.getComments(savedUser)
+    const storage = response.data
+    const object = {
+        storage
+    }
+    dispatch(storeComments(object))
   }
 
   const handleDecreasedLike = async () => {
     await commentInformation.configureComment(eachComment._id, savedUser, eachComment.likes, 'decrease')
-    setLiked(!liked)
+    const response = await commentInformation.getComments(savedUser)
+    const storage = response.data
+    const object = {
+        storage
+    }
+    dispatch(storeComments(object))
+  }
+
+  const handlePostingReply = async () => {
+
   }
   
   
@@ -97,11 +98,11 @@ const Comment = ({eachComment, savedUser}) => {
           </InputAdornment>
         ),
         endAdornment: (
-          <InputAdornment>
+          <InputAdornment onClick={handlePostingReply}>
             <AddCommentTwoToneIcon color='primary' />
           </InputAdornment>
         )
-      }} multiline rows={5} placeholder='Write your reply' sx={{width: '50%'}}/> : ''}
+      }} multiline placeholder='Write your reply' sx={{width: '50%'}}/> : ''}
       </>
   )
 }

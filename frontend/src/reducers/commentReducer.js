@@ -29,7 +29,7 @@ const commentSlice = createSlice({
         ...state,
         storage
       }
-    }
+    },
   },
 })
 

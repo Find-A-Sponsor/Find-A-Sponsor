@@ -4,6 +4,7 @@ import storeInformationReducer from "./reducers/storeInformationReducer";
 import postReducer from "./reducers/postReducer";
 import storePostReducer from "./reducers/storePostReducer";
 import commentReducer from "./reducers/commentReducer";
+import numberOfCommentsRemainingReducer from "./reducers/numberOfCommentsRemainingReducer";
 
 export const store = configureStore({
   reducer: {
@@ -11,7 +12,8 @@ export const store = configureStore({
     storage: storeInformationReducer,
     newPost: postReducer,
     posts: storePostReducer,
-    comments: commentReducer
+    comments: commentReducer,
+    commentsRemaining: numberOfCommentsRemainingReducer
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({
     serializableCheck: false

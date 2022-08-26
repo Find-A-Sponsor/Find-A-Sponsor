@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { current } from "@reduxjs/toolkit";
+import { sortBy } from 'lodash'
 
 const storePostSlice = createSlice({
   name: 'storage',
@@ -25,6 +26,7 @@ const storePostSlice = createSlice({
       }
     },
     configureLikes (state, action) {
+      state = sortBy(state, 'date').reverse()
       if (action.payload.message === 'increase') {
         state[action.payload.index].likes = state[action.payload.index].likes + 1
         state[action.payload.index].likedBy = state[action.payload.index].likedBy.concat(action.payload.currentId)
@@ -32,7 +34,6 @@ const storePostSlice = createSlice({
         state[action.payload.index].likes = state[action.payload.index].likes - 1
         state[action.payload.index].likedBy = state[action.payload.index].likedBy.filter(user => user !== action.payload.currentId)
       }
-      return state;
     }
     }
   })

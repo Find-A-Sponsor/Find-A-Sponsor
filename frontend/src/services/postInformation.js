@@ -31,19 +31,21 @@ const getPosts = async (token) => {
   return response;
 }
 
-const configurePost = async (postId, token, likes, action) => {
+const configurePost = async (postId, token, variable, action) => {
   const config = {
     headers: {
       'Authorization': token.token
     }
   }
   if (action === 'increase') {
-    likes = likes + 1
+    variable = variable + 1
   } else if (action === 'decrease') {
-    likes = likes - 1
+    variable = variable - 1
+  } else if (action === 'increaseCommentCount') {
+    variable = variable + 1
   }
 
-  const response = await axios.put(`${baseUrl}/api/posts/${postId}`, {likes, action}, config)
+  const response = await axios.put(`${baseUrl}/api/posts/${postId}`, {variable, action}, config)
   return response;
 }
 
