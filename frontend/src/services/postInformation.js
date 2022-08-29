@@ -61,9 +61,22 @@ const getSpecficPost = async (req, token) => {
   return response
 }
 
+const removePost = async (req, token) => {
+  const config = {
+    headers: {
+      Authorization: token.token
+    }
+  }
+
+  const response = await axios.delete(`${baseUrl}/api/posts/${req}`, config)
+
+  return response;
+}
+
 export default {
   makeAPost,
   getPosts,
   getSpecficPost,
-  configurePost
+  configurePost,
+  removePost
 }

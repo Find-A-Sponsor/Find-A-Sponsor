@@ -4,26 +4,14 @@ import { sortBy } from 'lodash'
 
 const storePostSlice = createSlice({
   name: 'storage',
-  initialState: {},
+  initialState: [],
   reducers: {
-    storePostInformation: {
-      reducer(state, action) {
-        const {content, keys} = action.payload
-        return {
-          ...state,
-          [keys]: content
-        }
-      }, 
-      prepare(...args) {
-        let content = args[0];
-        let keys = args[1];
-        return {
-          payload: {
-            content,
-            keys
-          }
-        }
-      }
+    storePostInformation(state, action) {
+      console.log(action.payload)
+      console.log(current(state))
+      const exists = state.find(post => post._id === action.payload._id)
+      console.log(exists ? current(exists) : '')
+      state.push(action.payload)
     },
     configureLikes (state, action) {
       state = sortBy(state, 'date').reverse()
@@ -34,9 +22,13 @@ const storePostSlice = createSlice({
         state[action.payload.index].likes = state[action.payload.index].likes - 1
         state[action.payload.index].likedBy = state[action.payload.index].likedBy.filter(user => user !== action.payload.currentId)
       }
+    },
+    resetState (state, action) {
+      state = []
+      return state
     }
-    }
-  })
+  }
+})
 
-export const { storePostInformation, configureLikes } = storePostSlice.actions
+export const { storePostInformation, configureLikes, resetState } = storePostSlice.actions
 export default storePostSlice.reducer

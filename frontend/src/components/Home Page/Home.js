@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import userInformation from "../../services/userInformation";
 import { Link, useNavigate } from "react-router-dom";
 import ReactPlayer from 'react-player'
-import { configureLikes, storePostInformation } from "../../reducers/storePostReducer";
+import { configureLikes, storePostInformation, resetState } from "../../reducers/storePostReducer";
 import { createComment, storeComments } from "../../reducers/commentReducer";
 import { sortBy } from 'lodash'
 
@@ -34,11 +34,12 @@ import commentInformation from "../../services/commentInformation";
 import Comment from "./Comment";
 import { createUsers } from "../../reducers/usersReducer";
 import { numberOfCommentsRemaining } from "../../reducers/numberOfCommentsRemainingReducer";
+import DeleteTwoTone from "@mui/icons-material/DeleteTwoTone";
 
 const Home = () => {
   const state = useSelector(state => state)
   const stateOfPosts = useSelector(state => state.posts)
-  const posts = sortBy(stateOfPosts, 'date').reverse()
+  const posts = [...new Set(sortBy(stateOfPosts, 'date').reverse())]
   const [savedUser, setSavedUser] = useState()
   const [mouseOver, setMouseOver] = useState()
   const [replies, setReplies] = useState(false)
@@ -48,7 +49,6 @@ const Home = () => {
   const [imageToView, setImageToView] = useState('')
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  console.log(posts)
   console.log(state)
 
 
@@ -123,6 +123,7 @@ const Home = () => {
 
     const handlePostingComment = async (e, postId, commentAmount) => {
       e.preventDefault()
+      console.log(e.target.value)
       await commentInformation.postComment(state.comments.newComment, postId, savedUser)
       await postInformation.configurePost(postId, savedUser, commentAmount, 'increaseCommentCount')
       const allPosts = await postInformation.getPosts(savedUser.token)
@@ -131,11 +132,35 @@ const Home = () => {
       const object = {
         storage
       }
+      dispatch(resetState(''))
       await allPosts.data.map((post, i) => {
       dispatch(storePostInformation(post, i))
       })
       dispatch(storeComments(object))
       dispatch(createComment('', 'newComment'))
+    }
+
+    const handleDeleteOfPost = async (postId) => {
+      const shouldDelete = window.confirm('Are you sure you want to delete this post?')
+      let response;
+      if (shouldDelete) { 
+        response = await postInformation.removePost(postId, savedUser)
+      } else {
+        return;
+      }
+      const allPosts = await postInformation.getPosts(savedUser.token)
+      const uniquePosts = ([...new Set(allPosts.data)]).reverse();
+      dispatch(resetState(''))
+      uniquePosts.map((post, i) => {
+        dispatch(storePostInformation(post, i))
+      })
+      state.comments.storage.map(async comment => {
+        if (comment.belongsToPost === postId) {
+          await commentInformation.removeComment(comment._id, savedUser)
+        }
+      })
+      dispatch(createComment('', 'newComment'))
+      return response;
     }
 
 
@@ -149,7 +174,6 @@ const Home = () => {
           setNumberOfPosts(numberOfPosts.concat(Array.from({length: Object.entries(state.posts).length - numberOfPosts.length})))
         }, 1500)
       } else {
-        console.log('hi')
         setTimeout(() => {
           setNumberOfPosts(numberOfPosts.concat(Array.from({length: ((Object.entries(state.posts)).length - numberOfPosts)})))
         }, 1500)
@@ -333,6 +357,12 @@ const Home = () => {
             </IconButton>{" "}
             {posts[i]?.shares}
           </Grid>
+          {posts[i].owner === state.storage.id ? 
+          <Grid item>
+            <IconButton onClick={() => handleDeleteOfPost(posts[i]._id)}>
+              <DeleteTwoTone style={{color: 'red'}}/>
+            </IconButton>
+          </Grid> : ''}
         </Grid>
       </Grid>
       <Grid item xs={12} className="indent2" style={{backgroundColor: 'white', borderRadius: '16px'}}>
@@ -363,21 +393,26 @@ const Home = () => {
           placeholder="Write your comment"
           style={{ width: "100%" }}
           onBlur={(e) => dispatch(createComment(e.target.value, 'newComment'))}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              dispatch(createComment(e.target.value, 'newComment'))
+              handlePostingComment(e, posts[i]._id, posts[i].comments) // Fix functionality when user press 'Enter', the comment submits current text to database.
+            }}}
         />
       </Grid>
       <Grid container wrap='nowrap' maxHeight='205px' overflow='auto'>
         <Grid item xs={12} className='indent2' style={{backgroundColor: 'white', borderRadius: '16px'}} textAlign='center'>
-        {posts[i]?.comments <= 10 ?
+        {posts[i]?.comments <= 10 && posts[i]?.comments > 0 ?
         state?.comments.storage.map(eachComment => eachComment.belongsToPost === posts[i]._id ?
         <Comment eachComment={eachComment} savedUser={savedUser}/> :
         '')
         : posts[i]?.comments > 10 ? 
         state.commentsRemaining.map((eachComment, index) => state?.comments.storage[index]?.belongsToPost === posts[i]._id ?
         <Comment eachComment={state.comments.storage[index]} savedUser={savedUser}/> :
-        '') :
+        '') : replies[i] ?
           <Box sx={{ display: 'block'}}>
             <h1>There seems to be no comments on this post :/</h1>
-          </Box>}
+          </Box> : ''}
           {posts[i]?.comments - state.commentsRemaining.length > 0 && posts[i] ? <Button onClick={() => fetchMoreComments(i)}>Show {posts[i].comments - state.commentsRemaining.length} more comments</Button>
           : ''} 
         </Grid>

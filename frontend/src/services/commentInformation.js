@@ -49,8 +49,20 @@ const configureComment = async (commentId, token, likes, action) => {
   return response;
 }
 
+const removeComment = async (req, token) => {
+  const config = {
+    headers: {
+      Authorization: token.token
+    }
+  }
+
+  const response = await axios.delete(`${baseUrl}/api/comments/${req}`, config)
+  return response
+}
+
 export default {
   postComment,
   getComments,
-  configureComment
+  configureComment,
+  removeComment
 }

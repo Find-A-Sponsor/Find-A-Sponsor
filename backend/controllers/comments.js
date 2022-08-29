@@ -101,5 +101,19 @@ commentRouter.get('/:id', async (req, res) => {
 
 })
 
+commentRouter.delete('/:id', async (req, res) => {
+  let token = getTokenFrom(req)
+  const verifiedToken = jwt.verify(token, process.env.SECRET)
+  const id = ObjectId(req.params.id)
+
+  if (!verifiedToken.id) {
+    return res.status(401).json({error: 'token missing or invalid'})
+  }
+  
+  const singleCommentRequest = await Comment.findByIdAndDelete(id)
+
+  res.status(200).json(singleCommentRequest)
+})
+
 
 module.exports = commentRouter

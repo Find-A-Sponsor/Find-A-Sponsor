@@ -2,7 +2,7 @@ import axios from "axios";
 import { useState, useRef, useEffect} from "react";
 import { useSelector, useDispatch } from "react-redux";
 import postInformation from "../../services/postInformation";
-import { storePostInformation } from "../../reducers/storePostReducer";
+import { resetState, storePostInformation } from "../../reducers/storePostReducer";
 
 import { Loading } from '@nextui-org/react'
 import { TextField, Button } from "@mui/material";
@@ -31,6 +31,7 @@ const ViewProfileBox = ({ savedUser, setNumberOfPosts, numberOfPosts }) => {
     const grabPosts = async () => {
       const user = await JSON.parse(window.localStorage.getItem('loggedAppUser'))
       const posts = await postInformation.getPosts(user.token)
+      dispatch(resetState(''))
       await posts.data.map((post, i) => {
       dispatch(storePostInformation(post, i))
       })

@@ -102,5 +102,19 @@ postRouter.get('/:id', async (req, res) => {
 
 })
 
+postRouter.delete('/:id', async (req, res) => {
+  let token = getTokenFrom(req)
+  const verifiedToken = jwt.verify(token, process.env.SECRET)
+  const id = ObjectId(req.params.id)
+
+  if (!verifiedToken.id) {
+    return res.status(401).json({error: 'token missing or invalid'})
+  }
+
+  const singlePost = await Post.findByIdAndDelete({_id: id})
+
+  res.status(200).json(singlePost);
+})
+
 
 module.exports = postRouter
