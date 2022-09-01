@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import userInformation from "../../services/userInformation";
 import { Link, useNavigate } from "react-router-dom";
 import ReactPlayer from 'react-player'
@@ -14,7 +14,7 @@ import PageviewTwoToneIcon from '@mui/icons-material/PageviewTwoTone';
 import GroupsTwoToneIcon from '@mui/icons-material/GroupsTwoTone';
 import EmailTwoToneIcon from '@mui/icons-material/EmailTwoTone';
 import SettingsApplicationsTwoToneIcon from '@mui/icons-material/SettingsApplicationsTwoTone';
-import { Dialog, Button, IconButton, ImageList, ImageListItem, InputAdornment, Box } from "@mui/material";
+import { Dialog, Button, IconButton, ImageList, ImageListItem, InputAdornment, Box, MenuItem, Menu } from "@mui/material";
 import { TextField, Grid } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { storeUserInformation } from "../../reducers/storeInformationReducer";
@@ -34,11 +34,13 @@ import commentInformation from "../../services/commentInformation";
 import Comment from "./Comment";
 import { createUsers } from "../../reducers/usersReducer";
 import { numberOfCommentsRemaining } from "../../reducers/numberOfCommentsRemainingReducer";
-import DeleteTwoTone from "@mui/icons-material/DeleteTwoTone";
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 
 const Home = () => {
   const state = useSelector(state => state)
   const stateOfPosts = useSelector(state => state.posts)
+  const stateOfComments = useSelector(state => state.comments.storage)
+  const comments = sortBy(stateOfComments, 'date').reverse()
   const posts = [...new Set(sortBy(stateOfPosts, 'date').reverse())]
   const [savedUser, setSavedUser] = useState()
   const [mouseOver, setMouseOver] = useState()
@@ -47,10 +49,23 @@ const Home = () => {
   const [hasMorePosts, setHasMorePosts] = useState(true)
   const [open, setOpen] = useState(false)
   const [imageToView, setImageToView] = useState('')
+  const ITEM_HEIGHT = 48
+  const options = [
+    'Delete Post',
+    'Edit Post',
+    'Pin Post'
+  ];
+  const commentRef = useRef()
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  console.log(state)
-
+  const [control, setControl] = useState({
+    anchorEl: null,
+    menus: []
+  })
+  const [editPost, setEditPost] = useState({
+    specificPost: []
+  })
+  console.log(posts)
 
       useEffect(() => {
         const initializer = async () => {
@@ -75,18 +90,47 @@ const Home = () => {
           storage
         }
         dispatch(storeComments(object))
+        const menus = posts.map(post => false);
+        setControl({ menus })
+        const specificPost = posts.map(post => false)
+        setEditPost({ specificPost })
         }
         initializer()
       }, [])
 
       const fetchMoreComments = (i) => {
         if (state.posts[i].comments - state.commentsRemaining?.length >= 10) {
-          dispatch(numberOfCommentsRemaining(Array.from({length: 10})))
+          dispatch(numberOfCommentsRemaining(Array.from({length: 10}), 'concat'))
         } else if (state.posts[i].comments - state.commentsRemaining?.length < 10 && state.posts[i].comments - state.commentsRemaining?.length > 0) {
           dispatch(numberOfCommentsRemaining(Array.from({length: (state.posts[i].comments - state.commentsRemaining.length)}), 'concat'))
         } else {
           dispatch(numberOfCommentsRemaining(Array.from({length: 0})))
         }
+      }
+
+      const handleMenuClick = (event, index) => {
+        const { menus } = control;
+        menus[index] = true;
+        setControl({
+          anchorEl: event.currentTarget, menus
+        })
+      };
+
+      const handleMenuClose = (e, option, postId, index) => {
+        e.preventDefault();
+        console.log(postId)
+        const { menus } = control;
+        menus[index] = false;
+        setControl({
+          anchorEl: null,
+          menus
+        })
+        if ((option) === 'Delete Post') {
+          handleDeleteOfPost(postId)
+        } else if (option === 'Edit Post') {
+          handleEditOfPost(postId, index)
+        }
+
       }
 
       const handleLike = async (message, index) => {
@@ -123,8 +167,7 @@ const Home = () => {
 
     const handlePostingComment = async (e, postId, commentAmount) => {
       e.preventDefault()
-      console.log(e.target.value)
-      await commentInformation.postComment(state.comments.newComment, postId, savedUser)
+      await commentInformation.postComment(commentRef.current, postId, savedUser)
       await postInformation.configurePost(postId, savedUser, commentAmount, 'increaseCommentCount')
       const allPosts = await postInformation.getPosts(savedUser.token)
       const response = await commentInformation.getComments(savedUser)
@@ -137,7 +180,7 @@ const Home = () => {
       dispatch(storePostInformation(post, i))
       })
       dispatch(storeComments(object))
-      dispatch(createComment('', 'newComment'))
+      commentRef.current = ''
     }
 
     const handleDeleteOfPost = async (postId) => {
@@ -163,6 +206,10 @@ const Home = () => {
       return response;
     }
 
+    const handleEditOfPost = async (postId, index) => {
+      editPost.specificPost[index] = true
+    }
+
 
     const fetchMorePosts = () => {
       if ((Object.entries(state.posts)).length - numberOfPosts.length >= 5 || numberOfPosts.length < 5) {
@@ -175,7 +222,7 @@ const Home = () => {
         }, 1500)
       } else {
         setTimeout(() => {
-          setNumberOfPosts(numberOfPosts.concat(Array.from({length: ((Object.entries(state.posts)).length - numberOfPosts)})))
+          setNumberOfPosts(numberOfPosts.concat(Array.from({length: ((Object.entries(state.posts)).length - numberOfPosts.length)})))
         }, 1500)
         setHasMorePosts(false)
         return;
@@ -247,21 +294,56 @@ const Home = () => {
           <Grid item xs={11}>
             {posts[i]?.location} {posts[i]?.date}
           </Grid>
+          {posts[i].owner === state.storage.id ?
+        <Grid item xs={11}>
+          <IconButton 
+          id={posts[i]._id}
+          aria-controls={control.menus[i] ? 'long-menu' : undefined}
+          aria-expanded={control.menus[i] ? 'true' : undefined}
+          aria-haspopup='true'
+          onClick={(e) => handleMenuClick(e, i)}
+          style={{position: 'relative', left: '100%', bottom: '100%'}}>
+            <MoreHorizIcon />
+          </IconButton>
+          <Menu
+          id={posts[i]._id}
+          MenuListProps={{
+            'aria-labelledby': posts[i]._id
+          }}
+          anchorEl={control.anchorEl}
+          open={control.menus[i]}
+          onClose={(e) => handleMenuClose(e, '', posts[i]._id, i)}
+          PaperProps={{
+            style: {
+              maxHeight: ITEM_HEIGHT * 4.5,
+              width: '20ch',
+            },
+          }}
+          >
+            {options.map((option, index) =>
+            (
+              <MenuItem key={option} onClick={(e) => handleMenuClose(e, option, posts[i]._id, i)}>
+                {option}
+              </MenuItem>
+            ))}
+          </Menu>
+          </Grid> : ''}
         </Grid>
       </Grid>
       <Grid item xs={12} className="indent2" style={{backgroundColor: 'white'}}>
         {/* post text */}
-        <p
+        {editPost.specificPost[i] ? <TextField value={posts[i].text} multiline /> : <p
           className="Post"
           style={{
             padding: "1em",
             backgroundColor: "#FFFBEE",
             borderRadius: "20px",
-            margin: '1%'
+            margin: '1%',
+            wordBreak: 'break-all'
           }}
         >
           {posts[i]?.text}
-        </p>
+        </p> }
       </Grid>
       {posts[i]?.video && (
         <Grid item xs={12} className="indent2" style={{backgroundColor: 'white'}}>
@@ -357,12 +439,6 @@ const Home = () => {
             </IconButton>{" "}
             {posts[i]?.shares}
           </Grid>
-          {posts[i].owner === state.storage.id ? 
-          <Grid item>
-            <IconButton onClick={() => handleDeleteOfPost(posts[i]._id)}>
-              <DeleteTwoTone style={{color: 'red'}}/>
-            </IconButton>
-          </Grid> : ''}
         </Grid>
       </Grid>
       <Grid item xs={12} className="indent2" style={{backgroundColor: 'white', borderRadius: '16px'}}>
@@ -392,10 +468,15 @@ const Home = () => {
           multiline
           placeholder="Write your comment"
           style={{ width: "100%" }}
-          onBlur={(e) => dispatch(createComment(e.target.value, 'newComment'))}
-          onKeyDown={(e) => {
+          onBlur={(e) => commentRef.current = e.target.value}
+          onKeyPress={(e) => {
             if (e.key === 'Enter') {
-              dispatch(createComment(e.target.value, 'newComment'))
+              e.preventDefault()
+            }
+          }}
+          onKeyUp={(e) => {
+            commentRef.current = e.target.value
+            if (e.key === 'Enter') {
               handlePostingComment(e, posts[i]._id, posts[i].comments) // Fix functionality when user press 'Enter', the comment submits current text to database.
             }}}
         />
@@ -403,12 +484,12 @@ const Home = () => {
       <Grid container wrap='nowrap' maxHeight='205px' overflow='auto'>
         <Grid item xs={12} className='indent2' style={{backgroundColor: 'white', borderRadius: '16px'}} textAlign='center'>
         {posts[i]?.comments <= 10 && posts[i]?.comments > 0 ?
-        state?.comments.storage.map(eachComment => eachComment.belongsToPost === posts[i]._id ?
-        <Comment eachComment={eachComment} savedUser={savedUser}/> :
+        comments.map(eachComment => eachComment.belongsToPost === posts[i]._id ?
+        <Comment eachComment={eachComment} savedUser={savedUser} postInfo={posts[i]}/> :
         '')
         : posts[i]?.comments > 10 ? 
-        state.commentsRemaining.map((eachComment, index) => state?.comments.storage[index]?.belongsToPost === posts[i]._id ?
-        <Comment eachComment={state.comments.storage[index]} savedUser={savedUser}/> :
+        state.commentsRemaining.map((eachComment, index) => comments[index].belongsToPost === posts[i]._id ?
+        <Comment eachComment={comments[index]} savedUser={savedUser} postInfo={posts[i]}/> :
         '') : replies[i] ?
           <Box sx={{ display: 'block'}}>
             <h1>There seems to be no comments on this post :/</h1>

@@ -30,8 +30,12 @@ const commentSlice = createSlice({
         storage
       }
     },
+    resetState (state, action) {
+      state = []
+      return state;
+    }
   },
 })
 
-export const { createComment, storeComments } = commentSlice.actions
+export const { createComment, storeComments, resetState } = commentSlice.actions
 export default commentSlice.reducer

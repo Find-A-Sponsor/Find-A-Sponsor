@@ -7,13 +7,15 @@ import DeleteTwoToneIcon from '@mui/icons-material/DeleteTwoTone';
 import FavoriteTwoToneIcon from '@mui/icons-material/FavoriteTwoTone';
 import { useState, useEffect } from "react";
 import commentInformation from "../../services/commentInformation";
-import { storeComments } from "../../reducers/commentReducer";
+import { resetState, storeComments } from "../../reducers/commentReducer";
+import { resetState as resetPosts, storePostInformation } from "../../reducers/storePostReducer";
 import HeartBrokenTwoToneIcon from "@mui/icons-material/HeartBrokenTwoTone";
 import AddCommentTwoToneIcon from '@mui/icons-material/AddCommentTwoTone';
+import postInformation from "../../services/postInformation";
 
 
 
-const Comment = ({eachComment, savedUser}) => {
+const Comment = ({eachComment, savedUser, postInfo}) => {
   const [mouseOver, setMouseOver] = useState(false)
   const [open, setOpen] = useState(false)
   const state = useSelector(state => state)
@@ -43,6 +45,27 @@ const Comment = ({eachComment, savedUser}) => {
 
   const handlePostingReply = async () => {
 
+  }
+
+  const handleDeleteOfComment = async (e, commentId) => {
+    e.preventDefault()
+    const shouldDelete = window.confirm('Are you sure you want to delete this comment?')
+    if (shouldDelete) {
+      await commentInformation.removeComment(commentId, savedUser)
+      await postInformation.configurePost(postInfo._id, savedUser, postInfo.comments, 'decreaseCommentCount')
+      dispatch(resetState(''))
+      dispatch(resetPosts(''))
+      const response = await commentInformation.getComments(savedUser)
+      const storage = response.data
+      const object = {
+        storage
+      }
+      dispatch(storeComments(object))
+      const posts = await postInformation.getPosts(savedUser.token)
+      await posts.data.map((post, i) => {
+      dispatch(storePostInformation(post, i))
+      })
+    }
   }
   
   
@@ -84,7 +107,7 @@ const Comment = ({eachComment, savedUser}) => {
           <IconButton>
             <EditTwoToneIcon color='primary' />
           </IconButton>
-          <IconButton>
+          <IconButton onClick={(e) => handleDeleteOfComment(e, eachComment._id)}>
             <DeleteTwoToneIcon sx={{color: 'red'}} />
           </IconButton>
         </CardActions>

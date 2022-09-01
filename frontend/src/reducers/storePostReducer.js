@@ -7,10 +7,7 @@ const storePostSlice = createSlice({
   initialState: [],
   reducers: {
     storePostInformation(state, action) {
-      console.log(action.payload)
-      console.log(current(state))
       const exists = state.find(post => post._id === action.payload._id)
-      console.log(exists ? current(exists) : '')
       state.push(action.payload)
     },
     configureLikes (state, action) {

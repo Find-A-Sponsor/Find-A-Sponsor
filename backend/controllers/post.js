@@ -68,6 +68,9 @@ postRouter.put('/:id', async (req, res) => {
   } else if (body.action === 'increaseCommentCount') {
     postToUpdate = await Post.findOneAndUpdate({_id: ObjectId(req.params.id)},
     {$set: {comments: body.variable}})
+  } else if (body.action === 'decreaseCommentCount') {
+    postToUpdate = await Post.findOneAndUpdate({_id: ObjectId(req.params.id)},
+    {$set: {comments: body.variable}})
   }
 
   res.status(200).json(postToUpdate);

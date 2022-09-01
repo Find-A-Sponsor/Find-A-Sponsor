@@ -43,6 +43,8 @@ const configurePost = async (postId, token, variable, action) => {
     variable = variable - 1
   } else if (action === 'increaseCommentCount') {
     variable = variable + 1
+  } else if (action === 'decreaseCommentCount') {
+    variable = variable - 1
   }
 
   const response = await axios.put(`${baseUrl}/api/posts/${postId}`, {variable, action}, config)

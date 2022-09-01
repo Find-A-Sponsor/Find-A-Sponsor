@@ -27,7 +27,6 @@ const ViewProfileBox = ({ savedUser, setNumberOfPosts, numberOfPosts }) => {
   const [deleteGif, setDeleteGif] = useState(false)
 
   useEffect(() => {
-    console.log('use effect')
     const grabPosts = async () => {
       const user = await JSON.parse(window.localStorage.getItem('loggedAppUser'))
       const posts = await postInformation.getPosts(user.token)
