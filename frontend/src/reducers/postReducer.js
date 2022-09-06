@@ -27,6 +27,16 @@ const postSlice = createSlice({
       state = {}
       return state
     },
+    editPosts: {
+      reducer(state, action) {
+        return state
+      },
+      prepare(...args) {
+        console.log(args)
+        return args
+      }
+
+    }
   },
 })
 
@@ -42,5 +52,5 @@ export const resetter = () => {
   }
 }
 
-export const { createPosts, resetState } = postSlice.actions
+export const { createPosts, resetState, editPosts } = postSlice.actions
 export default postSlice.reducer

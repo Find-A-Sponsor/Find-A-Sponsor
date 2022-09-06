@@ -1,0 +1,12 @@
+src/store.js
+src/services/userInformation.js
+src/services/postInformation.js
+src/services/loginInformation.js
+src/services/commentInformation.js
+src/reducers/usersReducer.js
+src/reducers/storePostReducer.js
+src/reducers/storeInformationReducer.js
+src/reducers/postReducer.js
+src/reducers/numberOfCommentsRemainingReducer.js
+src/reducers/commentReducer.js
+src/index.js

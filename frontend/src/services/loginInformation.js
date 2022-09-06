@@ -1,5 +1,5 @@
+/* eslint-disable prettier/prettier */
 import axios from "axios";
-const baseUrl = 'http://localhost:3001'
 
 const login = async (req) => {
   const { email, password } = req
@@ -9,7 +9,7 @@ const login = async (req) => {
     password
   }
 
-  const response = await axios.post(`${baseUrl}/api/login`, object)
+  const response = await axios.post(`/api/login`, object)
 
   return response
 }

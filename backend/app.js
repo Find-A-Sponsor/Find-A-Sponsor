@@ -16,6 +16,7 @@ mongoose.connect(process.env.MONGODB_URI)
 app.use(cors())
 app.use(express.json())
 app.use(cookieParser())
+app.use(express.static('build'))
 
 app.use('/api/users', usersRouter)
 app.use('/api/login', loginRouter)

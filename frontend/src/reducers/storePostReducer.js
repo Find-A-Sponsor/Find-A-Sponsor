@@ -23,9 +23,13 @@ const storePostSlice = createSlice({
     resetState (state, action) {
       state = []
       return state
+    },
+    addImages (state, action) {
+      console.log(state)
+      console.log(action)
     }
   }
 })
 
-export const { storePostInformation, configureLikes, resetState } = storePostSlice.actions
+export const { storePostInformation, configureLikes, resetState, addImages } = storePostSlice.actions
 export default storePostSlice.reducer

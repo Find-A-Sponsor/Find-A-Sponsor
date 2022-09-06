@@ -17,6 +17,7 @@
     "@mui/core": "^5.0.0-alpha.54",
     "@mui/icons-material": "^5.8.4",
     "@mui/material": "^5.9.2",
+    "@mui/system": "^5.10.4",
     "@mui/x-date-pickers": "^5.0.0-beta.2",
     "@nextui-org/react": "^1.0.0-beta.9",
     "@react-pdf-viewer/core": "^3.6.0",
@@ -42,6 +43,7 @@
     "react-infinite-scroll-component": "^6.1.0",
     "react-medium-image-zoom": "^5.0.1",
     "react-pdf": "^5.7.2",
+    "react-player": "^2.10.1",
     "react-redux": "^8.0.2",
     "react-rewards": "^2.0.4",
     "react-router": "^6.3.0",
@@ -61,7 +63,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "eslint ."
   },
   "eslintConfig": {
     "extends": [
@@ -80,5 +83,14 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-jsx-a11y": "^6.6.1",
+    "eslint-plugin-prettier": "^4.2.1",
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.3",
+    "prettier": "^2.7.1"
   }
 }

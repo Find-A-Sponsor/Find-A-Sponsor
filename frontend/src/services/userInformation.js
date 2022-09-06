@@ -1,5 +1,7 @@
+/* eslint-disable prettier/prettier */
 import axios from 'axios'
-const baseUrl = 'http://localhost:3001'
+
+const baseUrl = '/api/users'
 
 let token = null;
 
@@ -13,21 +15,21 @@ const getAll = async () => {
       'authorization': token
     }
   }
-  const response = await axios.get(`${baseUrl}/api/users`, config)
+  const response = await axios.get(baseUrl, config)
   return response
 }
 
 const newUser = async (req, checker = '') => {
   if (checker === 'username') {
     try {
-    const response = await axios.post(`${baseUrl}/api/users`, {req, checker})
+    const response = await axios.post(baseUrl, {req, checker})
     return response
     } catch(err) {
       return 'Username is already taken'
     }
   } else if (checker === 'email') {
     try {
-      const response = await axios.post(`${baseUrl}/api/users`, {req, checker})
+      const response = await axios.post(baseUrl, {req, checker})
       return response
     } catch (err) {
       return 'Email is already in use'
@@ -48,7 +50,7 @@ const newUser = async (req, checker = '') => {
     addictions,
     groups
   }
-  const response = await axios.post(`${baseUrl}/api/users`, object)
+  const response = await axios.post(baseUrl, object)
 
   return response
 }
@@ -60,7 +62,7 @@ const findUser = async (req) => {
   },}
 
   try {
-    const response = await axios.post(`${baseUrl}/api/users/findUser`, req, config )
+    const response = await axios.post(`${baseUrl}/findUser`, req, config )
     return response
   } catch (err) {
     return err
