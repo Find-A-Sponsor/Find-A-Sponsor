@@ -2,7 +2,7 @@
 /* eslint-disable react/react-in-jsx-scope */
 import { useDispatch, useSelector } from "react-redux"
 // eslint-disable-next-line import/order
-import { createUsers } from "../../reducers/usersReducer"
+import { createUsers } from "../../../../src/reducers/usersReducer"
 import { useState } from "react"
 import moment from "moment"
 import { Link, useNavigate } from "react-router-dom"

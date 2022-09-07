@@ -22,7 +22,7 @@ import makeAnimated from "react-select/animated"
 import { useState } from "react"
 import userInformation from "../../services/userInformation"
 import AvatarPicture from "../../images/AvatarPicture.png"
-import { createUsers, resetState } from "../../reducers/usersReducer"
+import { createUsers, resetState } from "../../../../src/reducers/usersReducer"
 import { VectorIllustration } from "./VectorIllustration"
 
 function CreateYourProfile() {

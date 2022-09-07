@@ -5,7 +5,7 @@ import { MenuItem, TextField, InputAdornment } from "@mui/material"
 import countryList from "react-select-country-list"
 import AddLocationAltTwoToneIcon from "@mui/icons-material/AddLocationAltTwoTone"
 import { useDispatch } from "react-redux"
-import { createUsers } from "../../reducers/usersReducer"
+import { createUsers } from "../../../../src/reducers/usersReducer"
 
 function CountryOfOrigin({ state }) {
   const dispatch = useDispatch()

@@ -17,11 +17,11 @@ import CheckBoxTwoToneIcon from "@mui/icons-material/CheckBoxTwoTone"
 import DeleteForeverTwoToneIcon from "@mui/icons-material/DeleteForeverTwoTone"
 import MovieFilterIcon from "@mui/icons-material/MovieFilter"
 
-import { createPosts } from "../../reducers/postReducer"
+import { createPosts } from "../../../../src/reducers/postReducer"
 import {
   resetState,
   storePostInformation,
-} from "../../reducers/storePostReducer"
+} from "../../../../src/reducers/storePostReducer"
 
 import postInformation from "../../services/postInformation"
 

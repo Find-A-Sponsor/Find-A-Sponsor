@@ -12,16 +12,16 @@ import userInformation from "../../services/userInformation"
 import commentInformation from "../../services/commentInformation"
 import postInformation from "../../services/postInformation"
 
-import { storeUserInformation } from "../../reducers/storeInformationReducer"
-import { numberOfCommentsRemaining } from "../../reducers/numberOfCommentsRemainingReducer"
-import { createUsers } from "../../reducers/usersReducer"
-import { createComment, storeComments } from "../../reducers/commentReducer"
+import { storeUserInformation } from "../../../../src/reducers/storeInformationReducer"
+import { numberOfCommentsRemaining } from "../../../../src/reducers/numberOfCommentsRemainingReducer"
+import { createUsers } from "../../../../src/reducers/usersReducer"
+import { createComment, storeComments } from "../../../../src/reducers/commentReducer"
 import {
   configureLikes,
   storePostInformation,
   resetState,
   addImages,
-} from "../../reducers/storePostReducer"
+} from "../../../../src/reducers/storePostReducer"
 
 import HomeTwoToneIcon from "@mui/icons-material/HomeTwoTone"
 import { Avatar, Loading } from "@nextui-org/react"

@@ -1,10 +1,10 @@
-import usersReducer from "../frontend/src/reducers/usersReducer";
+import usersReducer from "./reducers/usersReducer";
 import { configureStore, getDefaultMiddleware } from "@reduxjs/toolkit";
-import storeInformationReducer from "../frontend/src/reducers/storeInformationReducer";
-import postReducer from "../frontend/src/reducers/postReducer";
-import storePostReducer from "../frontend/src/reducers/storePostReducer";
-import commentReducer from "../frontend/src/reducers/commentReducer";
-import numberOfCommentsRemainingReducer from "../frontend/src/reducers/numberOfCommentsRemainingReducer";
+import storeInformationReducer from "./reducers/storeInformationReducer";
+import postReducer from "./reducers/postReducer";
+import storePostReducer from "./reducers/storePostReducer";
+import commentReducer from "./reducers/commentReducer";
+import numberOfCommentsRemainingReducer from "./reducers/numberOfCommentsRemainingReducer";
 
 export const store = configureStore({
   reducer: {

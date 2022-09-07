@@ -23,11 +23,11 @@ import { useState } from "react"
 import HeartBrokenTwoToneIcon from "@mui/icons-material/HeartBrokenTwoTone"
 import AddCommentTwoToneIcon from "@mui/icons-material/AddCommentTwoTone"
 import commentInformation from "../../services/commentInformation"
-import { resetState, storeComments } from "../../reducers/commentReducer"
+import { resetState, storeComments } from "../../../../src/reducers/commentReducer"
 import {
   resetState as resetPosts,
   storePostInformation,
-} from "../../reducers/storePostReducer"
+} from "../../../../src/reducers/storePostReducer"
 import postInformation from "../../services/postInformation"
 
 function Comment({ eachComment, savedUser, postInfo }) {
