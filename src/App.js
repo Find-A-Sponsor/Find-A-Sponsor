@@ -1,9 +1,9 @@
 import {Route, Routes } from 'react-router';
 import { BrowserRouter } from 'react-router-dom';
-import LoginForm from './components/Login Page/LoginForm';
-import SignUpForm from './components/Sign Up Page/SignUpForm';
-import CreateYourProfile from './components/Sign Up Page/CreateYourProfile';
-import Home from './components/Home Page/Home';
+import LoginForm from '../frontend/src/components/Login Page/LoginForm';
+import SignUpForm from '../frontend/src/components/Sign Up Page/SignUpForm';
+import CreateYourProfile from '../frontend/src/components/Sign Up Page/CreateYourProfile';
+import Home from '../frontend/src/components/Home Page/Home';
 
 function App() {
   return (
