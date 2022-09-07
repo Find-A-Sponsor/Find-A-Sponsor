@@ -1,4 +1,4 @@
-import { Outlet, Route, Routes } from 'react-router';
+import {Route, Routes } from 'react-router';
 import { BrowserRouter } from 'react-router-dom';
 import LoginForm from './components/Login Page/LoginForm';
 import SignUpForm from './components/Sign Up Page/SignUpForm';
