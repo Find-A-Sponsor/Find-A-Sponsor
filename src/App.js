@@ -1,23 +1,24 @@
-import {Route, Routes } from 'react-router';
-import { BrowserRouter } from 'react-router-dom';
-import LoginForm from '../components/Login Page/LoginForm';
-import SignUpForm from '../components/Sign Up Page/SignUpForm';
-import CreateYourProfile from '../components/Sign Up Page/CreateYourProfile';
-import Home from '../components/Home Page/Home';
+/* eslint-disable react/react-in-jsx-scope */
+import { Route, Routes } from "react-router"
+import { BrowserRouter } from "react-router-dom"
+import LoginForm from "./frontend/components/Login Page/LoginForm"
+import SignUpForm from "./frontend/components/Sign Up Page/SignUpForm"
+import CreateYourProfile from "./frontend/components/Sign Up Page/CreateYourProfile"
+import Home from "./frontend/components/Home Page/Home"
 
 function App() {
   return (
     <div className="App">
       <BrowserRouter>
         <Routes>
-          <Route path='/' element={ <LoginForm /> }></Route>
-          <Route path='/signup' element={ <SignUpForm /> }></Route>
-          <Route path='/signup/:id' element={ <CreateYourProfile />}></Route>
-          <Route path='/home' element={ <Home /> }></Route>
+          <Route path="/" element={<LoginForm />} />
+          <Route path="/signup" element={<SignUpForm />} />
+          <Route path="/signup/:id" element={<CreateYourProfile />} />
+          <Route path="/home" element={<Home />} />
         </Routes>
       </BrowserRouter>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App

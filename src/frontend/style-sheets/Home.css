@@ -1,0 +1,8 @@
+.notched-outline-border-radius {
+  border-radius: 16px;
+}
+
+.zoom-in-images:hover {
+  transform: scale(2);
+}
+
