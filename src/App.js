@@ -1,10 +1,10 @@
 /* eslint-disable react/react-in-jsx-scope */
 import { Route, Routes } from "react-router"
 import { BrowserRouter } from "react-router-dom"
-import LoginForm from "./frontend/components/Login Page/LoginForm"
-import SignUpForm from "./frontend/components/Sign Up Page/SignUpForm"
-import CreateYourProfile from "./frontend/components/Sign Up Page/CreateYourProfile"
-import Home from "./frontend/components/Home Page/Home"
+import LoginForm from "./frontend/components/LoginPage/LoginForm"
+import SignUpForm from "./frontend/components/SignUpPage/SignUpForm"
+import CreateYourProfile from "./frontend/components/SignUpPage/CreateYourProfile"
+import Home from "./frontend/components/HomePage/Home"
 
 function App() {
   return (
