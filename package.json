@@ -83,7 +83,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint .",
-    "server": "nodemon index.js"
+    "server": "nodemon server.js"
   },
   "eslintConfig": {
     "extends": [
