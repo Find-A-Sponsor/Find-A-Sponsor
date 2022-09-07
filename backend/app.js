@@ -5,6 +5,8 @@ const cors = require("cors")
 const cookieParser = require("cookie-parser")
 const mongoose = require("mongoose")
 require("dotenv").config()
+
+app.use(cors())
 const loginRouter = require("./controllers/login")
 const usersRouter = require("./controllers/user")
 const postRouter = require("./controllers/post")
@@ -14,7 +16,6 @@ console.log("connecting to", process.env.MONGODB_URI)
 
 mongoose.connect(process.env.MONGODB_URI)
 
-app.use(cors())
 app.use(express.json())
 app.use(cookieParser())
 app.use(express.static("build"))
