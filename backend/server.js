@@ -7,7 +7,7 @@ const server = http.createServer(app)
 const PORT = process.env.PORT || 443
 
 app.use("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "./build"))
+  res.sendFile(path.join(__dirname, "../public/index.html"))
 })
 
 server.listen(PORT, () => {
