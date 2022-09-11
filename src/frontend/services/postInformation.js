@@ -48,6 +48,8 @@ const configurePost = async (postId, token, variable, action) => {
     variable += 1
   } else if (action === 'decreaseCommentCount') {
     variable -= 1
+  } else if (action === 'addImage') {
+    variable += 1
   }
 
   const response = await axios.put(`${baseUrl}${postId}`, {variable, action}, config)

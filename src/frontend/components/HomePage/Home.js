@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { Link, useNavigate } from "react-router-dom"
 import ReactPlayer from "react-player"
 import { sortBy } from "lodash"
+import axios from "axios"
 
 import userInformation from "../../services/userInformation"
 import commentInformation from "../../services/commentInformation"
@@ -20,7 +21,6 @@ import {
   configureLikes,
   storePostInformation,
   resetState,
-  addImages,
 } from "../../reducers/storePostReducer"
 
 import HomeTwoToneIcon from "@mui/icons-material/HomeTwoTone"
@@ -60,6 +60,7 @@ import ViewProfileBox from "./ViewProfileBox"
 import AvatarPicture from "../../images/AvatarPicture.png"
 import VectorIllustration from "./VectorIllustration"
 import "../../style-sheets/Home.css"
+import { Error } from "@material-ui/icons"
 
 function Home() {
   const state = useSelector((wholeState) => wholeState)
@@ -78,6 +79,7 @@ function Home() {
   const [deleteVideo, setDeleteVideo] = useState(false)
   const [deleteGif, setDeleteGif] = useState(false)
   const [deleteImage, setDeleteImage] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
   const ITEM_HEIGHT = 48
   const options = ["Delete Post", "Edit Post", "Pin Post"]
   const commentRef = useRef()
@@ -285,11 +287,6 @@ function Home() {
   /* const handleEditPostChanges = async () => {
   //  let object
   } */
-
-  const addMoreImagesToPost = async (certainPost) => {
-    // eslint-disable-next-line no-underscore-dangle
-    await postInformation.configurePost(certainPost._id, savedUser, "addImage")
-  }
 
   const fetchMorePosts = () => {
     if (
@@ -1016,30 +1013,73 @@ function Home() {
                         >
                           {posts[i].images.length > 0 ? (
                             <>
-                              <Button
-                                startIcon={<ImageTwoTone />}
-                                variant="outlined"
-                                style={{
-                                  background:
-                                    "linear-gradient(180deg, #2D87FF 0%, #6099E5 100%)",
-                                  color: "white",
-                                }}
-                                onClick={() => addMoreImagesToPost(posts[i], i)}
-                                component="label"
-                              >
-                                Add More Images To Your Post!{" "}
-                                <input
-                                  multiple
-                                  style={{ pointerEvents: "none" }}
-                                  accept="image/*"
-                                  type="file"
-                                  hidden
-                                  onChange={(e) => {
-                                    const arrayOfImages = e.target.files
-                                    dispatch(addImages(arrayOfImages))
+                              {errorMessage ? (
+                                <Button
+                                  startIcon={<Error />}
+                                  variant="outlined"
+                                  style={{ background: "red", color: "white" }}
+                                >
+                                  An error has occurred!
+                                </Button>
+                              ) : (
+                                <Button
+                                  startIcon={<ImageTwoTone />}
+                                  variant="outlined"
+                                  style={{
+                                    background:
+                                      "linear-gradient(180deg, #2D87FF 0%, #6099E5 100%)",
+                                    color: "white",
                                   }}
-                                />
-                              </Button>{" "}
+                                  component="label"
+                                >
+                                  Add More Images To Your Post!{" "}
+                                  <input
+                                    multiple
+                                    style={{ pointerEvents: "none" }}
+                                    accept="image/*"
+                                    type="file"
+                                    hidden
+                                    onChange={async (e) => {
+                                      const arrayOfFiles = Object.keys(
+                                        e.target.files
+                                      )
+                                      for (
+                                        let j = 0;
+                                        j < arrayOfFiles.length;
+                                        // eslint-disable-next-line no-plusplus
+                                        j++
+                                      ) {
+                                        try {
+                                          const formData = new FormData()
+                                          formData.append(
+                                            "file",
+                                            e.target.files[j]
+                                          )
+                                          formData.append(
+                                            "upload_preset",
+                                            process.env
+                                              .REACT_APP_CLOUDINARY_PRESET
+                                          )
+                                          formData.append(
+                                            "api_key",
+                                            process.env
+                                              .REACT_APP_CLOUDINARY_APIKEY
+                                          )
+                                          // eslint-disable-next-line no-await-in-loop
+                                          const response = await axios.post(
+                                            process.env
+                                              .REACT_APP_CLOUDINARY_IMAGE_URL,
+                                            formData
+                                          )
+                                          console.log(response)
+                                        } catch (err) {
+                                          setErrorMessage(err.message)
+                                        }
+                                      }
+                                    }}
+                                  />
+                                </Button>
+                              )}
                               <br />
                               <br />
                             </>

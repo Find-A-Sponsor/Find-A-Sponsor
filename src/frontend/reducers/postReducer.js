@@ -32,7 +32,6 @@ const postSlice = createSlice({
         return state
       },
       prepare(...args) {
-        console.log(args)
         return args
       }
 
