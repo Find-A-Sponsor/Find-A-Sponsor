@@ -4,7 +4,7 @@ const app = require("./app")
 
 const server = http.createServer(app)
 
-const PORT = process.env.PORT || 443
+const PORT = process.env.PORT || 3000
 
 app.use("*", (req, res) => {
   res.sendFile(path.join(__dirname, "./build/index.html"))

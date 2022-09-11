@@ -7,7 +7,6 @@ const storePostSlice = createSlice({
   initialState: [],
   reducers: {
     storePostInformation(state, action) {
-      const exists = state.find(post => post._id === action.payload._id)
       state.push(action.payload)
     },
     configureLikes (state, action) {
@@ -25,7 +24,7 @@ const storePostSlice = createSlice({
       return state
     },
     addImages (state, action) {
-      console.log(state)
+      console.log(current(state))
       console.log(action)
     }
   }

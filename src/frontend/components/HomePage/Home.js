@@ -286,11 +286,6 @@ function Home() {
   //  let object
   } */
 
-  const addMoreImagesToPost = async (certainPost) => {
-    // eslint-disable-next-line no-underscore-dangle
-    await postInformation.configurePost(certainPost._id, savedUser, "addImage")
-  }
-
   const fetchMorePosts = () => {
     if (
       Object.entries(state.posts).length - numberOfPosts.length >= 5 ||
@@ -1024,7 +1019,6 @@ function Home() {
                                     "linear-gradient(180deg, #2D87FF 0%, #6099E5 100%)",
                                   color: "white",
                                 }}
-                                onClick={() => addMoreImagesToPost(posts[i], i)}
                                 component="label"
                               >
                                 Add More Images To Your Post!{" "}
