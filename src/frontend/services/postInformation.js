@@ -50,7 +50,7 @@ const configurePost = async (postId, token, variable, action) => {
     variable -= 1
   }
 
-  const response = await axios.put(`${baseUrl}${postId}`, {variable, action}, config)
+  const response = await axios.put(`${baseUrl}/${postId}`, {variable, action}, config)
   return response;
 }
 

@@ -66,11 +66,20 @@ postRouter.put('/:id', async (req, res) => {
   {$set: {likes: body.variable}, $pull: {likedBy: userWhoLikes._id}}, {new: true})
   
   } else if (body.action === 'increaseCommentCount') {
+
     postToUpdate = await Post.findOneAndUpdate({_id: ObjectId(req.params.id)},
     {$set: {comments: body.variable}})
+
   } else if (body.action === 'decreaseCommentCount') {
+
     postToUpdate = await Post.findOneAndUpdate({_id: ObjectId(req.params.id)},
     {$set: {comments: body.variable}})
+
+  } else if (body.action === 'addImage') {
+
+    postToUpdate = await Post.findOneAndUpdate({_id: ObjectId(req.params.id)},
+    {$set: {images: body.variable}})
+
   }
 
   res.status(200).json(postToUpdate);
