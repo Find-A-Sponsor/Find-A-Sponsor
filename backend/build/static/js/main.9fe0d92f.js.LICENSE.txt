@@ -80,6 +80,7 @@
  */
 
 /**
+<<<<<<< HEAD
  * A better abstraction over CSS.
  *
  * @copyright Oleg Isonen (Slobodskoi) / Isonen 2014-present
@@ -88,6 +89,8 @@
  */
 
 /**
+=======
+>>>>>>> 1abb9075725f8ed71cccb8c9b66ff3b58c40b282
  * React Router DOM v6.3.0
  *
  * Copyright (c) Remix Software Inc.
