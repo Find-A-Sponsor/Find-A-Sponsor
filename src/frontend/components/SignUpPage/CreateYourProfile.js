@@ -246,8 +246,8 @@ function CreateYourProfile() {
           className="submit-button"
           sx={{ position: "absolute", color: "white", top: "90%" }}
           type="submit"
-          onClick={(e) => {
-            handlePostUserToServer(e)
+          onClick={() => {
+            handlePostUserToServer()
             reward()
           }}
           disabled={loading ? true : !!isAnimating}

@@ -31,7 +31,7 @@
   left: 15%;
   top: 21.11%;
   
-  font-family: 'Outfit';
+  font-family: Helvetica, Arial, Verdana, Tahoma, sans-serif;
   font-style: normal;
   font-weight: 700;
   font-size: 36px;
@@ -50,7 +50,7 @@
     left: 15%;
     top: 55%;
   
-    font-family: 'Outfit';
+    font-family: Helvetica, Arial, Verdana, Tahoma, sans-serif;
     font-style: normal;
     font-weight: 600;
     font-size: 20px;
@@ -69,7 +69,7 @@
   left: 70%;
   top: 5%;
 
-  font-family: 'Outfit';
+  font-family: Helvetica, Arial, Verdana, Tahoma, sans-serif;
   font-style: normal;
   font-weight: 600;
   font-size: 20px;
@@ -87,7 +87,7 @@
   height: 20%;
   top: 5%;
 
-  font-family: 'Outfit';
+  font-family: Helvetica, Arial, Verdana, Tahoma, sans-serif;
   font-style: normal;
   font-weight: 600;
   font-size: 20px;
@@ -100,7 +100,7 @@
 }
 
 .no-account-text{
-  font-family: 'Outfit';
+  font-family: Helvetica, Arial, Verdana, Tahoma, sans-serif;
   font-style: normal;
   font-weight: 400;
   font-size: 16px;

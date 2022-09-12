@@ -251,7 +251,7 @@ function Home() {
     const object = {
       storage,
     }
-    dispatch(resetState(""))
+    dispatch(resetState([]))
     // eslint-disable-next-line array-callback-return
     await allPosts.data.map((post, i) => {
       dispatch(storePostInformation(post, i))
@@ -273,9 +273,8 @@ function Home() {
     }
     const allPosts = await postInformation.getPosts(savedUser.token)
     const uniquePosts = [...new Set(allPosts.data)].reverse()
-    dispatch(resetState(""))
-    // eslint-disable-next-line array-callback-return
-    uniquePosts.map((post, i) => {
+    dispatch(resetState([]))
+    uniquePosts.forEach((post, i) => {
       dispatch(storePostInformation(post, i))
     })
     state.comments.storage.map(async (comment) => {
