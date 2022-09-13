@@ -157,6 +157,14 @@ function Home() {
         posts[currentIndex].images,
         "addImage"
       )
+      if (deleteVideo) {
+        await postInformation.configurePost(
+          posts[currentIndex]._id,
+          savedUser,
+          posts[currentIndex].video,
+          "deleteVideo"
+        )
+      }
       setEditToggle(!editToggle)
     } else {
       dispatch(eraseNewImages(currentIndex, lengthOfImages))
@@ -872,7 +880,12 @@ function Home() {
                           style={{ backgroundColor: "white" }}
                         >
                           {/* post video */}
-                          <IconButton onClick={() => setDeleteVideo(true)}>
+                          <IconButton
+                            onClick={() => {
+                              setDeleteVideo(true)
+                              setCurrentIndex(i)
+                            }}
+                          >
                             <DeleteTwoTone style={{ color: "red" }} />
                           </IconButton>
                           <ReactPlayer
