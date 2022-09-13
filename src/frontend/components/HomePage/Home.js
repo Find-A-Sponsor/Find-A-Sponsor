@@ -23,6 +23,7 @@ import {
   resetState,
   addImages,
   eraseNewImages,
+  editPost as editSpecificPost,
 } from "../../reducers/storePostReducer"
 
 import HomeTwoToneIcon from "@mui/icons-material/HomeTwoTone"
@@ -140,8 +141,16 @@ function Home() {
   }, [editToggle])
 
   // When you get back, figure out how to get an added image removed if you do not "Submit changes", otherwise it will be added to the database and be saved
-  const configurePost = async () => {
+  const configurePost = async (postId) => {
     if (changesToggleRef.current) {
+      const specificPost = posts.filter((post) => post._id === postId)
+      dispatch(editSpecificPost(newText, specificPost))
+      await postInformation.configurePost(
+        posts[currentIndex]._id,
+        savedUser,
+        newText,
+        "editText"
+      )
       await postInformation.configurePost(
         posts[currentIndex]._id,
         savedUser,
@@ -251,7 +260,7 @@ function Home() {
     const object = {
       storage,
     }
-    dispatch(resetState(""))
+    dispatch(resetState([]))
     // eslint-disable-next-line array-callback-return
     await allPosts.data.map((post, i) => {
       dispatch(storePostInformation(post, i))
@@ -273,9 +282,8 @@ function Home() {
     }
     const allPosts = await postInformation.getPosts(savedUser.token)
     const uniquePosts = [...new Set(allPosts.data)].reverse()
-    dispatch(resetState(""))
-    // eslint-disable-next-line array-callback-return
-    uniquePosts.map((post, i) => {
+    dispatch(resetState([]))
+    uniquePosts.forEach((post, i) => {
       dispatch(storePostInformation(post, i))
     })
     state.comments.storage.map(async (comment) => {
@@ -834,7 +842,10 @@ function Home() {
                             value={newText}
                             multiline
                             fullWidth
-                            onChange={(e) => setNewText(e.target.value)}
+                            onChange={(e) => {
+                              setNewText(e.target.value)
+                              setCurrentIndex(i)
+                            }}
                           />
                         ) : (
                           <p
@@ -1146,7 +1157,7 @@ function Home() {
                             }}
                             onClick={() => {
                               changesToggleRef.current = true
-                              configurePost()
+                              configurePost(posts[i]._id)
                             }}
                             disabled={loadingOfNewImage}
                           >

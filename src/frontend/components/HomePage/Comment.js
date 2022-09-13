@@ -73,7 +73,7 @@ function Comment({ eachComment, savedUser, postInfo }) {
   const handleDeleteOfComment = async (e, commentId) => {
     e.preventDefault()
     const shouldDelete = window.confirm(
-      "Are you sure you want to delete this comment?"
+      "Are you sure you want to delete this comment?" // hello
     )
     if (shouldDelete) {
       await commentInformation.removeComment(commentId, savedUser)

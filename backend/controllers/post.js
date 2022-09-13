@@ -65,12 +65,7 @@ postRouter.put('/:id', async (req, res) => {
     postToUpdate = await Post.findOneAndUpdate({_id: ObjectId(req.params.id)},
   {$set: {likes: body.variable}, $pull: {likedBy: userWhoLikes._id}}, {new: true})
   
-  } else if (body.action === 'increaseCommentCount') {
-
-    postToUpdate = await Post.findOneAndUpdate({_id: ObjectId(req.params.id)},
-    {$set: {comments: body.variable}})
-
-  } else if (body.action === 'decreaseCommentCount') {
+  } else if (body.action === 'increaseCommentCount' || body.action === 'decreaseCommentCount') {
 
     postToUpdate = await Post.findOneAndUpdate({_id: ObjectId(req.params.id)},
     {$set: {comments: body.variable}})
@@ -79,6 +74,11 @@ postRouter.put('/:id', async (req, res) => {
 
     postToUpdate = await Post.findOneAndUpdate({_id: ObjectId(req.params.id)},
     {$set: {images: body.variable}})
+
+  } else if (body.action === 'editText') {
+
+    postToUpdate = await Post.findOneAndUpdate({_id: ObjectId(req.params.id)},
+    {$set: {text: body.variable}}, {new: true})
 
   }
 

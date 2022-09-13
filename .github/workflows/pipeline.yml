@@ -6,7 +6,7 @@ on:
       - main
   pull_request:
     branches: [main]
-    types: [opened, synchronize]
+    types: [opened, synchronize, reopened]
 
 jobs:
   simple_deployment_pipeline:
@@ -47,3 +47,25 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         DEFAULT_BUMP: patch
+  sonarcloud:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '14.19.0'
+    - name: npm install
+      run: npm install
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        args:
+          -Dsonar.organization=find-a-sponsor
+          -Dsonar.projectKey=Find-A-Sponsor_Find-A-Sponsor
+          -Dsonar.verbose=true
+    - name: SonarCloud Scan
+      uses: sonarsource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      

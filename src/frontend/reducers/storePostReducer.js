@@ -40,6 +40,23 @@ const storePostSlice = createSlice({
         }
       }
     },
+    editPost: {
+      reducer(state, action) {
+        const index = state.findIndex(post => post._id === action.payload.id)
+        state[index].text = action.payload.text
+        return state
+      },
+      prepare(...args) {
+        const text = args[0]
+        const id = args[1][0]._id
+        return {
+          payload: {
+            id,
+            text
+          }
+        }  
+      }
+    },
     eraseNewImages: {
       reducer(state, action) {
         state[action.payload.index].images = state[action.payload.index].images.slice(0, -action.payload.amountToRemove)
@@ -59,5 +76,5 @@ const storePostSlice = createSlice({
   }
 })
 
-export const { storePostInformation, configureLikes, resetState, addImages, eraseNewImages } = storePostSlice.actions
+export const { storePostInformation, configureLikes, resetState, addImages, eraseNewImages, editPost } = storePostSlice.actions
 export default storePostSlice.reducer
