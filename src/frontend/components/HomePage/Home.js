@@ -164,6 +164,13 @@ function Home() {
           posts[currentIndex].video,
           "deleteVideo"
         )
+      } else if (deleteGif) {
+        await postInformation.configurePost(
+          posts[currentIndex]._id,
+          savedUser,
+          posts[currentIndex].gif,
+          "deleteGif"
+        )
       }
       setEditToggle(!editToggle)
     } else {
@@ -921,7 +928,12 @@ function Home() {
                             style={{ backgroundColor: "white" }}
                           >
                             {/* post gif */}
-                            <IconButton onClick={() => setDeleteGif(true)}>
+                            <IconButton
+                              onClick={() => {
+                                setDeleteGif(true)
+                                setCurrentIndex(i)
+                              }}
+                            >
                               <DeleteTwoTone style={{ color: "red" }} />
                             </IconButton>
                             <img
