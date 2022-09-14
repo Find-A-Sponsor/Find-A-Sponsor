@@ -90,6 +90,11 @@ postRouter.put('/:id', async (req, res) => {
     postToUpdate = await Post.findOneAndUpdate({_id: ObjectId(req.params.id)},
     {$unset: {gif: ""}}, {new: true})
 
+  } else if (body.action === 'deleteImages') {
+
+    postToUpdate = await Post.findOneAndUpdate({_id: ObjectId(req.params.id)},
+    {$set: {images: []}}, {new: true})
+
   }
 
   res.status(200).json(postToUpdate);
