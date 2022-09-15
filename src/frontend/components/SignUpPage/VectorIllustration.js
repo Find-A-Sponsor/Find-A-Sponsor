@@ -1,6 +1,6 @@
 /* eslint-disable react/react-in-jsx-scope */
 /* eslint-disable import/prefer-default-export */
-import "../../style-sheets/VectorIllustration.css"
+import "../../style-sheets/VectorIllustration.css";
 
 export function VectorIllustration() {
   return (
@@ -1817,5 +1817,5 @@ export function VectorIllustration() {
         />
       </svg>
     </div>
-  )
+  );
 }

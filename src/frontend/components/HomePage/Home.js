@@ -5,22 +5,22 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable react/react-in-jsx-scope */
-import { useEffect, useRef, useState, useCallback } from "react"
-import { useDropzone } from "react-dropzone"
-import { useDispatch, useSelector } from "react-redux"
-import { Link, useNavigate } from "react-router-dom"
-import ReactPlayer from "react-player"
-import { sortBy } from "lodash"
-import axios from "axios"
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useDropzone } from "react-dropzone";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import ReactPlayer from "react-player";
+import { sortBy } from "lodash";
+import axios from "axios";
 
-import userInformation from "../../services/userInformation"
-import commentInformation from "../../services/commentInformation"
-import postInformation from "../../services/postInformation"
+import userInformation from "../../services/userInformation";
+import commentInformation from "../../services/commentInformation";
+import postInformation from "../../services/postInformation";
 
-import { storeUserInformation } from "../../reducers/storeInformationReducer"
-import { numberOfCommentsRemaining } from "../../reducers/numberOfCommentsRemainingReducer"
-import { createUsers } from "../../reducers/usersReducer"
-import { createComment, storeComments } from "../../reducers/commentReducer"
+import { storeUserInformation } from "../../reducers/storeInformationReducer";
+import { numberOfCommentsRemaining } from "../../reducers/numberOfCommentsRemainingReducer";
+import { createUsers } from "../../reducers/usersReducer";
+import { createComment, storeComments } from "../../reducers/commentReducer";
 import {
   configureLikes,
   storePostInformation,
@@ -28,14 +28,14 @@ import {
   addImages,
   eraseNewImages,
   editPost as editSpecificPost,
-} from "../../reducers/storePostReducer"
+} from "../../reducers/storePostReducer";
 
-import HomeTwoToneIcon from "@mui/icons-material/HomeTwoTone"
-import { Avatar, Loading } from "@nextui-org/react"
-import PageviewTwoToneIcon from "@mui/icons-material/PageviewTwoTone"
-import GroupsTwoToneIcon from "@mui/icons-material/GroupsTwoTone"
-import EmailTwoToneIcon from "@mui/icons-material/EmailTwoTone"
-import SettingsApplicationsTwoToneIcon from "@mui/icons-material/SettingsApplicationsTwoTone"
+import HomeTwoToneIcon from "@mui/icons-material/HomeTwoTone";
+import { Avatar, Loading } from "@nextui-org/react";
+import PageviewTwoToneIcon from "@mui/icons-material/PageviewTwoTone";
+import GroupsTwoToneIcon from "@mui/icons-material/GroupsTwoTone";
+import EmailTwoToneIcon from "@mui/icons-material/EmailTwoTone";
+import SettingsApplicationsTwoToneIcon from "@mui/icons-material/SettingsApplicationsTwoTone";
 import {
   Dialog,
   Button,
@@ -48,183 +48,183 @@ import {
   Menu,
   TextField,
   Grid,
-} from "@mui/material"
-import FavoriteBorderTwoToneIcon from "@mui/icons-material/FavoriteBorderTwoTone"
-import FavoriteIcon from "@mui/icons-material/Favorite"
-import HeartBrokenIcon from "@mui/icons-material/HeartBroken"
-import MessageIcon from "@mui/icons-material/Message"
-import IosShareOutlinedIcon from "@mui/icons-material/IosShareOutlined"
-import MessageOutlinedIcon from "@mui/icons-material/MessageOutlined"
-import InfiniteScroll from "react-infinite-scroll-component"
-import AddCommentTwoToneIcon from "@mui/icons-material/AddCommentTwoTone"
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz"
-import CancelIcon from "@mui/icons-material/Cancel"
-import DeleteTwoTone from "@mui/icons-material/DeleteTwoTone"
-import ImageTwoTone from "@mui/icons-material/ImageTwoTone"
+} from "@mui/material";
+import FavoriteBorderTwoToneIcon from "@mui/icons-material/FavoriteBorderTwoTone";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import HeartBrokenIcon from "@mui/icons-material/HeartBroken";
+import MessageIcon from "@mui/icons-material/Message";
+import IosShareOutlinedIcon from "@mui/icons-material/IosShareOutlined";
+import MessageOutlinedIcon from "@mui/icons-material/MessageOutlined";
+import InfiniteScroll from "react-infinite-scroll-component";
+import AddCommentTwoToneIcon from "@mui/icons-material/AddCommentTwoTone";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import CancelIcon from "@mui/icons-material/Cancel";
+import DeleteTwoTone from "@mui/icons-material/DeleteTwoTone";
+import ImageTwoTone from "@mui/icons-material/ImageTwoTone";
 
-import Comment from "./Comment"
-import ViewProfileBox from "./ViewProfileBox"
-import AvatarPicture from "../../images/AvatarPicture.png"
-import VectorIllustration from "./VectorIllustration"
-import "../../style-sheets/Home.css"
-import { Error } from "@material-ui/icons"
+import Comment from "./Comment";
+import ViewProfileBox from "./ViewProfileBox";
+import AvatarPicture from "../../images/AvatarPicture.png";
+import VectorIllustration from "./VectorIllustration";
+import "../../style-sheets/Home.css";
+import { Error } from "@material-ui/icons";
 
 function Home() {
-  const state = useSelector((wholeState) => wholeState)
-  const stateOfPosts = state.posts
-  const stateOfComments = state.comments.storage
-  const comments = sortBy(stateOfComments, "date").reverse()
-  const posts = [...new Set(sortBy(stateOfPosts, "date").reverse())]
-  const [savedUser, setSavedUser] = useState()
-  const [mouseOver, setMouseOver] = useState()
-  const [replies, setReplies] = useState(false)
-  const [numberOfPosts, setNumberOfPosts] = useState(Array.from({ length: 5 }))
-  const [hasMorePosts, setHasMorePosts] = useState(true)
-  const [open, setOpen] = useState(false)
-  const [editToggle, setEditToggle] = useState(false)
-  const [imageToView, setImageToView] = useState("")
-  const [deleteVideo, setDeleteVideo] = useState(false)
-  const [deleteGif, setDeleteGif] = useState(false)
-  const [deleteImage, setDeleteImage] = useState(false)
-  const [errorMessage, setErrorMessage] = useState("")
-  const [currentIndex, setCurrentIndex] = useState()
-  const [lengthOfImages, setLengthOfImages] = useState(0)
-  const [loadingOfNewImage, setLoadingOfNewImage] = useState(false)
-  const ITEM_HEIGHT = 48
-  const options = ["Delete Post", "Edit Post", "Pin Post"]
-  const commentRef = useRef()
-  const changesToggleRef = useRef()
-  const filesRef = useRef()
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
+  const state = useSelector((wholeState) => wholeState);
+  const stateOfPosts = state.posts;
+  const stateOfComments = state.comments.storage;
+  const comments = sortBy(stateOfComments, "date").reverse();
+  const posts = [...new Set(sortBy(stateOfPosts, "date").reverse())];
+  const [savedUser, setSavedUser] = useState();
+  const [mouseOver, setMouseOver] = useState();
+  const [replies, setReplies] = useState(false);
+  const [numberOfPosts, setNumberOfPosts] = useState(Array.from({ length: 5 }));
+  const [hasMorePosts, setHasMorePosts] = useState(true);
+  const [open, setOpen] = useState(false);
+  const [editToggle, setEditToggle] = useState(false);
+  const [imageToView, setImageToView] = useState("");
+  const [deleteVideo, setDeleteVideo] = useState(false);
+  const [deleteGif, setDeleteGif] = useState(false);
+  const [deleteImage, setDeleteImage] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [currentIndex, setCurrentIndex] = useState();
+  const [lengthOfImages, setLengthOfImages] = useState(0);
+  const [loadingOfNewImage, setLoadingOfNewImage] = useState(false);
+  const ITEM_HEIGHT = 48;
+  const options = ["Delete Post", "Edit Post", "Pin Post"];
+  const commentRef = useRef();
+  const changesToggleRef = useRef();
+  const filesRef = useRef();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [control, setControl] = useState({
     anchorEl: null,
     menus: [],
-  })
+  });
   const [editPost, setEditPost] = useState({
     specificPost: [],
-  })
-  const [newText, setNewText] = useState("")
+  });
+  const [newText, setNewText] = useState("");
 
   useEffect(() => {
     const initializer = async () => {
       const user = await JSON.parse(
         window.localStorage.getItem("loggedAppUser")
-      )
-      setSavedUser(user)
-      userInformation.setToken(user.token)
-      const response = await userInformation.findUser(user.user.email)
-      const arrayOfKeys = Object.keys(response.data.user)
-      const arrayOfValues = Object.values(response.data.user)
-      let i = 0
+      );
+      setSavedUser(user);
+      userInformation.setToken(user.token);
+      const response = await userInformation.findUser(user.user.email);
+      const arrayOfKeys = Object.keys(response.data.user);
+      const arrayOfValues = Object.values(response.data.user);
+      let i = 0;
       arrayOfKeys.forEach((element) => {
-        dispatch(storeUserInformation(arrayOfValues[i], element))
+        dispatch(storeUserInformation(arrayOfValues[i], element));
         // eslint-disable-next-line no-plusplus
-        i++
-      })
-      const response2 = await userInformation.getAll()
+        i++;
+      });
+      const response2 = await userInformation.getAll();
       // eslint-disable-next-line no-shadow, array-callback-return
       response2.data.users.map((eachUser, i) => {
-        dispatch(createUsers(eachUser, i))
-      })
+        dispatch(createUsers(eachUser, i));
+      });
       // eslint-disable-next-line no-shadow
-      const comments = await commentInformation.getComments(user)
-      const storage = comments.data
+      const comments = await commentInformation.getComments(user);
+      const storage = comments.data;
       const object = {
         storage,
-      }
-      dispatch(storeComments(object))
-      const menus = posts.map(() => false)
-      setControl({ menus })
-    }
-    initializer()
-  }, [])
+      };
+      dispatch(storeComments(object));
+      const menus = posts.map(() => false);
+      setControl({ menus });
+    };
+    initializer();
+  }, []);
 
   useEffect(() => {
-    const specificPost = posts.map(() => false)
-    setEditPost({ specificPost })
-  }, [editToggle])
+    const specificPost = posts.map(() => false);
+    setEditPost({ specificPost });
+  }, [editToggle]);
 
   // When you get back, figure out how to get an added image removed if you do not "Submit changes", otherwise it will be added to the database and be saved
   const configurePost = async (postId) => {
     if (changesToggleRef.current) {
-      const specificPost = posts.filter((post) => post._id === postId)
-      dispatch(editSpecificPost(newText, specificPost))
+      const specificPost = posts.filter((post) => post._id === postId);
+      dispatch(editSpecificPost(newText, specificPost));
       await postInformation.configurePost(
         posts[currentIndex]._id,
         savedUser,
         newText,
         "editText"
-      )
+      );
       await postInformation.configurePost(
         posts[currentIndex]._id,
         savedUser,
         posts[currentIndex].images,
         "addImage"
-      )
+      );
       if (deleteVideo) {
         await postInformation.configurePost(
           posts[currentIndex]._id,
           savedUser,
           posts[currentIndex].video,
           "deleteVideo"
-        )
+        );
       } else if (deleteGif) {
         await postInformation.configurePost(
           posts[currentIndex]._id,
           savedUser,
           posts[currentIndex].gif,
           "deleteGif"
-        )
+        );
       } else if (deleteImage) {
         await postInformation.configurePost(
           posts[currentIndex]._id,
           savedUser,
           posts[currentIndex].images,
           "deleteImages"
-        )
+        );
       }
-      setEditToggle(!editToggle)
+      setEditToggle(!editToggle);
     } else {
-      dispatch(eraseNewImages(currentIndex, lengthOfImages))
+      dispatch(eraseNewImages(currentIndex, lengthOfImages));
     }
-    setLengthOfImages(0)
-  }
+    setLengthOfImages(0);
+  };
 
   const onDrop = useCallback(async (acceptedFiles) => {
     const arrayOfVideoFiles = acceptedFiles.filter(
       (file) => file.type.indexOf("video") > -1
-    )
+    );
     const arrayOfGifFiles = acceptedFiles.filter(
       (file) => file.type.indexOf("gif") > -1
-    )
+    );
     filesRef.current =
       arrayOfVideoFiles.length > 0
         ? arrayOfVideoFiles[0]
         : arrayOfGifFiles.length > 0
         ? arrayOfGifFiles[0]
-        : acceptedFiles
+        : acceptedFiles;
 
     for (const element of filesRef.current) {
-      const formData = new FormData()
-      formData.append("file", element)
-      formData.append("upload_preset", process.env.REACT_APP_CLOUDINARY_PRESET)
-      formData.append("api_key", process.env.REACT_APP_CLOUDINARY_APIKEY)
+      const formData = new FormData();
+      formData.append("file", element);
+      formData.append("upload_preset", process.env.REACT_APP_CLOUDINARY_PRESET);
+      formData.append("api_key", process.env.REACT_APP_CLOUDINARY_APIKEY);
       // eslint-disable-next-line no-await-in-loop
       const response = await axios.post(
         process.env.REACT_APP_CLOUDINARY_IMAGE_URL,
         formData
-      )
-      dispatch(addImages(currentIndex, response.data.secure_url))
+      );
+      dispatch(addImages(currentIndex, response.data.secure_url));
     }
-  }, [])
+  }, []);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-  })
+  });
 
   const fetchMoreComments = (i) => {
     if (state.posts[i].comments - state.commentsRemaining.length >= 10) {
-      dispatch(numberOfCommentsRemaining(Array.from({ length: 10 }), "concat"))
+      dispatch(numberOfCommentsRemaining(Array.from({ length: 10 }), "concat"));
     } else if (
       state.posts[i].comments - state.commentsRemaining.length < 10 &&
       state.posts[i].comments - state.commentsRemaining.length > 0
@@ -236,29 +236,29 @@ function Home() {
           }),
           "concat"
         )
-      )
+      );
     } else {
-      dispatch(numberOfCommentsRemaining(Array.from({ length: 0 })))
+      dispatch(numberOfCommentsRemaining(Array.from({ length: 0 })));
     }
-  }
+  };
 
   const handleMenuClick = (event, index) => {
-    const { menus } = control
-    menus[index] = true
+    const { menus } = control;
+    menus[index] = true;
     setControl({
       anchorEl: event.currentTarget,
       menus,
-    })
-  }
+    });
+  };
 
   const handleLike = async (message, index) => {
-    const currentId = state.storage.id
+    const currentId = state.storage.id;
     const object = {
       index,
       message,
       currentId,
-    }
-    dispatch(configureLikes(object))
+    };
+    dispatch(configureLikes(object));
 
     await postInformation.configurePost(
       // eslint-disable-next-line no-underscore-dangle
@@ -266,113 +266,113 @@ function Home() {
       savedUser,
       posts[index].likes,
       message
-    )
-  }
+    );
+  };
 
   const handleOpen = (e) => {
-    setOpen(true)
-    setImageToView(e)
-  }
+    setOpen(true);
+    setImageToView(e);
+  };
 
   const handleReplies = async (index) => {
     // eslint-disable-next-line no-shadow
     setReplies((replies) => ({
       ...replies,
       [index]: !replies[index],
-    }))
-    const response = await commentInformation.getComments(savedUser)
-    const storage = response.data
+    }));
+    const response = await commentInformation.getComments(savedUser);
+    const storage = response.data;
     const object = {
       storage,
-    }
-    dispatch(storeComments(object))
-  }
+    };
+    dispatch(storeComments(object));
+  };
 
-  const handleClose = () => setOpen(false)
+  const handleClose = () => setOpen(false);
 
   const handleCancelEdit = () => {
-    const cancelEdit = window.confirm("Exit edit-mode for this post?")
+    const cancelEdit = window.confirm("Exit edit-mode for this post?");
     if (cancelEdit) {
-      setNewText("")
-      setEditToggle(!editToggle)
-      setDeleteVideo(false)
-      setDeleteGif(false)
-      setDeleteImage(false)
-      changesToggleRef.current = false
-      configurePost()
+      setNewText("");
+      setEditToggle(!editToggle);
+      setDeleteVideo(false);
+      setDeleteGif(false);
+      setDeleteImage(false);
+      changesToggleRef.current = false;
+      configurePost();
     }
-  }
+  };
 
   const handlePostingComment = async (e, postId, commentAmount) => {
-    e.preventDefault()
-    await commentInformation.postComment(commentRef.current, postId, savedUser)
+    e.preventDefault();
+    await commentInformation.postComment(commentRef.current, postId, savedUser);
     await postInformation.configurePost(
       postId,
       savedUser,
       commentAmount,
       "increaseCommentCount"
-    )
-    const allPosts = await postInformation.getPosts(savedUser.token)
-    const response = await commentInformation.getComments(savedUser)
-    const storage = response.data
+    );
+    const allPosts = await postInformation.getPosts(savedUser.token);
+    const response = await commentInformation.getComments(savedUser);
+    const storage = response.data;
     const object = {
       storage,
-    }
-    dispatch(resetState([]))
+    };
+    dispatch(resetState([]));
     // eslint-disable-next-line array-callback-return
     await allPosts.data.map((post, i) => {
-      dispatch(storePostInformation(post, i))
-    })
-    dispatch(storeComments(object))
-    commentRef.current = ""
-  }
+      dispatch(storePostInformation(post, i));
+    });
+    dispatch(storeComments(object));
+    commentRef.current = "";
+  };
 
   const handleDeleteOfPost = async (postId) => {
     // eslint-disable-next-line no-alert
     const shouldDelete = window.confirm(
       "Are you sure you want to delete this post?"
-    )
-    let response
+    );
+    let response;
     if (shouldDelete) {
-      response = await postInformation.removePost(postId, savedUser)
+      response = await postInformation.removePost(postId, savedUser);
     } else {
-      return
+      return;
     }
-    const allPosts = await postInformation.getPosts(savedUser.token)
-    const uniquePosts = [...new Set(allPosts.data)].reverse()
-    dispatch(resetState([]))
+    const allPosts = await postInformation.getPosts(savedUser.token);
+    const uniquePosts = [...new Set(allPosts.data)].reverse();
+    dispatch(resetState([]));
     uniquePosts.forEach((post, i) => {
-      dispatch(storePostInformation(post, i))
-    })
+      dispatch(storePostInformation(post, i));
+    });
     state.comments.storage.map(async (comment) => {
       if (comment.belongsToPost === postId) {
-        await commentInformation.removeComment(comment._id, savedUser)
+        await commentInformation.removeComment(comment._id, savedUser);
       }
-    })
-    dispatch(createComment("", "newComment"))
+    });
+    dispatch(createComment("", "newComment"));
     // eslint-disable-next-line consistent-return
-    return response
-  }
+    return response;
+  };
 
   const handleEditOfPost = async (postId, index) => {
-    editPost.specificPost[index] = true
-    setNewText(posts[index].text)
-  }
+    editPost.specificPost[index] = true;
+    setNewText(posts[index].text);
+  };
 
   const handleMenuClose = (e, option, postId, index) => {
-    e.preventDefault()
-    const { menus } = control
-    menus[index] = false
+    e.preventDefault();
+    const { menus } = control;
+    menus[index] = false;
     setControl({
       anchorEl: null,
       menus,
-    })
+    });
     if (option === "Delete Post") {
-      handleDeleteOfPost(postId)
+      handleDeleteOfPost(postId);
     } else if (option === "Edit Post") {
-      handleEditOfPost(postId, index)
+      handleEditOfPost(postId, index);
     }
-  }
+  };
 
   /* const handleEditPostChanges = async () => {
   //  let object
@@ -384,8 +384,8 @@ function Home() {
       numberOfPosts.length < 5
     ) {
       setTimeout(() => {
-        setNumberOfPosts(numberOfPosts.concat(Array.from({ length: 5 })))
-      }, 1500)
+        setNumberOfPosts(numberOfPosts.concat(Array.from({ length: 5 })));
+      }, 1500);
     } else if (
       Object.entries(state.posts).length - numberOfPosts.length < 5 &&
       Object.entries(state.posts).length - numberOfPosts.length > 0
@@ -397,8 +397,8 @@ function Home() {
               length: Object.entries(state.posts).length - numberOfPosts.length,
             })
           )
-        )
-      }, 1500)
+        );
+      }, 1500);
     } else {
       setTimeout(() => {
         setNumberOfPosts(
@@ -407,11 +407,11 @@ function Home() {
               length: Object.entries(state.posts).length - numberOfPosts.length,
             })
           )
-        )
-      }, 1500)
-      setHasMorePosts(false)
+        );
+      }, 1500);
+      setHasMorePosts(false);
     }
-  }
+  };
 
   return (
     <div
@@ -856,9 +856,10 @@ function Home() {
                                 }}
                                 anchorEl={control.anchorEl}
                                 open={control.menus[i]}
-                                onClose={(e) =>
-                                  handleMenuClose(e, "", posts[i]._id, i)
-                                }
+                                onClose={(e) => {
+                                  handleMenuClose(e, "", posts[i]._id, i);
+                                  setCurrentIndex(i);
+                                }}
                                 PaperProps={{
                                   style: {
                                     maxHeight: ITEM_HEIGHT * 4.5,
@@ -901,8 +902,8 @@ function Home() {
                             multiline
                             fullWidth
                             onChange={(e) => {
-                              setNewText(e.target.value)
-                              setCurrentIndex(i)
+                              setNewText(e.target.value);
+                              setCurrentIndex(i);
                             }}
                           />
                         ) : (
@@ -932,8 +933,8 @@ function Home() {
                           {/* post video */}
                           <IconButton
                             onClick={() => {
-                              setDeleteVideo(true)
-                              setCurrentIndex(i)
+                              setDeleteVideo(true);
+                              setCurrentIndex(i);
                             }}
                           >
                             <DeleteTwoTone style={{ color: "red" }} />
@@ -973,8 +974,8 @@ function Home() {
                             {/* post gif */}
                             <IconButton
                               onClick={() => {
-                                setDeleteGif(true)
-                                setCurrentIndex(i)
+                                setDeleteGif(true);
+                                setCurrentIndex(i);
                               }}
                             >
                               <DeleteTwoTone style={{ color: "red" }} />
@@ -1015,8 +1016,8 @@ function Home() {
                             {/* post image */}
                             <IconButton
                               onClick={() => {
-                                setDeleteImage(true)
-                                setCurrentIndex(i)
+                                setDeleteImage(true);
+                                setCurrentIndex(i);
                               }}
                             >
                               <DeleteTwoTone style={{ color: "red" }} />
@@ -1158,10 +1159,10 @@ function Home() {
                                     type="file"
                                     hidden
                                     onChange={async (e) => {
-                                      setLoadingOfNewImage(true)
+                                      setLoadingOfNewImage(true);
                                       const arrayOfFiles = Object.keys(
                                         e.target.files
-                                      )
+                                      );
                                       for (
                                         let j = 0;
                                         j < arrayOfFiles.length;
@@ -1169,46 +1170,46 @@ function Home() {
                                         j++
                                       ) {
                                         try {
-                                          const formData = new FormData()
+                                          const formData = new FormData();
                                           formData.append(
                                             "file",
                                             e.target.files[j]
-                                          )
+                                          );
                                           formData.append(
                                             "upload_preset",
                                             process.env
                                               .REACT_APP_CLOUDINARY_PRESET
-                                          )
+                                          );
                                           formData.append(
                                             "api_key",
                                             process.env
                                               .REACT_APP_CLOUDINARY_APIKEY
-                                          )
+                                          );
                                           // eslint-disable-next-line no-await-in-loop
                                           const response = await axios.post(
                                             process.env
                                               .REACT_APP_CLOUDINARY_IMAGE_URL,
                                             formData
-                                          )
+                                          );
                                           dispatch(
                                             addImages(
                                               i,
                                               response.data.secure_url
                                             )
-                                          )
+                                          );
                                         } catch (err) {
-                                          setErrorMessage(err.message)
+                                          setErrorMessage(err.message);
                                         }
                                       }
-                                      setCurrentIndex(i)
+                                      setCurrentIndex(i);
                                       if (lengthOfImages > 0) {
                                         setLengthOfImages(
                                           lengthOfImages + arrayOfFiles.length
-                                        )
+                                        );
                                       } else {
-                                        setLengthOfImages(arrayOfFiles.length)
+                                        setLengthOfImages(arrayOfFiles.length);
                                       }
-                                      setLoadingOfNewImage(false)
+                                      setLoadingOfNewImage(false);
                                     }}
                                   />
                                 </Button>
@@ -1254,8 +1255,8 @@ function Home() {
                               color: "white",
                             }}
                             onClick={() => {
-                              changesToggleRef.current = true
-                              configurePost(posts[i]._id)
+                              changesToggleRef.current = true;
+                              configurePost(posts[i]._id);
                             }}
                             disabled={loadingOfNewImage}
                           >
@@ -1344,12 +1345,12 @@ function Home() {
                             endAdornment: (
                               <IconButton
                                 onClick={(e) => {
-                                  handleReplies(i)
+                                  handleReplies(i);
                                   handlePostingComment(
                                     e,
                                     posts[i]._id,
                                     posts[i].comments
-                                  )
+                                  );
                                 }}
                               >
                                 <AddCommentTwoToneIcon color="primary" />
@@ -1371,17 +1372,17 @@ function Home() {
                           onBlur={(e) => (commentRef.current = e.target.value)}
                           onKeyPress={(e) => {
                             if (e.key === "Enter") {
-                              e.preventDefault()
+                              e.preventDefault();
                             }
                           }}
                           onKeyUp={(e) => {
-                            commentRef.current = e.target.value
+                            commentRef.current = e.target.value;
                             if (e.key === "Enter") {
                               handlePostingComment(
                                 e,
                                 posts[i]._id,
                                 posts[i].comments
-                              ) // Fix functionality when user press 'Enter', the comment submits current text to database.
+                              ); // Fix functionality when user press 'Enter', the comment submits current text to database.
                             }
                           }}
                         />
@@ -1450,7 +1451,7 @@ function Home() {
                         </Grid>
                       </Grid>
                     </Grid>
-                  )
+                  );
                 }
               })}
           </Grid>
@@ -1475,7 +1476,7 @@ function Home() {
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default Home
+export default Home;

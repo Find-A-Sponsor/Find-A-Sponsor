@@ -12,31 +12,31 @@ import {
   InputAdornment,
   TextField,
   Typography,
-} from "@mui/material"
-import { useDispatch, useSelector } from "react-redux"
-import FavoriteBorderTwoToneIcon from "@mui/icons-material/FavoriteBorderTwoTone"
-import ReplyTwoToneIcon from "@mui/icons-material/Reply"
-import EditTwoToneIcon from "@mui/icons-material/EditTwoTone"
-import DeleteTwoToneIcon from "@mui/icons-material/DeleteTwoTone"
-import FavoriteTwoToneIcon from "@mui/icons-material/FavoriteTwoTone"
-import { useState } from "react"
-import HeartBrokenTwoToneIcon from "@mui/icons-material/HeartBrokenTwoTone"
-import AddCommentTwoToneIcon from "@mui/icons-material/AddCommentTwoTone"
-import commentInformation from "../../services/commentInformation"
-import { resetState, storeComments } from "../../reducers/commentReducer"
+} from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import FavoriteBorderTwoToneIcon from "@mui/icons-material/FavoriteBorderTwoTone";
+import ReplyTwoToneIcon from "@mui/icons-material/Reply";
+import EditTwoToneIcon from "@mui/icons-material/EditTwoTone";
+import DeleteTwoToneIcon from "@mui/icons-material/DeleteTwoTone";
+import FavoriteTwoToneIcon from "@mui/icons-material/FavoriteTwoTone";
+import { useState } from "react";
+import HeartBrokenTwoToneIcon from "@mui/icons-material/HeartBrokenTwoTone";
+import AddCommentTwoToneIcon from "@mui/icons-material/AddCommentTwoTone";
+import commentInformation from "../../services/commentInformation";
+import { resetState, storeComments } from "../../reducers/commentReducer";
 import {
   resetState as resetPosts,
   storePostInformation,
-} from "../../reducers/storePostReducer"
-import postInformation from "../../services/postInformation"
+} from "../../reducers/storePostReducer";
+import postInformation from "../../services/postInformation";
 
 function Comment({ eachComment, savedUser, postInfo }) {
-  const [mouseOver, setMouseOver] = useState(false)
-  const [open, setOpen] = useState(false)
-  const state = useSelector((wholeState) => wholeState)
-  const eachUser = state.users
-  const dispatch = useDispatch()
-  const arrayOfUsers = Object.values(eachUser)
+  const [mouseOver, setMouseOver] = useState(false);
+  const [open, setOpen] = useState(false);
+  const state = useSelector((wholeState) => wholeState);
+  const eachUser = state.users;
+  const dispatch = useDispatch();
+  const arrayOfUsers = Object.values(eachUser);
 
   const handleIncreasedLike = async () => {
     await commentInformation.configureComment(
@@ -44,14 +44,14 @@ function Comment({ eachComment, savedUser, postInfo }) {
       savedUser,
       eachComment.likes,
       "increase"
-    )
-    const response = await commentInformation.getComments(savedUser)
-    const storage = response.data
+    );
+    const response = await commentInformation.getComments(savedUser);
+    const storage = response.data;
     const object = {
       storage,
-    }
-    dispatch(storeComments(object))
-  }
+    };
+    dispatch(storeComments(object));
+  };
 
   const handleDecreasedLike = async () => {
     await commentInformation.configureComment(
@@ -59,45 +59,45 @@ function Comment({ eachComment, savedUser, postInfo }) {
       savedUser,
       eachComment.likes,
       "decrease"
-    )
-    const response = await commentInformation.getComments(savedUser)
-    const storage = response.data
+    );
+    const response = await commentInformation.getComments(savedUser);
+    const storage = response.data;
     const object = {
       storage,
-    }
-    dispatch(storeComments(object))
-  }
+    };
+    dispatch(storeComments(object));
+  };
 
-  const handlePostingReply = async () => {}
+  const handlePostingReply = async () => {};
 
   const handleDeleteOfComment = async (e, commentId) => {
-    e.preventDefault()
+    e.preventDefault();
     const shouldDelete = window.confirm(
       "Are you sure you want to delete this comment?" // hello
-    )
+    );
     if (shouldDelete) {
-      await commentInformation.removeComment(commentId, savedUser)
+      await commentInformation.removeComment(commentId, savedUser);
       await postInformation.configurePost(
         postInfo._id,
         savedUser,
         postInfo.comments,
         "decreaseCommentCount"
-      )
-      dispatch(resetState(""))
-      dispatch(resetPosts(""))
-      const response = await commentInformation.getComments(savedUser)
-      const storage = response.data
+      );
+      dispatch(resetState(""));
+      dispatch(resetPosts(""));
+      const response = await commentInformation.getComments(savedUser);
+      const storage = response.data;
       const object = {
         storage,
-      }
-      dispatch(storeComments(object))
-      const posts = await postInformation.getPosts(savedUser.token)
+      };
+      dispatch(storeComments(object));
+      const posts = await postInformation.getPosts(savedUser.token);
       // eslint-disable-next-line array-callback-return
       await posts.data.map((post, i) => {
-        dispatch(storePostInformation(post, i))
-      })
+        dispatch(storePostInformation(post, i));
+      });
     }
-  }
+  };
 
   return (
     <>
@@ -178,7 +178,7 @@ function Comment({ eachComment, savedUser, postInfo }) {
         ""
       )}
     </>
-  )
+  );
 }
 
-export default Comment
+export default Comment;

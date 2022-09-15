@@ -1,61 +1,61 @@
 /* eslint-disable react/jsx-no-duplicate-props */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable react/react-in-jsx-scope */
-import { useDispatch, useSelector } from "react-redux"
-import axios from "axios"
-import { useReward } from "react-rewards"
-import { useNavigate } from "react-router"
+import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+import { useReward } from "react-rewards";
+import { useNavigate } from "react-router";
 
-import { Avatar, Text, Loading } from "@nextui-org/react"
+import { Avatar, Text, Loading } from "@nextui-org/react";
 import {
   Button,
   IconButton,
   InputAdornment,
   InputLabel,
   TextField,
-} from "@mui/material"
-import "../../style-sheets/CreateYourProfile.css"
-import AddAPhotoTwoToneIcon from "@mui/icons-material/AddAPhotoTwoTone"
-import DescriptionTwoToneIcon from "@mui/icons-material/DescriptionTwoTone"
-import Select from "react-select"
-import makeAnimated from "react-select/animated"
-import { useState } from "react"
-import userInformation from "../../services/userInformation"
-import AvatarPicture from "../../images/AvatarPicture.png"
-import { createUsers, resetState } from "../../reducers/usersReducer"
-import { VectorIllustration } from "./VectorIllustration"
+} from "@mui/material";
+import "../../style-sheets/CreateYourProfile.css";
+import AddAPhotoTwoToneIcon from "@mui/icons-material/AddAPhotoTwoTone";
+import DescriptionTwoToneIcon from "@mui/icons-material/DescriptionTwoTone";
+import Select from "react-select";
+import makeAnimated from "react-select/animated";
+import { useState } from "react";
+import userInformation from "../../services/userInformation";
+import AvatarPicture from "../../images/AvatarPicture.png";
+import { createUsers, resetState } from "../../reducers/usersReducer";
+import { VectorIllustration } from "./VectorIllustration";
 
 function CreateYourProfile() {
-  const { reward, isAnimating } = useReward("rewardId", "confetti")
-  const [loading, setLoading] = useState(false)
-  const state = useSelector((wholeState) => wholeState)
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
-  const animatedComponents = makeAnimated()
+  const { reward, isAnimating } = useReward("rewardId", "confetti");
+  const [loading, setLoading] = useState(false);
+  const state = useSelector((wholeState) => wholeState);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const animatedComponents = makeAnimated();
 
   const handleImageSubmit = async (e) => {
-    setLoading(true)
-    const formData = new FormData()
-    formData.append("file", e.target.files[0])
-    formData.append("upload_preset", process.env.REACT_APP_CLOUDINARY_PRESET)
-    formData.append("api_key", process.env.REACT_APP_CLOUDINARY_APIKEY)
+    setLoading(true);
+    const formData = new FormData();
+    formData.append("file", e.target.files[0]);
+    formData.append("upload_preset", process.env.REACT_APP_CLOUDINARY_PRESET);
+    formData.append("api_key", process.env.REACT_APP_CLOUDINARY_APIKEY);
     const response = await axios
       .post(process.env.REACT_APP_CLOUDINARY_IMAGE_URL, formData)
       .finally(() => {
-        setLoading(false)
-      })
-    dispatch(createUsers(response.data.secure_url, "profileImageURL"))
-  }
+        setLoading(false);
+      });
+    dispatch(createUsers(response.data.secure_url, "profileImageURL"));
+  };
 
   const handlePostUserToServer = async () => {
-    const user = await userInformation.newUser(state.users)
+    const user = await userInformation.newUser(state.users);
     window.localStorage.setItem(
       "loggedAppUser",
       JSON.stringify(user.data) // Setting localStorage allows user to make posts on account later and the posts requests will be sent to different route and that route will contain a verify function to verify that the user is authenticated to make posts. This implementation will occur whenever I get the home page up and running and I can grab the token via a localstore.getItem()
-    )
-    dispatch(resetState())
-    navigate("/home")
-  }
+    );
+    dispatch(resetState());
+    navigate("/home");
+  };
 
   const listOfAddictions = [
     { value: "Alcohol", label: "Alcohol" },
@@ -71,7 +71,7 @@ function CreateYourProfile() {
     { value: "Emotions", label: "Emotions" },
     { value: "Marijuana", label: "Marijuana" },
     { value: "Narcotics", label: "Narcotics" },
-  ]
+  ];
 
   const listOfGroups = [
     { value: "Alcoholics Anonymous", label: "Alcoholics Anonymous" },
@@ -107,7 +107,7 @@ function CreateYourProfile() {
     { value: "Sexual Recovery Anonymous", label: "Sexual Recovery Anonymous" },
     { value: "Workaholics Anonymous", label: "Workaholics Anonymous" },
     { value: "Racists Anonymous", label: "Racists Anonymous" },
-  ]
+  ];
 
   return (
     <div className="create-profile-page-container">
@@ -180,7 +180,7 @@ function CreateYourProfile() {
             ),
           }}
           onChange={(e) => {
-            dispatch(createUsers(e.target.value, "biography"))
+            dispatch(createUsers(e.target.value, "biography"));
           }}
         />
         <Text
@@ -209,7 +209,7 @@ function CreateYourProfile() {
                 e.map((addiction) => addiction?.value),
                 "addictions"
               )
-            )
+            );
           }}
         />
         <Text
@@ -247,8 +247,8 @@ function CreateYourProfile() {
           sx={{ position: "absolute", color: "white", top: "90%" }}
           type="submit"
           onClick={() => {
-            handlePostUserToServer()
-            reward()
+            handlePostUserToServer();
+            reward();
           }}
           disabled={loading ? true : !!isAnimating}
         >
@@ -256,7 +256,7 @@ function CreateYourProfile() {
         </Button>
       </div>
     </div>
-  )
+  );
 }
 
-export default CreateYourProfile
+export default CreateYourProfile;

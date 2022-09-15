@@ -195,7 +195,7 @@ function VectorIllustration() {
         }}
       />
     </>
-  )
+  );
 }
 
-export default VectorIllustration
+export default VectorIllustration;

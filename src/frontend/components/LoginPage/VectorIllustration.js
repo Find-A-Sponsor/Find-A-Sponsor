@@ -1,5 +1,5 @@
 /* eslint-disable react/react-in-jsx-scope */
-import "../../style-sheets/LoginForm.css"
+import "../../style-sheets/LoginForm.css";
 
 function VectorIllustration() {
   return (
@@ -858,7 +858,7 @@ function VectorIllustration() {
         />
       </svg>
     </div>
-  )
+  );
 }
 
-export default VectorIllustration
+export default VectorIllustration;

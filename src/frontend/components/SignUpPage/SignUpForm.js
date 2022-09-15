@@ -1,68 +1,68 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable react/react-in-jsx-scope */
-import { useDispatch, useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux";
 // eslint-disable-next-line import/order
-import { createUsers } from "../../reducers/usersReducer"
-import { useState } from "react"
-import moment from "moment"
-import { Link, useNavigate } from "react-router-dom"
-import validator from "validator"
+import { createUsers } from "../../reducers/usersReducer";
+import { useState } from "react";
+import moment from "moment";
+import { Link, useNavigate } from "react-router-dom";
+import validator from "validator";
 
-import "../../style-sheets/SignUpForm.css"
+import "../../style-sheets/SignUpForm.css";
 
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns"
-import { DesktopDatePicker, LocalizationProvider } from "@mui/x-date-pickers"
-import { Button, InputAdornment, TextField, IconButton } from "@mui/material"
-import AccountCircleTwoToneIcon from "@mui/icons-material/AccountCircleTwoTone"
-import AlternateEmailSharpIcon from "@mui/icons-material/AlternateEmailSharp"
-import EmailTwoToneIcon from "@mui/icons-material/EmailTwoTone"
-import LockTwoToneIcon from "@mui/icons-material/LockTwoTone"
-import Dangerous from "@mui/icons-material/Dangerous"
-import CheckCircleIcon from "@mui/icons-material/CheckCircle"
-import LockOpenTwoToneIcon from "@mui/icons-material/LockOpenTwoTone"
-import CalendarMonthTwoToneIcon from "@mui/icons-material/CalendarMonthTwoTone"
-import CountryOfOrigin from "./CountryOfOrigin"
-import { VectorIllustration } from "./VectorIllustration"
-import userInformation from "../../services/userInformation"
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { DesktopDatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { Button, InputAdornment, TextField, IconButton } from "@mui/material";
+import AccountCircleTwoToneIcon from "@mui/icons-material/AccountCircleTwoTone";
+import AlternateEmailSharpIcon from "@mui/icons-material/AlternateEmailSharp";
+import EmailTwoToneIcon from "@mui/icons-material/EmailTwoTone";
+import LockTwoToneIcon from "@mui/icons-material/LockTwoTone";
+import Dangerous from "@mui/icons-material/Dangerous";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import LockOpenTwoToneIcon from "@mui/icons-material/LockOpenTwoTone";
+import CalendarMonthTwoToneIcon from "@mui/icons-material/CalendarMonthTwoTone";
+import CountryOfOrigin from "./CountryOfOrigin";
+import { VectorIllustration } from "./VectorIllustration";
+import userInformation from "../../services/userInformation";
 
 function SignUpForm() {
-  const dispatch = useDispatch()
-  const state = useSelector((wholeState) => wholeState)
-  const [showPassword, setShowPassword] = useState(false)
-  const [showPassword2, setShowPassword2] = useState(false)
-  const navigate = useNavigate()
+  const dispatch = useDispatch();
+  const state = useSelector((wholeState) => wholeState);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword2, setShowPassword2] = useState(false);
+  const navigate = useNavigate();
 
-  const handleClickShowPassword = () => setShowPassword(!showPassword)
-  const handleMouseDownPassword = () => setShowPassword(!showPassword)
+  const handleClickShowPassword = () => setShowPassword(!showPassword);
+  const handleMouseDownPassword = () => setShowPassword(!showPassword);
 
-  const handleClickShowPassword2 = () => setShowPassword2(!showPassword2)
-  const handleMouseDownPassword2 = () => setShowPassword2(!showPassword2)
+  const handleClickShowPassword2 = () => setShowPassword2(!showPassword2);
+  const handleMouseDownPassword2 = () => setShowPassword2(!showPassword2);
 
   const handleUsernameCheck = async (e) => {
-    dispatch(createUsers(e.target.value, "username"))
+    dispatch(createUsers(e.target.value, "username"));
     const checkIfUserExists = await userInformation.newUser(
       e.target.value,
       "username"
-    )
+    );
     if (checkIfUserExists === "Username is already taken") {
-      dispatch(createUsers(true, "usernameExists"))
+      dispatch(createUsers(true, "usernameExists"));
     } else {
-      dispatch(createUsers(false, "usernameExists"))
+      dispatch(createUsers(false, "usernameExists"));
     }
-  }
+  };
 
   const handleEmailCheck = async (e) => {
-    dispatch(createUsers(e.target.value, "email"))
+    dispatch(createUsers(e.target.value, "email"));
     const checkIfEmailExists = await userInformation.newUser(
       e.target.value,
       "email"
-    )
+    );
     if (checkIfEmailExists === "Email is already in use") {
-      dispatch(createUsers(true, "emailExists"))
+      dispatch(createUsers(true, "emailExists"));
     } else {
-      dispatch(createUsers(false, "emailExists"))
+      dispatch(createUsers(false, "emailExists"));
     }
-  }
+  };
 
   return (
     <div className="sign-up-page-container">
@@ -279,7 +279,7 @@ function SignUpForm() {
                           new Date(e.currentTarget.value).toString(),
                           "dateOfBirth"
                         )
-                      )
+                      );
                     }
                   }}
                   value={state.users?.dateOfBirth}
@@ -292,7 +292,7 @@ function SignUpForm() {
               value={state.users.dateOfBirth}
               onChange={(e) => {
                 if (e?.getFullYear() >= 1900) {
-                  dispatch(createUsers(e.toString(), "dateOfBirth"))
+                  dispatch(createUsers(e.toString(), "dateOfBirth"));
                 }
               }}
               label="Date of birth"
@@ -342,7 +342,7 @@ function SignUpForm() {
         </p>
       </div>
     </div>
-  )
+  );
 }
 
-export default SignUpForm
+export default SignUpForm;

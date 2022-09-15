@@ -1,20 +1,20 @@
 /* eslint-disable react/react-in-jsx-scope */
 /* eslint-disable react/prop-types */
-import { useMemo } from "react"
-import { MenuItem, TextField, InputAdornment } from "@mui/material"
-import countryList from "react-select-country-list"
-import AddLocationAltTwoToneIcon from "@mui/icons-material/AddLocationAltTwoTone"
-import { useDispatch } from "react-redux"
-import { createUsers } from "../../reducers/usersReducer"
+import { useMemo } from "react";
+import { MenuItem, TextField, InputAdornment } from "@mui/material";
+import countryList from "react-select-country-list";
+import AddLocationAltTwoToneIcon from "@mui/icons-material/AddLocationAltTwoTone";
+import { useDispatch } from "react-redux";
+import { createUsers } from "../../reducers/usersReducer";
 
 function CountryOfOrigin({ state }) {
-  const dispatch = useDispatch()
-  const options = useMemo(() => countryList().getData(), [])
+  const dispatch = useDispatch();
+  const options = useMemo(() => countryList().getData(), []);
 
   const changeHandler = (e) => {
-    e.preventDefault()
-    dispatch(createUsers(e.target.value, "location"))
-  }
+    e.preventDefault();
+    dispatch(createUsers(e.target.value, "location"));
+  };
 
   return (
     <TextField
@@ -39,7 +39,7 @@ function CountryOfOrigin({ state }) {
         </MenuItem>
       ))}
     </TextField>
-  )
+  );
 }
 
-export default CountryOfOrigin
+export default CountryOfOrigin;

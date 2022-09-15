@@ -3,103 +3,103 @@
 /* eslint-disable react/react-in-jsx-scope */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-plusplus */
-import axios from "axios"
-import { useState, useRef, useEffect } from "react"
-import { useSelector, useDispatch } from "react-redux"
+import axios from "axios";
+import { useState, useRef, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 
-import { Loading } from "@nextui-org/react"
-import { TextField, Button } from "@mui/material"
-import ImageTwoToneIcon from "@mui/icons-material/ImageTwoTone"
-import VideocamTwoToneIcon from "@mui/icons-material/VideocamTwoTone"
-import SendTwoToneIcon from "@mui/icons-material/SendTwoTone"
-import ErrorTwoToneIcon from "@mui/icons-material/ErrorTwoTone"
-import CheckBoxTwoToneIcon from "@mui/icons-material/CheckBoxTwoTone"
-import DeleteForeverTwoToneIcon from "@mui/icons-material/DeleteForeverTwoTone"
-import MovieFilterIcon from "@mui/icons-material/MovieFilter"
+import { Loading } from "@nextui-org/react";
+import { TextField, Button } from "@mui/material";
+import ImageTwoToneIcon from "@mui/icons-material/ImageTwoTone";
+import VideocamTwoToneIcon from "@mui/icons-material/VideocamTwoTone";
+import SendTwoToneIcon from "@mui/icons-material/SendTwoTone";
+import ErrorTwoToneIcon from "@mui/icons-material/ErrorTwoTone";
+import CheckBoxTwoToneIcon from "@mui/icons-material/CheckBoxTwoTone";
+import DeleteForeverTwoToneIcon from "@mui/icons-material/DeleteForeverTwoTone";
+import MovieFilterIcon from "@mui/icons-material/MovieFilter";
 
-import { createPosts } from "../../reducers/postReducer"
+import { createPosts } from "../../reducers/postReducer";
 import {
   resetState,
   storePostInformation,
-} from "../../reducers/storePostReducer"
+} from "../../reducers/storePostReducer";
 
-import postInformation from "../../services/postInformation"
+import postInformation from "../../services/postInformation";
 
 function ViewProfileBox({ savedUser, setNumberOfPosts, numberOfPosts }) {
-  const ref = useRef()
-  const state = useSelector((wholeState) => wholeState)
-  const dispatch = useDispatch()
-  const [errorMessage, setErrorMessage] = useState("")
-  const [contentError, setContentError] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [deleteItem, setDeleteItem] = useState(false)
-  const [deleteVideo, setDeleteVideo] = useState(false)
-  const [deleteGif, setDeleteGif] = useState(false)
+  const ref = useRef();
+  const state = useSelector((wholeState) => wholeState);
+  const dispatch = useDispatch();
+  const [errorMessage, setErrorMessage] = useState("");
+  const [contentError, setContentError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [deleteItem, setDeleteItem] = useState(false);
+  const [deleteVideo, setDeleteVideo] = useState(false);
+  const [deleteGif, setDeleteGif] = useState(false);
 
   useEffect(() => {
     const grabPosts = async () => {
       const user = await JSON.parse(
         window.localStorage.getItem("loggedAppUser")
-      )
-      const posts = await postInformation.getPosts(user.token)
-      dispatch(resetState(""))
+      );
+      const posts = await postInformation.getPosts(user.token);
+      dispatch(resetState(""));
       // eslint-disable-next-line array-callback-return
       await posts.data.map((post, i) => {
-        dispatch(storePostInformation(post, i))
-      })
+        dispatch(storePostInformation(post, i));
+      });
       // eslint-disable-next-line react/prop-types
-      setNumberOfPosts(numberOfPosts.concat(Array.from({ length: 1 })))
-    }
-    grabPosts()
-  }, [state.newPost.text])
+      setNumberOfPosts(numberOfPosts.concat(Array.from({ length: 1 })));
+    };
+    grabPosts();
+  }, [state.newPost.text]);
 
   const uploadToServer = async (URL, arrayOfKeys, i) => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const formData = new FormData()
-      formData.append("file", state.newPost[arrayOfKeys[i]])
-      formData.append("upload_preset", process.env.REACT_APP_CLOUDINARY_PRESET)
-      formData.append("api_key", process.env.REACT_APP_CLOUDINARY_APIKEY)
+      const formData = new FormData();
+      formData.append("file", state.newPost[arrayOfKeys[i]]);
+      formData.append("upload_preset", process.env.REACT_APP_CLOUDINARY_PRESET);
+      formData.append("api_key", process.env.REACT_APP_CLOUDINARY_APIKEY);
       const response = await axios.post(URL, formData).finally(() => {
-        setLoading(false)
-      })
+        setLoading(false);
+      });
       ref.current = {
         ...ref.current,
         [arrayOfKeys[i]]: response.data.secure_url,
-      }
+      };
     } catch (err) {
-      setErrorMessage(err.message)
+      setErrorMessage(err.message);
     }
-  }
+  };
 
   const handleNewPost = async (e) => {
-    e.preventDefault()
-    const arrayOfKeys = Object.keys(state.newPost)
+    e.preventDefault();
+    const arrayOfKeys = Object.keys(state.newPost);
     for (let i = 0; i <= arrayOfKeys.length; i++) {
       if (arrayOfKeys[i] === "images") {
-        const arrayOfFiles = Object.keys(state.newPost.images)
+        const arrayOfFiles = Object.keys(state.newPost.images);
         for (let j = 0; j < arrayOfFiles.length; j++) {
           try {
-            const formData = new FormData()
-            formData.append("file", state.newPost.images[j])
+            const formData = new FormData();
+            formData.append("file", state.newPost.images[j]);
             formData.append(
               "upload_preset",
               process.env.REACT_APP_CLOUDINARY_PRESET
-            )
-            formData.append("api_key", process.env.REACT_APP_CLOUDINARY_APIKEY)
+            );
+            formData.append("api_key", process.env.REACT_APP_CLOUDINARY_APIKEY);
             // eslint-disable-next-line no-await-in-loop
             const response = await axios
               .post(process.env.REACT_APP_CLOUDINARY_IMAGE_URL, formData)
               .finally(() => {
-                setLoading(false)
-              })
+                setLoading(false);
+              });
             ref.current = {
               images: ref.current?.images
                 ? ref.current.images.concat(response.data.secure_url)
                 : [].concat(response.data.secure_url),
-            }
+            };
           } catch (err) {
-            setErrorMessage(err.message)
+            setErrorMessage(err.message);
           }
         }
       } else if (
@@ -110,7 +110,7 @@ function ViewProfileBox({ savedUser, setNumberOfPosts, numberOfPosts }) {
           process.env.REACT_APP_CLOUDINARY_VIDEO_URL,
           arrayOfKeys,
           i
-        )
+        );
       } else if (
         arrayOfKeys[i] === "gif" &&
         state.newPost[arrayOfKeys[i]].size < 10485760
@@ -119,26 +119,26 @@ function ViewProfileBox({ savedUser, setNumberOfPosts, numberOfPosts }) {
           process.env.REACT_APP_CLOUDINARY_IMAGE_URL,
           arrayOfKeys,
           i
-        )
+        );
       } else if (arrayOfKeys[i] !== "text" && state.newPost[arrayOfKeys[i]]) {
         setErrorMessage(
           "Video files must be 100MB or less, images and gifs must be 10MB or less."
-        )
-        setContentError(arrayOfKeys[i])
+        );
+        setContentError(arrayOfKeys[i]);
         setTimeout(() => {
-          setErrorMessage("")
-          setContentError("")
-        }, 5000)
+          setErrorMessage("");
+          setContentError("");
+        }, 5000);
       }
     }
-    ref.current = { ...ref.current, text: state.newPost.text }
-    await postInformation.makeAPost(ref.current, savedUser)
+    ref.current = { ...ref.current, text: state.newPost.text };
+    await postInformation.makeAPost(ref.current, savedUser);
     arrayOfKeys.forEach((key) => {
-      dispatch(createPosts("", key))
-    })
-    setLoading(false)
-    ref.current = ""
-  }
+      dispatch(createPosts("", key));
+    });
+    setLoading(false);
+    ref.current = "";
+  };
 
   return (
     <form onSubmit={handleNewPost}>
@@ -186,8 +186,8 @@ function ViewProfileBox({ savedUser, setNumberOfPosts, numberOfPosts }) {
           onMouseOver={() => setDeleteItem(true)}
           onMouseLeave={() => setDeleteItem(false)}
           onClick={(e) => {
-            e.preventDefault()
-            dispatch(createPosts("", "images"))
+            e.preventDefault();
+            dispatch(createPosts("", "images"));
           }}
           startIcon={
             deleteItem ? <DeleteForeverTwoToneIcon /> : <CheckBoxTwoToneIcon />
@@ -239,9 +239,9 @@ function ViewProfileBox({ savedUser, setNumberOfPosts, numberOfPosts }) {
             type="file"
             hidden
             onChange={(e) => {
-              setDeleteItem(false)
-              const arrayOfImages = e.target.files
-              dispatch(createPosts(arrayOfImages, "images"))
+              setDeleteItem(false);
+              const arrayOfImages = e.target.files;
+              dispatch(createPosts(arrayOfImages, "images"));
             }}
           />
         </Button>
@@ -252,8 +252,8 @@ function ViewProfileBox({ savedUser, setNumberOfPosts, numberOfPosts }) {
           onMouseLeave={() => setDeleteVideo(false)}
           onMouseOver={() => setDeleteVideo(true)}
           onClick={(e) => {
-            e.preventDefault()
-            dispatch(createPosts("", "video"))
+            e.preventDefault();
+            dispatch(createPosts("", "video"));
           }}
           startIcon={
             deleteVideo ? <DeleteForeverTwoToneIcon /> : <CheckBoxTwoToneIcon />
@@ -304,8 +304,8 @@ function ViewProfileBox({ savedUser, setNumberOfPosts, numberOfPosts }) {
             type="file"
             hidden
             onChange={(e) => {
-              setDeleteVideo(false)
-              dispatch(createPosts(e.target.files[0], "video"))
+              setDeleteVideo(false);
+              dispatch(createPosts(e.target.files[0], "video"));
             }}
           />
         </Button>
@@ -316,8 +316,8 @@ function ViewProfileBox({ savedUser, setNumberOfPosts, numberOfPosts }) {
           onMouseLeave={() => setDeleteGif(false)}
           onMouseOver={() => setDeleteGif(true)}
           onClick={(e) => {
-            e.preventDefault()
-            dispatch(createPosts("", "gif"))
+            e.preventDefault();
+            dispatch(createPosts("", "gif"));
           }}
           startIcon={
             deleteGif ? <DeleteForeverTwoToneIcon /> : <CheckBoxTwoToneIcon />
@@ -373,8 +373,8 @@ function ViewProfileBox({ savedUser, setNumberOfPosts, numberOfPosts }) {
             type="file"
             hidden
             onChange={(e) => {
-              setDeleteGif(false)
-              dispatch(createPosts(e.target.files[0], "gif"))
+              setDeleteGif(false);
+              dispatch(createPosts(e.target.files[0], "gif"));
             }}
           />
         </Button>
@@ -436,7 +436,7 @@ function ViewProfileBox({ savedUser, setNumberOfPosts, numberOfPosts }) {
         </Button>
       )}
     </form>
-  )
+  );
 }
 
-export default ViewProfileBox
+export default ViewProfileBox;

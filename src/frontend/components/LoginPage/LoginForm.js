@@ -1,19 +1,19 @@
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable react/react-in-jsx-scope */
-import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import Box from "@mui/material/Box"
-import Modal from "@mui/material/Modal"
-import { keyframes } from "@mui/system"
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import Box from "@mui/material/Box";
+import Modal from "@mui/material/Modal";
+import { keyframes } from "@mui/system";
 
-import "../../style-sheets/LoginForm.css"
-import { TextField, InputAdornment, Button, IconButton } from "@mui/material"
-import VisibilityTwoToneIcon from "@mui/icons-material/VisibilityTwoTone"
-import VisibilityOffTwoToneIcon from "@mui/icons-material/VisibilityOffTwoTone"
-import EmailTwoToneIcon from "@mui/icons-material/EmailTwoTone"
-import VectorIllustration from "./VectorIllustration"
-import loginInformaion from "../../services/loginInformation"
+import "../../style-sheets/LoginForm.css";
+import { TextField, InputAdornment, Button, IconButton } from "@mui/material";
+import VisibilityTwoToneIcon from "@mui/icons-material/VisibilityTwoTone";
+import VisibilityOffTwoToneIcon from "@mui/icons-material/VisibilityOffTwoTone";
+import EmailTwoToneIcon from "@mui/icons-material/EmailTwoTone";
+import VectorIllustration from "./VectorIllustration";
+import loginInformaion from "../../services/loginInformation";
 
 const style = {
   position: "absolute",
@@ -27,63 +27,63 @@ const style = {
   pt: 2,
   px: 4,
   pb: 3,
-}
+};
 
 const shake = keyframes`
   0% { transform: translateX(0) }
   25% { transform: translateX(5px) }
   50% { transform: translateX(-5px) }
   75% { transform: translateX(5px) }
-  100% { transform: translateX(0) }`
+  100% { transform: translateX(0) }`;
 
 function LoginForm() {
-  const [password, setPassword] = useState("")
-  const [email, setEmail] = useState("")
-  const [emailRecoveryLink, setEmailRecoveryLink] = useState("")
-  const [emailSent, setEmailSent] = useState(false)
-  const [errorMessage, setErrorMessage] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
-  const [open, setOpen] = useState(false)
-  const navigate = useNavigate()
+  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [emailRecoveryLink, setEmailRecoveryLink] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleOpen = () => {
-    setOpen(true)
-  }
+    setOpen(true);
+  };
   const handleClose = () => {
-    setOpen(false)
-  }
-  const handleClickShowPassword = () => setShowPassword(!showPassword)
-  const handleMouseDownPassword = () => setShowPassword(!showPassword)
+    setOpen(false);
+  };
+  const handleClickShowPassword = () => setShowPassword(!showPassword);
+  const handleMouseDownPassword = () => setShowPassword(!showPassword);
   const handleEmailRecoveryLink = (e) => {
-    e.preventDefault()
-    setEmailSent(true)
+    e.preventDefault();
+    setEmailSent(true);
     setTimeout(() => {
-      setEmailSent(false)
-    }, 5000)
-  }
+      setEmailSent(false);
+    }, 5000);
+  };
 
   const handleLogin = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     const object = {
       email,
       password,
-    }
+    };
     try {
-      const user = await loginInformaion.login(object)
+      const user = await loginInformaion.login(object);
       window.localStorage.setItem(
         "loggedAppUser",
         JSON.stringify(user.data) // Setting localStorage allows user to make posts on account later and the posts requests will be sent to different route and that route will contain a verify function to verify that the user is authenticated to make posts. This implementation will occur whenever I get the home page up and running and I can grab the token via a localstore.getItem()
-      )
+      );
       if (user) {
-        navigate("/home")
+        navigate("/home");
       }
     } catch (err) {
-      setErrorMessage(err.response.data.error)
+      setErrorMessage(err.response.data.error);
       setTimeout(() => {
-        setErrorMessage("")
-      }, 3000)
+        setErrorMessage("");
+      }, 3000);
     }
-  }
+  };
 
   return (
     <div className="log-in-page-container">
@@ -288,7 +288,7 @@ function LoginForm() {
         </Link>
       </div>
     </div>
-  )
+  );
 }
 
-export default LoginForm
+export default LoginForm;
