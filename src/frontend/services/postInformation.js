@@ -2,7 +2,8 @@
 /* eslint-disable prettier/prettier */
 import axios from "axios";
 
-const baseUrl = '/api/posts'
+const baseUrl = process.env.NODE_ENV === "production" ? "/api/posts" : "http://localhost:3001/api/posts"
+
 
 const makeAPost = async (req, token) => {
   const config = {headers: {
@@ -57,7 +58,7 @@ const getSpecficPost = async (req, token) => {
     }
   }
 
-  const response = await axios.get(`${baseUrl}${req}`, config)
+  const response = await axios.get(`${baseUrl}/${req}`, config)
 
   return response
 }

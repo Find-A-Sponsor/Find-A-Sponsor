@@ -1,7 +1,8 @@
 /* eslint-disable prettier/prettier */
 import axios from 'axios'
 
-const baseUrl = '/api/users'
+const baseUrl = process.env.NODE_ENV === "production" ? "/api/users" : "http://localhost:3001/api/users"
+
 
 let token = null;
 

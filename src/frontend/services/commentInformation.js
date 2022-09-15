@@ -2,7 +2,8 @@
 /* eslint-disable prettier/prettier */
 import axios from "axios";
 
-const baseUrl = '/api/comments'
+const baseUrl = process.env.NODE_ENV === "production" ? "/api/comments" : "http://localhost:3001/api/comments"
+
 
 const postComment = async (req, postId, token) => {
   const newComment  = req

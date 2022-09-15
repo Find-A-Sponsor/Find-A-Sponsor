@@ -1,8 +1,12 @@
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable import/order */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable react/react-in-jsx-scope */
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useCallback } from "react"
+import { useDropzone } from "react-dropzone"
 import { useDispatch, useSelector } from "react-redux"
 import { Link, useNavigate } from "react-router-dom"
 import ReactPlayer from "react-player"
@@ -90,6 +94,7 @@ function Home() {
   const options = ["Delete Post", "Edit Post", "Pin Post"]
   const commentRef = useRef()
   const changesToggleRef = useRef()
+  const filesRef = useRef()
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const [control, setControl] = useState({
@@ -185,6 +190,37 @@ function Home() {
     }
     setLengthOfImages(0)
   }
+
+  const onDrop = useCallback(async (acceptedFiles) => {
+    const arrayOfVideoFiles = acceptedFiles.filter(
+      (file) => file.type.indexOf("video") > -1
+    )
+    const arrayOfGifFiles = acceptedFiles.filter(
+      (file) => file.type.indexOf("gif") > -1
+    )
+    filesRef.current =
+      arrayOfVideoFiles.length > 0
+        ? arrayOfVideoFiles[0]
+        : arrayOfGifFiles.length > 0
+        ? arrayOfGifFiles[0]
+        : acceptedFiles
+
+    for (const element of filesRef.current) {
+      const formData = new FormData()
+      formData.append("file", element)
+      formData.append("upload_preset", process.env.REACT_APP_CLOUDINARY_PRESET)
+      formData.append("api_key", process.env.REACT_APP_CLOUDINARY_APIKEY)
+      // eslint-disable-next-line no-await-in-loop
+      const response = await axios.post(
+        process.env.REACT_APP_CLOUDINARY_IMAGE_URL,
+        formData
+      )
+      dispatch(addImages(currentIndex, response.data.secure_url))
+    }
+  }, [])
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+  })
 
   const fetchMoreComments = (i) => {
     if (state.posts[i].comments - state.commentsRemaining.length >= 10) {
@@ -1183,6 +1219,31 @@ function Home() {
                           ) : (
                             ""
                           )}
+                          <div
+                            {...getRootProps()}
+                            style={{
+                              textAlign: "center",
+                              padding: "20px",
+                              border: "3px dashed #eeeeee",
+                              backgroundColor: "#fafafa",
+                              color: "#bdbdbd",
+                              margin: "20px",
+                            }}
+                          >
+                            <input
+                              multiple
+                              {...getInputProps()}
+                              accept="image/*, video/*"
+                            />
+                            {isDragActive ? (
+                              <p>Drop the files here ...</p>
+                            ) : (
+                              <p>
+                                Drag 'n' drop some files here, or click to
+                                select files
+                              </p>
+                            )}
+                          </div>
                           <Button
                             variant="outlined"
                             startIcon={loadingOfNewImage ? <Loading /> : ""}

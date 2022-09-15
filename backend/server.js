@@ -4,12 +4,15 @@ const app = require("./app")
 
 const server = http.createServer(app)
 
-const PORT = process.env.PORT || 3000
+const PORT =
+  process.env.NODE_ENV === "production" ? 3000 : process.env.SERVER_PORT
 
-app.use("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "./build/index.html"))
-})
+if (process.env.NODE_ENV === "production") {
+  app.use("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "./build/index.html"))
+  })
+}
 
 server.listen(PORT, () => {
-  console.log(`Server running on port ${process.env.PORT}`)
+  console.log(`Server running on port ${PORT}`)
 })

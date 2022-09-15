@@ -20,7 +20,10 @@ mongoose.connect(process.env.MONGODB_URI)
 
 app.use(express.json())
 app.use(cookieParser())
-app.use(express.static("build"))
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static("build"))
+}
 
 app.use("/api/users", usersRouter)
 app.use("/api/login", loginRouter)
