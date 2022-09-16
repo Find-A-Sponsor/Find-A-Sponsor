@@ -95,6 +95,16 @@ postRouter.put('/:id', async (req, res) => {
     postToUpdate = await Post.findOneAndUpdate({_id: ObjectId(req.params.id)},
     {$set: {images: []}}, {new: true})
 
+  } else if (body.action === 'addVideo') {
+
+    postToUpdate = await Post.findOneAndUpdate({_id: ObjectId(req.params.id)},
+    {$set: {video: body.variable}}, {new: true})
+
+  } else if (body.action === 'addGif') {
+
+    postToUpdate = await Post.findOneAndUpdate({_id: ObjectId(req.params.id)},
+    {$set: {gif: body.variable}}, {new: true})
+
   }
 
   res.status(200).json(postToUpdate);

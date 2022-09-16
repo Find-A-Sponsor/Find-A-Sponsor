@@ -26,7 +26,41 @@ const storePostSlice = createSlice({
     addImages: {
       reducer(state, action) {
         state[action.payload.index].images = state[action.payload.index].images.concat(action.payload.content)
-        console.log(current(state))
+        return state
+      },
+      prepare(...args) {
+        const index = args[0]
+        const content = args[1]
+        return {
+          payload: {
+            index,
+            content
+          }
+        }
+      }
+    },
+    addGif: {
+      reducer(state, action) {
+        state[action.payload.index].gif = action.payload.content
+        return state
+      },
+      prepare(...args) {
+        const index = args[0]
+        const content = args[1]
+        return {
+          payload: {
+            index,
+            content
+          }
+        }
+      }
+    },
+    addVideo: {
+      reducer(state, action) {
+        state[action.payload.index] = {
+          ...state[action.payload.index],
+          video: action.payload.content
+        }
         return state
       },
       prepare(...args) {
@@ -76,5 +110,5 @@ const storePostSlice = createSlice({
   }
 })
 
-export const { storePostInformation, configureLikes, resetState, addImages, eraseNewImages, editPost } = storePostSlice.actions
+export const { storePostInformation, configureLikes, resetState, addImages, eraseNewImages, editPost, addGif, addVideo } = storePostSlice.actions
 export default storePostSlice.reducer

@@ -1,3 +1,5 @@
+/* eslint-disable no-await-in-loop */
+/* eslint-disable no-unused-expressions */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable react/jsx-props-no-spreading */
@@ -28,6 +30,8 @@ import {
   addImages,
   eraseNewImages,
   editPost as editSpecificPost,
+  addGif,
+  addVideo,
 } from "../../reducers/storePostReducer";
 
 import HomeTwoToneIcon from "@mui/icons-material/HomeTwoTone";
@@ -95,6 +99,7 @@ function Home() {
   const commentRef = useRef();
   const changesToggleRef = useRef();
   const filesRef = useRef();
+  const indexRef = useRef();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [control, setControl] = useState({
@@ -145,48 +150,61 @@ function Home() {
     setEditPost({ specificPost });
   }, [editToggle]);
 
-  // When you get back, figure out how to get an added image removed if you do not "Submit changes", otherwise it will be added to the database and be saved
   const configurePost = async (postId) => {
     if (changesToggleRef.current) {
       const specificPost = posts.filter((post) => post._id === postId);
       dispatch(editSpecificPost(newText, specificPost));
       await postInformation.configurePost(
-        posts[currentIndex]._id,
+        posts[currentIndex || indexRef.current]._id,
         savedUser,
         newText,
         "editText"
       );
       await postInformation.configurePost(
-        posts[currentIndex]._id,
+        posts[currentIndex || indexRef.current]._id,
         savedUser,
-        posts[currentIndex].images,
+        posts[currentIndex || indexRef.current].images,
         "addImage"
+      );
+      await postInformation.configurePost(
+        posts[currentIndex || indexRef.current]._id,
+        savedUser,
+        posts[currentIndex || indexRef.current].video,
+        "addVideo"
+      );
+      await postInformation.configurePost(
+        posts[currentIndex || indexRef.current]._id,
+        savedUser,
+        posts[currentIndex || indexRef.current].gif,
+        "addGif"
       );
       if (deleteVideo) {
         await postInformation.configurePost(
-          posts[currentIndex]._id,
+          posts[currentIndex || indexRef.current]._id,
           savedUser,
-          posts[currentIndex].video,
+          posts[currentIndex || indexRef.current].video,
           "deleteVideo"
         );
       } else if (deleteGif) {
         await postInformation.configurePost(
-          posts[currentIndex]._id,
+          posts[currentIndex || indexRef.current]._id,
           savedUser,
-          posts[currentIndex].gif,
+          posts[currentIndex || indexRef.current].gif,
           "deleteGif"
         );
       } else if (deleteImage) {
         await postInformation.configurePost(
-          posts[currentIndex]._id,
+          posts[currentIndex || indexRef.current]._id,
           savedUser,
-          posts[currentIndex].images,
+          posts[currentIndex || indexRef.current].images,
           "deleteImages"
         );
       }
       setEditToggle(!editToggle);
     } else {
-      dispatch(eraseNewImages(currentIndex, lengthOfImages));
+      dispatch(
+        eraseNewImages(currentIndex || indexRef.current, lengthOfImages)
+      );
     }
     setLengthOfImages(0);
   };
@@ -200,9 +218,9 @@ function Home() {
     );
     filesRef.current =
       arrayOfVideoFiles.length > 0
-        ? arrayOfVideoFiles[0]
+        ? [arrayOfVideoFiles[0]]
         : arrayOfGifFiles.length > 0
-        ? arrayOfGifFiles[0]
+        ? [arrayOfGifFiles[0]]
         : acceptedFiles;
 
     for (const element of filesRef.current) {
@@ -210,12 +228,50 @@ function Home() {
       formData.append("file", element);
       formData.append("upload_preset", process.env.REACT_APP_CLOUDINARY_PRESET);
       formData.append("api_key", process.env.REACT_APP_CLOUDINARY_APIKEY);
-      // eslint-disable-next-line no-await-in-loop
-      const response = await axios.post(
-        process.env.REACT_APP_CLOUDINARY_IMAGE_URL,
-        formData
-      );
-      dispatch(addImages(currentIndex, response.data.secure_url));
+      let response;
+      if (
+        (element.type.indexOf("image/gif") > -1 ||
+          element.type.indexOf("image") > -1) &&
+        element.size < 10485760
+      ) {
+        // eslint-disable-next-line no-await-in-loop
+        response = await axios.post(
+          process.env.REACT_APP_CLOUDINARY_IMAGE_URL,
+          formData,
+          { withCredentials: false }
+        );
+
+        element.type.indexOf("image/gif") > -1
+          ? dispatch(
+              addGif(
+                stateOfPosts.length - 1 - indexRef.current,
+                response.data.secure_url
+              )
+            )
+          : element.type.indexOf("image") > -1
+          ? dispatch(
+              addImages(
+                stateOfPosts.length - 1 - indexRef.current,
+                response.data.secure_url
+              )
+            )
+          : "";
+      } else if (
+        element.type.indexOf("video") > -1 &&
+        element.size < 104857600
+      ) {
+        response = await axios.post(
+          process.env.REACT_APP_CLOUDINARY_VIDEO_URL,
+          formData,
+          { withCredentials: false }
+        );
+        dispatch(
+          addVideo(
+            stateOfPosts.length - 1 - indexRef.current,
+            response.data.secure_url
+          )
+        );
+      }
     }
   }, []);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -245,6 +301,7 @@ function Home() {
   const handleMenuClick = (event, index) => {
     const { menus } = control;
     menus[index] = true;
+    indexRef.current = index;
     setControl({
       anchorEl: event.currentTarget,
       menus,
@@ -291,7 +348,9 @@ function Home() {
   const handleClose = () => setOpen(false);
 
   const handleCancelEdit = () => {
-    const cancelEdit = window.confirm("Exit edit-mode for this post?");
+    const cancelEdit = window.confirm(
+      "If you exit now, any changes you have made to this post will be discarded?"
+    );
     if (cancelEdit) {
       setNewText("");
       setEditToggle(!editToggle);
@@ -856,10 +915,9 @@ function Home() {
                                 }}
                                 anchorEl={control.anchorEl}
                                 open={control.menus[i]}
-                                onClose={(e) => {
-                                  handleMenuClose(e, "", posts[i]._id, i);
-                                  setCurrentIndex(i);
-                                }}
+                                onClose={(e) =>
+                                  handleMenuClose(e, "", posts[i]._id, i)
+                                }
                                 PaperProps={{
                                   style: {
                                     maxHeight: ITEM_HEIGHT * 4.5,

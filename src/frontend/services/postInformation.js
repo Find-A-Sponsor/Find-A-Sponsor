@@ -41,6 +41,7 @@ const configurePost = async (postId, token, variable, action) => {
       'Authorization': token.token
     }
   }
+
   if (action === 'increase' || action === 'increaseCommentCount') {
     variable += 1
   } else if (action === 'decrease' || action === 'decreaseCommentCount') {
