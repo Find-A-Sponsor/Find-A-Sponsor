@@ -90,6 +90,7 @@ function Home() {
   const [deleteGif, setDeleteGif] = useState(false);
   const [deleteImage, setDeleteImage] = useState(false);
   const [lengthOfImages, setLengthOfImages] = useState(0);
+  const [loading, setLoading] = useState(false);
   const ITEM_HEIGHT = 48;
   const options = ["Delete Post", "Edit Post", "Pin Post"];
   const commentRef = useRef();
@@ -217,6 +218,7 @@ function Home() {
 
   const onDrop = useCallback(
     async (acceptedFiles) => {
+      setLoading(true);
       const arrayOfVideoFiles = acceptedFiles.filter(
         (file) => file.type.indexOf("video") > -1
       );
@@ -283,6 +285,7 @@ function Home() {
           );
         }
       }
+      setLoading(false);
     },
     [stateOfPosts.length]
   );
@@ -1223,20 +1226,34 @@ function Home() {
                           ) : (
                             ""
                           )}
-                          <Button
-                            variant="outlined"
-                            style={{
-                              background:
-                                "linear-gradient(180deg, #2D87FF 0%, #6099E5 100%)",
-                              color: "white",
-                            }}
-                            onClick={() => {
-                              changesToggleRef.current = true;
-                              configurePost(posts[i]._id);
-                            }}
-                          >
-                            Submit Changes
-                          </Button>
+                          {loading ? (
+                            <Button
+                              startIcon={<Loading />}
+                              variant="outlined"
+                              style={{
+                                background: "gray",
+                                color: "white",
+                              }}
+                              disabled
+                            >
+                              Loading
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outlined"
+                              style={{
+                                background:
+                                  "linear-gradient(180deg, #2D87FF 0%, #6099E5 100%)",
+                                color: "white",
+                              }}
+                              onClick={() => {
+                                changesToggleRef.current = true;
+                                configurePost(posts[i]._id);
+                              }}
+                            >
+                              Submit Changes
+                            </Button>
+                          )}
                         </Grid>
                       ) : (
                         ""
