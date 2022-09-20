@@ -1007,6 +1007,7 @@ function Home() {
                             onClick={() => {
                               setDeleteVideo(true);
                               indexRef.current = i;
+                              dispatch(removeContent(i, "video"));
                             }}
                           >
                             <DeleteTwoTone style={{ color: "red" }} />
@@ -1048,6 +1049,7 @@ function Home() {
                               onClick={() => {
                                 setDeleteGif(true);
                                 indexRef.current = i;
+                                dispatch(removeContent(i, "gif"));
                               }}
                             >
                               <DeleteTwoTone style={{ color: "red" }} />
@@ -1090,6 +1092,7 @@ function Home() {
                               onClick={() => {
                                 setDeleteImage(true);
                                 indexRef.current = i;
+                                dispatch(removeContent(i, "images"));
                               }}
                             >
                               <DeleteTwoTone style={{ color: "red" }} />
