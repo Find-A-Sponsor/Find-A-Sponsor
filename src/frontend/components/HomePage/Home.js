@@ -28,10 +28,11 @@ import {
   storePostInformation,
   resetState,
   addImages,
-  eraseNewImages,
+  eraseNewContent,
   editPost as editSpecificPost,
   addGif,
   addVideo,
+  removeContent,
 } from "../../reducers/storePostReducer";
 
 import HomeTwoToneIcon from "@mui/icons-material/HomeTwoTone";
@@ -64,14 +65,12 @@ import AddCommentTwoToneIcon from "@mui/icons-material/AddCommentTwoTone";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import CancelIcon from "@mui/icons-material/Cancel";
 import DeleteTwoTone from "@mui/icons-material/DeleteTwoTone";
-import ImageTwoTone from "@mui/icons-material/ImageTwoTone";
 
 import Comment from "./Comment";
 import ViewProfileBox from "./ViewProfileBox";
 import AvatarPicture from "../../images/AvatarPicture.png";
 import VectorIllustration from "./VectorIllustration";
 import "../../style-sheets/Home.css";
-import { Error } from "@material-ui/icons";
 
 function Home() {
   const state = useSelector((wholeState) => wholeState);
@@ -90,10 +89,7 @@ function Home() {
   const [deleteVideo, setDeleteVideo] = useState(false);
   const [deleteGif, setDeleteGif] = useState(false);
   const [deleteImage, setDeleteImage] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [currentIndex, setCurrentIndex] = useState();
   const [lengthOfImages, setLengthOfImages] = useState(0);
-  const [loadingOfNewImage, setLoadingOfNewImage] = useState(false);
   const ITEM_HEIGHT = 48;
   const options = ["Delete Post", "Edit Post", "Pin Post"];
   const commentRef = useRef();
@@ -110,6 +106,8 @@ function Home() {
     specificPost: [],
   });
   const [newText, setNewText] = useState("");
+  console.log(state);
+  console.log(deleteGif);
 
   useEffect(() => {
     const initializer = async () => {
@@ -143,7 +141,7 @@ function Home() {
       setControl({ menus });
     };
     initializer();
-  }, []);
+  }, [changesToggleRef]);
 
   useEffect(() => {
     const specificPost = posts.map(() => false);
@@ -155,125 +153,141 @@ function Home() {
       const specificPost = posts.filter((post) => post._id === postId);
       dispatch(editSpecificPost(newText, specificPost));
       await postInformation.configurePost(
-        posts[currentIndex || indexRef.current]._id,
+        posts[indexRef.current]._id,
         savedUser,
         newText,
         "editText"
       );
       await postInformation.configurePost(
-        posts[currentIndex || indexRef.current]._id,
+        posts[indexRef.current]._id,
         savedUser,
-        posts[currentIndex || indexRef.current].images,
+        posts[indexRef.current].images,
         "addImage"
       );
       await postInformation.configurePost(
-        posts[currentIndex || indexRef.current]._id,
+        posts[indexRef.current]._id,
         savedUser,
-        posts[currentIndex || indexRef.current].video,
+        posts[indexRef.current].video,
         "addVideo"
       );
       await postInformation.configurePost(
-        posts[currentIndex || indexRef.current]._id,
+        posts[indexRef.current]._id,
         savedUser,
-        posts[currentIndex || indexRef.current].gif,
+        posts[indexRef.current].gif,
         "addGif"
       );
       if (deleteVideo) {
         await postInformation.configurePost(
-          posts[currentIndex || indexRef.current]._id,
+          posts[indexRef.current]._id,
           savedUser,
-          posts[currentIndex || indexRef.current].video,
+          posts[indexRef.current].video,
           "deleteVideo"
         );
+        dispatch(removeContent(indexRef.current, "video"));
       } else if (deleteGif) {
         await postInformation.configurePost(
-          posts[currentIndex || indexRef.current]._id,
+          posts[indexRef.current]._id,
           savedUser,
-          posts[currentIndex || indexRef.current].gif,
+          posts[indexRef.current].gif,
           "deleteGif"
         );
+        dispatch(removeContent(indexRef.current, "gif"));
       } else if (deleteImage) {
         await postInformation.configurePost(
-          posts[currentIndex || indexRef.current]._id,
+          posts[indexRef.current]._id,
           savedUser,
-          posts[currentIndex || indexRef.current].images,
+          posts[indexRef.current].images,
           "deleteImages"
         );
+        dispatch(removeContent(indexRef.current, "images"));
       }
-      setEditToggle(!editToggle);
     } else {
       dispatch(
-        eraseNewImages(currentIndex || indexRef.current, lengthOfImages)
+        eraseNewContent(
+          stateOfPosts.length - 1 - indexRef.current,
+          lengthOfImages
+        )
       );
     }
+    setNewText("");
+    setEditToggle(!editToggle);
+    setDeleteVideo(false);
+    setDeleteGif(false);
+    setDeleteImage(false);
     setLengthOfImages(0);
   };
 
-  const onDrop = useCallback(async (acceptedFiles) => {
-    const arrayOfVideoFiles = acceptedFiles.filter(
-      (file) => file.type.indexOf("video") > -1
-    );
-    const arrayOfGifFiles = acceptedFiles.filter(
-      (file) => file.type.indexOf("gif") > -1
-    );
-    filesRef.current =
-      arrayOfVideoFiles.length > 0
-        ? [arrayOfVideoFiles[0]]
-        : arrayOfGifFiles.length > 0
-        ? [arrayOfGifFiles[0]]
-        : acceptedFiles;
+  const onDrop = useCallback(
+    async (acceptedFiles) => {
+      const arrayOfVideoFiles = acceptedFiles.filter(
+        (file) => file.type.indexOf("video") > -1
+      );
+      const arrayOfGifFiles = acceptedFiles.filter(
+        (file) => file.type.indexOf("gif") > -1
+      );
+      filesRef.current =
+        arrayOfVideoFiles.length > 0
+          ? [arrayOfVideoFiles[0]]
+          : arrayOfGifFiles.length > 0
+          ? [arrayOfGifFiles[0]]
+          : acceptedFiles;
 
-    for (const element of filesRef.current) {
-      const formData = new FormData();
-      formData.append("file", element);
-      formData.append("upload_preset", process.env.REACT_APP_CLOUDINARY_PRESET);
-      formData.append("api_key", process.env.REACT_APP_CLOUDINARY_APIKEY);
-      let response;
-      if (
-        (element.type.indexOf("image/gif") > -1 ||
-          element.type.indexOf("image") > -1) &&
-        element.size < 10485760
-      ) {
-        // eslint-disable-next-line no-await-in-loop
-        response = await axios.post(
-          process.env.REACT_APP_CLOUDINARY_IMAGE_URL,
-          formData,
-          { withCredentials: false }
+      for (const element of filesRef.current) {
+        const formData = new FormData();
+        formData.append("file", element);
+        formData.append(
+          "upload_preset",
+          process.env.REACT_APP_CLOUDINARY_PRESET
         );
+        formData.append("api_key", process.env.REACT_APP_CLOUDINARY_APIKEY);
+        let response;
+        if (
+          (element.type.indexOf("gif") > -1 ||
+            element.type.indexOf("image") > -1) &&
+          element.size < 10485760
+        ) {
+          // eslint-disable-next-line no-await-in-loop
+          response = await axios.post(
+            process.env.REACT_APP_CLOUDINARY_IMAGE_URL,
+            formData,
+            { withCredentials: false }
+          );
 
-        element.type.indexOf("image/gif") > -1
-          ? dispatch(
-              addGif(
-                stateOfPosts.length - 1 - indexRef.current,
-                response.data.secure_url
+          element.type.indexOf("gif") > -1
+            ? dispatch(
+                addGif(
+                  stateOfPosts.length - 1 - indexRef.current,
+                  response.data.secure_url
+                )
               )
-            )
-          : element.type.indexOf("image") > -1
-          ? dispatch(
-              addImages(
-                stateOfPosts.length - 1 - indexRef.current,
-                response.data.secure_url
+            : element.type.indexOf("image") > -1
+            ? dispatch(
+                addImages(
+                  stateOfPosts.length - 1 - indexRef.current,
+                  response.data.secure_url
+                )
               )
+            : "";
+        } else if (
+          element.type.indexOf("video") > -1 &&
+          element.size < 104857600
+        ) {
+          response = await axios.post(
+            process.env.REACT_APP_CLOUDINARY_VIDEO_URL,
+            formData,
+            { withCredentials: false }
+          );
+          dispatch(
+            addVideo(
+              stateOfPosts.length - 1 - indexRef.current,
+              response.data.secure_url
             )
-          : "";
-      } else if (
-        element.type.indexOf("video") > -1 &&
-        element.size < 104857600
-      ) {
-        response = await axios.post(
-          process.env.REACT_APP_CLOUDINARY_VIDEO_URL,
-          formData,
-          { withCredentials: false }
-        );
-        dispatch(
-          addVideo(
-            stateOfPosts.length - 1 - indexRef.current,
-            response.data.secure_url
-          )
-        );
+          );
+        }
       }
-    }
-  }, []);
+    },
+    [stateOfPosts.length]
+  );
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
   });
@@ -357,7 +371,6 @@ function Home() {
       setDeleteVideo(false);
       setDeleteGif(false);
       setDeleteImage(false);
-      changesToggleRef.current = false;
       configurePost();
     }
   };
@@ -961,7 +974,7 @@ function Home() {
                             fullWidth
                             onChange={(e) => {
                               setNewText(e.target.value);
-                              setCurrentIndex(i);
+                              indexRef.current = i;
                             }}
                           />
                         ) : (
@@ -992,7 +1005,7 @@ function Home() {
                           <IconButton
                             onClick={() => {
                               setDeleteVideo(true);
-                              setCurrentIndex(i);
+                              indexRef.current = i;
                             }}
                           >
                             <DeleteTwoTone style={{ color: "red" }} />
@@ -1033,7 +1046,7 @@ function Home() {
                             <IconButton
                               onClick={() => {
                                 setDeleteGif(true);
-                                setCurrentIndex(i);
+                                indexRef.current = i;
                               }}
                             >
                               <DeleteTwoTone style={{ color: "red" }} />
@@ -1075,7 +1088,7 @@ function Home() {
                             <IconButton
                               onClick={() => {
                                 setDeleteImage(true);
-                                setCurrentIndex(i);
+                                indexRef.current = i;
                               }}
                             >
                               <DeleteTwoTone style={{ color: "red" }} />
@@ -1178,147 +1191,53 @@ function Home() {
                             textAlign: "center",
                           }}
                         >
-                          {posts[i].images.length > 0 ? (
-                            <>
-                              {errorMessage ? (
-                                <Button
-                                  startIcon={<Error />}
-                                  variant="outlined"
-                                  style={{ background: "red", color: "white" }}
-                                >
-                                  An error has occurred!
-                                </Button>
+                          {(!posts[i].video || posts[i].video === "") &&
+                          (!posts[i].gif || posts[i].gif === "") &&
+                          posts[i].images.length === 0 ? (
+                            <div
+                              {...getRootProps()}
+                              style={{
+                                textAlign: "center",
+                                padding: "20px",
+                                border: "3px dashed #eeeeee",
+                                backgroundColor: "#fafafa",
+                                color: "#bdbdbd",
+                                margin: "20px",
+                              }}
+                            >
+                              <input
+                                multiple
+                                {...getInputProps()}
+                                accept="image/*, video/*"
+                              />
+                              {isDragActive ? (
+                                <p>Drop the files here ...</p>
                               ) : (
-                                <Button
-                                  startIcon={
-                                    loadingOfNewImage ? (
-                                      <Loading />
-                                    ) : (
-                                      <ImageTwoTone />
-                                    )
-                                  }
-                                  variant="outlined"
-                                  style={{
-                                    background: loadingOfNewImage
-                                      ? "gray"
-                                      : "linear-gradient(180deg, #2D87FF 0%, #6099E5 100%)",
-                                    color: "white",
-                                  }}
-                                  component="label"
-                                  disabled={loadingOfNewImage}
-                                >
-                                  {loadingOfNewImage
-                                    ? "Loading"
-                                    : "Add More Images To Your Post!"}
-                                  <input
-                                    multiple
-                                    style={{ pointerEvents: "none" }}
-                                    accept="image/*"
-                                    type="file"
-                                    hidden
-                                    onChange={async (e) => {
-                                      setLoadingOfNewImage(true);
-                                      const arrayOfFiles = Object.keys(
-                                        e.target.files
-                                      );
-                                      for (
-                                        let j = 0;
-                                        j < arrayOfFiles.length;
-                                        // eslint-disable-next-line no-plusplus
-                                        j++
-                                      ) {
-                                        try {
-                                          const formData = new FormData();
-                                          formData.append(
-                                            "file",
-                                            e.target.files[j]
-                                          );
-                                          formData.append(
-                                            "upload_preset",
-                                            process.env
-                                              .REACT_APP_CLOUDINARY_PRESET
-                                          );
-                                          formData.append(
-                                            "api_key",
-                                            process.env
-                                              .REACT_APP_CLOUDINARY_APIKEY
-                                          );
-                                          // eslint-disable-next-line no-await-in-loop
-                                          const response = await axios.post(
-                                            process.env
-                                              .REACT_APP_CLOUDINARY_IMAGE_URL,
-                                            formData
-                                          );
-                                          dispatch(
-                                            addImages(
-                                              i,
-                                              response.data.secure_url
-                                            )
-                                          );
-                                        } catch (err) {
-                                          setErrorMessage(err.message);
-                                        }
-                                      }
-                                      setCurrentIndex(i);
-                                      if (lengthOfImages > 0) {
-                                        setLengthOfImages(
-                                          lengthOfImages + arrayOfFiles.length
-                                        );
-                                      } else {
-                                        setLengthOfImages(arrayOfFiles.length);
-                                      }
-                                      setLoadingOfNewImage(false);
-                                    }}
-                                  />
-                                </Button>
+                                <p>
+                                  Drag 'n' drop some files here, or click to
+                                  select files. <br />
+                                  (You can upload as many images as you want but
+                                  are limited to only 1 video or 1 gif for each
+                                  post)
+                                </p>
                               )}
-                              <br />
-                              <br />
-                            </>
+                            </div>
                           ) : (
                             ""
                           )}
-                          <div
-                            {...getRootProps()}
-                            style={{
-                              textAlign: "center",
-                              padding: "20px",
-                              border: "3px dashed #eeeeee",
-                              backgroundColor: "#fafafa",
-                              color: "#bdbdbd",
-                              margin: "20px",
-                            }}
-                          >
-                            <input
-                              multiple
-                              {...getInputProps()}
-                              accept="image/*, video/*"
-                            />
-                            {isDragActive ? (
-                              <p>Drop the files here ...</p>
-                            ) : (
-                              <p>
-                                Drag 'n' drop some files here, or click to
-                                select files
-                              </p>
-                            )}
-                          </div>
                           <Button
                             variant="outlined"
-                            startIcon={loadingOfNewImage ? <Loading /> : ""}
                             style={{
-                              background: loadingOfNewImage
-                                ? "gray"
-                                : "linear-gradient(180deg, #2D87FF 0%, #6099E5 100%)",
+                              background:
+                                "linear-gradient(180deg, #2D87FF 0%, #6099E5 100%)",
                               color: "white",
                             }}
                             onClick={() => {
                               changesToggleRef.current = true;
                               configurePost(posts[i]._id);
                             }}
-                            disabled={loadingOfNewImage}
                           >
-                            {loadingOfNewImage ? "Loading" : "Submit Changes"}
+                            Submit Changes
                           </Button>
                         </Grid>
                       ) : (

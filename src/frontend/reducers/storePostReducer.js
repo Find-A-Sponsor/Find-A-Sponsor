@@ -41,7 +41,10 @@ const storePostSlice = createSlice({
     },
     addGif: {
       reducer(state, action) {
-        state[action.payload.index].gif = action.payload.content
+        state[action.payload.index] = {
+          ...state[action.payload.index],
+          gif: action.payload.content
+        }
         return state
       },
       prepare(...args) {
@@ -51,6 +54,28 @@ const storePostSlice = createSlice({
           payload: {
             index,
             content
+          }
+        }
+      }
+    },
+    removeContent: {
+      reducer (state, action) {
+        const remove = action.payload.contentToRemove;
+        state = sortBy(state, 'date').reverse()
+        if (remove === "images") {
+          state[action.payload.index][remove] = []
+        } else {
+          delete state[action.payload.index][remove]
+        }
+        console.log(current(state[action.payload.index]))
+      },
+      prepare(...args) {
+        const index = args[0]
+        const contentToRemove = args[1]
+        return {
+          payload: {
+            index,
+            contentToRemove
           }
         }
       }
@@ -91,9 +116,11 @@ const storePostSlice = createSlice({
         }  
       }
     },
-    eraseNewImages: {
+    eraseNewContent: {
       reducer(state, action) {
         state[action.payload.index].images = state[action.payload.index].images.slice(0, -action.payload.amountToRemove)
+        delete state[action.payload.index].gif
+        delete state[action.payload.index].video
         return state
       },
       prepare(...args) {
@@ -110,5 +137,5 @@ const storePostSlice = createSlice({
   }
 })
 
-export const { storePostInformation, configureLikes, resetState, addImages, eraseNewImages, editPost, addGif, addVideo } = storePostSlice.actions
+export const { storePostInformation, configureLikes, resetState, addImages, eraseNewContent, editPost, addGif, addVideo, removeContent } = storePostSlice.actions
 export default storePostSlice.reducer
