@@ -106,8 +106,6 @@ function Home() {
     specificPost: [],
   });
   const [newText, setNewText] = useState("");
-  console.log(state);
-  console.log(deleteGif);
 
   useEffect(() => {
     const initializer = async () => {

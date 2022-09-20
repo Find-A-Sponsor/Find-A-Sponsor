@@ -67,7 +67,6 @@ const storePostSlice = createSlice({
         } else {
           delete state[action.payload.index][remove]
         }
-        console.log(current(state[action.payload.index]))
       },
       prepare(...args) {
         const index = args[0]
