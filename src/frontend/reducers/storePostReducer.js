@@ -25,35 +25,53 @@ const storePostSlice = createSlice({
     },
     addImages: {
       reducer(state, action) {
-        state[action.payload.index].images = state[action.payload.index].images.concat(action.payload.content)
-        return state
+        if (action.payload.needsReversed) {
+          state = sortBy(state, 'date').reverse()
+          state[action.payload.index].images = state[action.payload.index].images.concat(action.payload.content)
+        } else {
+          state[action.payload.index].images = state[action.payload.index].images.concat(action.payload.content)
+          return state
+        }
       },
       prepare(...args) {
+        console.log(args)
         const index = args[0]
         const content = args[1]
+        const needsReversed = args[2]
         return {
           payload: {
             index,
-            content
+            content,
+            needsReversed
           }
         }
       }
     },
     addGif: {
       reducer(state, action) {
-        state[action.payload.index] = {
-          ...state[action.payload.index],
-          gif: action.payload.content
+        if (action.payload.needsReversed) {
+          state = sortBy(state, 'date').reverse()
+          state[action.payload.index] = {
+            ...state[action.payload.index],
+            gif: action.payload.content
+          }
+        } else {
+          state[action.payload.index] = {
+            ...state[action.payload.index],
+            gif: action.payload.content
+          }
         }
         return state
       },
       prepare(...args) {
         const index = args[0]
         const content = args[1]
+        const needsReversed = args[2]
         return {
           payload: {
             index,
-            content
+            content,
+            needsReversed
           }
         }
       }
@@ -81,6 +99,13 @@ const storePostSlice = createSlice({
     },
     addVideo: {
       reducer(state, action) {
+        if (action.payload.needsReversed) {
+          state = sortBy(state, 'date').reverse()
+          state[action.payload.index] = {
+            ...state[action.payload.index],
+            video: action.payload.content
+          }
+        }
         state[action.payload.index] = {
           ...state[action.payload.index],
           video: action.payload.content
@@ -90,10 +115,12 @@ const storePostSlice = createSlice({
       prepare(...args) {
         const index = args[0]
         const content = args[1]
+        const needsReversed = args[2]
         return {
           payload: {
             index,
-            content
+            content,
+            needsReversed
           }
         }
       }
@@ -105,6 +132,7 @@ const storePostSlice = createSlice({
         return state
       },
       prepare(...args) {
+        console.log(args)
         const text = args[0]
         const id = args[1][0]._id
         return {

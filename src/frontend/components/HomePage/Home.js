@@ -91,6 +91,7 @@ function Home() {
   const [deleteImage, setDeleteImage] = useState(false);
   const [lengthOfImages, setLengthOfImages] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [contentUrl, setContentUrl] = useState("");
   const ITEM_HEIGHT = 48;
   const options = ["Delete Post", "Edit Post", "Pin Post"];
   const commentRef = useRef();
@@ -200,7 +201,7 @@ function Home() {
         );
         dispatch(removeContent(indexRef.current, "images"));
       }
-    } else {
+    } else if (!contentUrl) {
       dispatch(
         eraseNewContent(
           stateOfPosts.length - 1 - indexRef.current,
@@ -210,85 +211,72 @@ function Home() {
     }
     setNewText("");
     setEditToggle(!editToggle);
+    setDeleteImage(false);
     setDeleteVideo(false);
     setDeleteGif(false);
-    setDeleteImage(false);
     setLengthOfImages(0);
   };
 
-  const onDrop = useCallback(
-    async (acceptedFiles) => {
-      setLoading(true);
-      const arrayOfVideoFiles = acceptedFiles.filter(
-        (file) => file.type.indexOf("video") > -1
-      );
-      const arrayOfGifFiles = acceptedFiles.filter(
-        (file) => file.type.indexOf("gif") > -1
-      );
-      filesRef.current =
-        arrayOfVideoFiles.length > 0
-          ? [arrayOfVideoFiles[0]]
-          : arrayOfGifFiles.length > 0
-          ? [arrayOfGifFiles[0]]
-          : acceptedFiles;
+  const onDrop = useCallback(async (acceptedFiles) => {
+    setLoading(true);
+    const arrayOfVideoFiles = acceptedFiles.filter(
+      (file) => file.type.indexOf("video") > -1
+    );
+    const arrayOfGifFiles = acceptedFiles.filter(
+      (file) => file.type.indexOf("gif") > -1
+    );
+    filesRef.current =
+      arrayOfVideoFiles.length > 0
+        ? [arrayOfVideoFiles[0]]
+        : arrayOfGifFiles.length > 0
+        ? [arrayOfGifFiles[0]]
+        : acceptedFiles;
 
-      for (const element of filesRef.current) {
-        const formData = new FormData();
-        formData.append("file", element);
-        formData.append(
-          "upload_preset",
-          process.env.REACT_APP_CLOUDINARY_PRESET
+    for (const element of filesRef.current) {
+      const formData = new FormData();
+      formData.append("file", element);
+      formData.append("upload_preset", process.env.REACT_APP_CLOUDINARY_PRESET);
+      formData.append("api_key", process.env.REACT_APP_CLOUDINARY_APIKEY);
+      let response;
+      if (
+        (element.type.indexOf("gif") > -1 ||
+          element.type.indexOf("image") > -1) &&
+        element.size < 10485760
+      ) {
+        // eslint-disable-next-line no-await-in-loop
+        response = await axios.post(
+          process.env.REACT_APP_CLOUDINARY_IMAGE_URL,
+          formData,
+          { withCredentials: false }
         );
-        formData.append("api_key", process.env.REACT_APP_CLOUDINARY_APIKEY);
-        let response;
-        if (
-          (element.type.indexOf("gif") > -1 ||
-            element.type.indexOf("image") > -1) &&
-          element.size < 10485760
-        ) {
-          // eslint-disable-next-line no-await-in-loop
-          response = await axios.post(
-            process.env.REACT_APP_CLOUDINARY_IMAGE_URL,
-            formData,
-            { withCredentials: false }
-          );
 
-          element.type.indexOf("gif") > -1
-            ? dispatch(
-                addGif(
-                  stateOfPosts.length - 1 - indexRef.current,
-                  response.data.secure_url
-                )
+        element.type.indexOf("gif") > -1
+          ? dispatch(
+              addGif(
+                stateOfPosts.length - 1 - indexRef.current,
+                response.data.secure_url,
+                false
               )
-            : element.type.indexOf("image") > -1
-            ? dispatch(
-                addImages(
-                  stateOfPosts.length - 1 - indexRef.current,
-                  response.data.secure_url
-                )
-              )
-            : "";
-        } else if (
-          element.type.indexOf("video") > -1 &&
-          element.size < 104857600
-        ) {
-          response = await axios.post(
-            process.env.REACT_APP_CLOUDINARY_VIDEO_URL,
-            formData,
-            { withCredentials: false }
-          );
-          dispatch(
-            addVideo(
-              stateOfPosts.length - 1 - indexRef.current,
-              response.data.secure_url
             )
-          );
-        }
+          : element.type.indexOf("image") > -1
+          ? dispatch(
+              addImages(indexRef.current, response.data.secure_url, true)
+            )
+          : "";
+      } else if (
+        element.type.indexOf("video") > -1 &&
+        element.size < 104857600
+      ) {
+        response = await axios.post(
+          process.env.REACT_APP_CLOUDINARY_VIDEO_URL,
+          formData,
+          { withCredentials: false }
+        );
+        dispatch(addVideo(indexRef.current, response.data.secure_url, true));
       }
-      setLoading(false);
-    },
-    [stateOfPosts.length]
-  );
+    }
+    setLoading(false);
+  }, []);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
   });
@@ -362,16 +350,33 @@ function Home() {
 
   const handleClose = () => setOpen(false);
 
-  const handleCancelEdit = () => {
+  const handleCancelEdit = async (postId) => {
     const cancelEdit = window.confirm(
       "If you exit now, any changes you have made to this post will be discarded?"
     );
     if (cancelEdit) {
       setNewText("");
-      setEditToggle(!editToggle);
+      if (deleteGif) {
+        const checker = await postInformation.getSpecficPost(postId, savedUser);
+        if (checker.data.gif === contentUrl) {
+          dispatch(addGif(indexRef.current, contentUrl, true));
+        }
+      } else if (deleteImage) {
+        const checker = await postInformation.getSpecficPost(postId, savedUser);
+        if (checker.data.images.includes(contentUrl[0])) {
+          dispatch(addImages(indexRef.current, contentUrl, true));
+        }
+      } else if (deleteVideo) {
+        const checker = await postInformation.getSpecficPost(postId, savedUser);
+        if (checker.data.video === contentUrl) {
+          dispatch(addVideo(indexRef.current, contentUrl, true));
+        }
+      }
       setDeleteVideo(false);
       setDeleteGif(false);
       setDeleteImage(false);
+      setEditToggle(!editToggle);
+      changesToggleRef.current = false;
       configurePost();
     }
   };
@@ -899,7 +904,9 @@ function Home() {
                             {posts[i]?.location} {posts[i]?.date}
                           </Grid>
                           {editPost.specificPost[i] ? (
-                            <IconButton onClick={handleCancelEdit}>
+                            <IconButton
+                              onClick={() => handleCancelEdit(posts[i]._id)}
+                            >
                               <CancelIcon />
                             </IconButton>
                           ) : posts[i].owner === state.storage.id ? (
@@ -1007,6 +1014,7 @@ function Home() {
                             onClick={() => {
                               setDeleteVideo(true);
                               indexRef.current = i;
+                              setContentUrl(posts[i].video);
                               dispatch(removeContent(i, "video"));
                             }}
                           >
@@ -1049,6 +1057,7 @@ function Home() {
                               onClick={() => {
                                 setDeleteGif(true);
                                 indexRef.current = i;
+                                setContentUrl(posts[i].gif);
                                 dispatch(removeContent(i, "gif"));
                               }}
                             >
@@ -1092,6 +1101,7 @@ function Home() {
                               onClick={() => {
                                 setDeleteImage(true);
                                 indexRef.current = i;
+                                setContentUrl(posts[i].images);
                                 dispatch(removeContent(i, "images"));
                               }}
                             >
