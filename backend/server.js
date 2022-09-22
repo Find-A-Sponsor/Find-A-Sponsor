@@ -5,7 +5,9 @@ const app = require("./app");
 const server = http.createServer(app);
 
 const PORT =
-  process.env.NODE_ENV === "production" ? 3000 : process.env.SERVER_PORT;
+  process.env.NODE_ENV === "production"
+    ? process.env.PORT
+    : process.env.SERVER_PORT;
 
 if (process.env.NODE_ENV === "production") {
   app.use("*", (req, res) => {
