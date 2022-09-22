@@ -6,7 +6,7 @@ const server = http.createServer(app);
 
 const PORT =
   process.env.NODE_ENV === "production"
-    ? process.env.PORT
+    ? process.env.PORT || 3000
     : process.env.SERVER_PORT;
 
 if (process.env.NODE_ENV === "production") {
