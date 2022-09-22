@@ -34,7 +34,6 @@ const storePostSlice = createSlice({
         }
       },
       prepare(...args) {
-        console.log(args)
         const index = args[0]
         const content = args[1]
         const needsReversed = args[2]
@@ -132,7 +131,6 @@ const storePostSlice = createSlice({
         return state
       },
       prepare(...args) {
-        console.log(args)
         const text = args[0]
         const id = args[1][0]._id
         return {
