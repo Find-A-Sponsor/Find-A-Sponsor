@@ -143,10 +143,16 @@ const storePostSlice = createSlice({
     },
     eraseNewContent: {
       reducer(state, action) {
-        state[action.payload.index].images = state[action.payload.index].images.slice(0, -action.payload.amountToRemove)
-        delete state[action.payload.index].gif
-        delete state[action.payload.index].video
-        return state
+        console.log(current(state))
+        console.log(action.payload.amountToRemove)
+        if (action.payload.amountToRemove > 0) {
+          state = sortBy(state, 'date').reverse() 
+          state[action.payload.index].images = state[action.payload.index].images.slice(0, -action.payload.amountToRemove)
+        } else {
+          delete state[action.payload.index].gif
+          delete state[action.payload.index].video
+          return state
+        }
       },
       prepare(...args) {
         const index = args[0]

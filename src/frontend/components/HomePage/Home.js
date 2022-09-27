@@ -109,6 +109,8 @@ function Home() {
   });
   const [newText, setNewText] = useState("");
 
+  console.log(deleteImage);
+
   useEffect(() => {
     const initializer = async () => {
       const user = await JSON.parse(
@@ -149,6 +151,7 @@ function Home() {
   }, [editToggle]);
 
   const configurePost = async (postId) => {
+    console.log(contentUrl);
     if (changesToggleRef.current) {
       const specificPost = posts.filter((post) => post._id === postId);
       dispatch(editSpecificPost(newText, specificPost));
@@ -201,15 +204,18 @@ function Home() {
         );
         dispatch(removeContent(indexRef.current, "images"));
       }
-    } else if (!contentUrl) {
-      dispatch(
-        eraseNewContent(
-          stateOfPosts.length - 1 - indexRef.current,
-          lengthOfImages
-        )
-      );
+    } else {
+      dispatch(eraseNewContent(indexRef.current, lengthOfImages));
+      if (contentUrl && Array.isArray(contentUrl)) {
+        dispatch(addImages(indexRef.current, contentUrl, true));
+      } else if (contentUrl && contentUrl.slice(-3) === "gif") {
+        dispatch(addGif(indexRef.current, contentUrl, true));
+      } else if (contentUrl && contentUrl.slice(-3) === "mp4") {
+        dispatch(addVideo(indexRef.current, contentUrl, true));
+      }
     }
     setNewText("");
+    setContentUrl("");
     setEditToggle(!editToggle);
     setDeleteImage(false);
     setDeleteVideo(false);
@@ -218,6 +224,18 @@ function Home() {
   };
 
   const onDrop = useCallback(async (acceptedFiles) => {
+    // eslint-disable-next-line no-unused-vars
+    let i = 0;
+    setDeleteImage(false);
+    setDeleteGif(false);
+    setDeleteVideo(false);
+    acceptedFiles.forEach((file) => {
+      if (!file.type.includes("gif") && file.type.includes("image")) {
+        // eslint-disable-next-line no-plusplus
+        i++;
+      }
+    });
+    setLengthOfImages(i);
     setLoading(true);
     const arrayOfVideoFiles = acceptedFiles.filter(
       (file) => file.type.indexOf("video") > -1
@@ -251,13 +269,7 @@ function Home() {
         );
 
         element.type.indexOf("gif") > -1
-          ? dispatch(
-              addGif(
-                stateOfPosts.length - 1 - indexRef.current,
-                response.data.secure_url,
-                false
-              )
-            )
+          ? dispatch(addGif(indexRef.current, response.data.secure_url, true))
           : element.type.indexOf("image") > -1
           ? dispatch(
               addImages(indexRef.current, response.data.secure_url, true)
@@ -309,6 +321,13 @@ function Home() {
       anchorEl: event.currentTarget,
       menus,
     });
+    if (posts[index].images.length > 0) {
+      setContentUrl(posts[index].images);
+    } else if (posts[index].gif) {
+      setContentUrl(posts[index].gif);
+    } else if (posts[index].video) {
+      setContentUrl(posts[index].video);
+    }
   };
 
   const handleLike = async (message, index) => {
@@ -1014,7 +1033,6 @@ function Home() {
                             onClick={() => {
                               setDeleteVideo(true);
                               indexRef.current = i;
-                              setContentUrl(posts[i].video);
                               dispatch(removeContent(i, "video"));
                             }}
                           >
@@ -1057,7 +1075,6 @@ function Home() {
                               onClick={() => {
                                 setDeleteGif(true);
                                 indexRef.current = i;
-                                setContentUrl(posts[i].gif);
                                 dispatch(removeContent(i, "gif"));
                               }}
                             >
@@ -1101,7 +1118,6 @@ function Home() {
                               onClick={() => {
                                 setDeleteImage(true);
                                 indexRef.current = i;
-                                setContentUrl(posts[i].images);
                                 dispatch(removeContent(i, "images"));
                               }}
                             >
@@ -1222,7 +1238,7 @@ function Home() {
                               <input
                                 multiple
                                 {...getInputProps()}
-                                accept="image/*, video/*"
+                                accept="image/*, video/mp4"
                               />
                               {isDragActive ? (
                                 <p>Drop the files here ...</p>
