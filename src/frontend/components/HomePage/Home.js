@@ -1,3 +1,4 @@
+/* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-restricted-syntax */
@@ -33,6 +34,7 @@ import {
   addGif,
   addVideo,
   removeContent,
+  keepOriginalImages,
 } from "../../reducers/storePostReducer";
 
 import HomeTwoToneIcon from "@mui/icons-material/HomeTwoTone";
@@ -108,8 +110,9 @@ function Home() {
     specificPost: [],
   });
   const [newText, setNewText] = useState("");
+  const [errorMessage, setErrorMessage] = useState(""); // Work paused here, set error message just in case someone tries to upload multiple media types on one post
 
-  console.log(deleteImage);
+  // Fix issue where a gif that was deleted from a previous post continues to populate on new posts with videos after it was removed from previous post
 
   useEffect(() => {
     const initializer = async () => {
@@ -151,7 +154,6 @@ function Home() {
   }, [editToggle]);
 
   const configurePost = async (postId) => {
-    console.log(contentUrl);
     if (changesToggleRef.current) {
       const specificPost = posts.filter((post) => post._id === postId);
       dispatch(editSpecificPost(newText, specificPost));
@@ -179,6 +181,7 @@ function Home() {
         posts[indexRef.current].gif,
         "addGif"
       );
+      // eslint-disable-next-line no-plusplus
       if (deleteVideo) {
         await postInformation.configurePost(
           posts[indexRef.current]._id,
@@ -187,6 +190,7 @@ function Home() {
           "deleteVideo"
         );
         dispatch(removeContent(indexRef.current, "video"));
+        setDeleteVideo(false);
       } else if (deleteGif) {
         await postInformation.configurePost(
           posts[indexRef.current]._id,
@@ -195,6 +199,7 @@ function Home() {
           "deleteGif"
         );
         dispatch(removeContent(indexRef.current, "gif"));
+        setDeleteGif(false);
       } else if (deleteImage) {
         await postInformation.configurePost(
           posts[indexRef.current]._id,
@@ -203,32 +208,50 @@ function Home() {
           "deleteImages"
         );
         dispatch(removeContent(indexRef.current, "images"));
+        setDeleteImage(false);
       }
     } else {
       dispatch(eraseNewContent(indexRef.current, lengthOfImages));
-      if (contentUrl && Array.isArray(contentUrl)) {
-        dispatch(addImages(indexRef.current, contentUrl, true));
-      } else if (contentUrl && contentUrl.slice(-3) === "gif") {
+      if (Array.isArray(contentUrl)) {
+        dispatch(keepOriginalImages(indexRef.current, contentUrl));
+      } else if (contentUrl.slice(-3) === "gif") {
         dispatch(addGif(indexRef.current, contentUrl, true));
-      } else if (contentUrl && contentUrl.slice(-3) === "mp4") {
+      } else if (contentUrl.slice(-3) === "mp4") {
         dispatch(addVideo(indexRef.current, contentUrl, true));
       }
     }
     setNewText("");
     setContentUrl("");
     setEditToggle(!editToggle);
-    setDeleteImage(false);
-    setDeleteVideo(false);
-    setDeleteGif(false);
     setLengthOfImages(0);
   };
 
   const onDrop = useCallback(async (acceptedFiles) => {
     // eslint-disable-next-line no-unused-vars
     let i = 0;
-    setDeleteImage(false);
-    setDeleteGif(false);
-    setDeleteVideo(false);
+    let j = 0;
+    let k = 0;
+    acceptedFiles.forEach((file) => {
+      if (file.type.includes("gif")) {
+        i++;
+      } else if (file.type.includes("image")) {
+        j++;
+      } else if (file.type.includes("video")) {
+        k++;
+      }
+    });
+
+    if ((i > 0 && (j > 0 || k > 0)) || (j > 0 && (i > 0 || k > 0))) {
+      setErrorMessage(
+        "You cannot mix media types, you can only upload one media type per post"
+      );
+      setTimeout(() => {
+        setErrorMessage("");
+      }, 5000);
+      return;
+    }
+
+    i = 0;
     acceptedFiles.forEach((file) => {
       if (!file.type.includes("gif") && file.type.includes("image")) {
         // eslint-disable-next-line no-plusplus
@@ -236,6 +259,9 @@ function Home() {
       }
     });
     setLengthOfImages(i);
+    setDeleteGif(false);
+    setDeleteImage(false);
+    setDeleteVideo(false);
     setLoading(true);
     const arrayOfVideoFiles = acceptedFiles.filter(
       (file) => file.type.indexOf("video") > -1
@@ -1221,9 +1247,28 @@ function Home() {
                             textAlign: "center",
                           }}
                         >
-                          {(!posts[i].video || posts[i].video === "") &&
-                          (!posts[i].gif || posts[i].gif === "") &&
-                          posts[i].images.length === 0 ? (
+                          {errorMessage ? (
+                            <div
+                              style={{
+                                textAlign: "center",
+                                padding: "20px",
+                                border: "3px dashed red",
+                                backgroundColor: "#fafafa",
+                                color: "red",
+                                margin: "20px",
+                              }}
+                            >
+                              <input
+                                multiple
+                                accept="image/*, video/mp4"
+                                disabled
+                                hidden
+                              />
+                              <p>{errorMessage}</p>
+                            </div>
+                          ) : (!posts[i].video || posts[i].video === "") &&
+                            (!posts[i].gif || posts[i].gif === "") &&
+                            posts[i].images.length === 0 ? (
                             <div
                               {...getRootProps()}
                               style={{
@@ -1271,14 +1316,16 @@ function Home() {
                             <Button
                               variant="outlined"
                               style={{
-                                background:
-                                  "linear-gradient(180deg, #2D87FF 0%, #6099E5 100%)",
+                                background: errorMessage
+                                  ? "gray"
+                                  : "linear-gradient(180deg, #2D87FF 0%, #6099E5 100%)",
                                 color: "white",
                               }}
                               onClick={() => {
                                 changesToggleRef.current = true;
                                 configurePost(posts[i]._id);
                               }}
+                              disabled={errorMessage}
                             >
                               Submit Changes
                             </Button>

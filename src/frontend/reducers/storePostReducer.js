@@ -164,9 +164,25 @@ const storePostSlice = createSlice({
           }
         }
       }
+    },
+  keepOriginalImages: {
+    reducer(state, action) {
+      state[action.payload.index].images = action.payload.content
+      return state;
+    },
+    prepare(...args) {
+      const index = args[0]
+      const content = args[1]
+      return {
+        payload: {
+          index,
+          content
+        }
+      }
     }
   }
+}
 })
 
-export const { storePostInformation, configureLikes, resetState, addImages, eraseNewContent, editPost, addGif, addVideo, removeContent } = storePostSlice.actions
+export const { storePostInformation, configureLikes, resetState, addImages, eraseNewContent, editPost, addGif, addVideo, removeContent, keepOriginalImages } = storePostSlice.actions
 export default storePostSlice.reducer
