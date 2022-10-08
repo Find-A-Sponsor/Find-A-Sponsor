@@ -1,16 +1,16 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { current } from "@reduxjs/toolkit";
 
 const numberOfCommentsSlice = createSlice({
   name: 'numberOfComments',
-  initialState: Array.from({length: 10}),
+  initialState: [],
   reducers: {
     numberOfCommentsRemaining: {
       reducer (state, action) {
-        const { content, key } = action.payload
+        const { content, key, index } = action.payload
         if (key === 'concat') {
-          state = state.concat(content)
-          console.log(state)
-        } else {
+          state[index] = state[index].concat(content)
+        } else if (key === 'initial') {
           state = content
         }
         return state;
@@ -18,10 +18,12 @@ const numberOfCommentsSlice = createSlice({
       prepare(...args) {
         const content = args[0]
         const key = args[1]
+        const index = args?.[2]
         return {
           payload: {
             content,
-            key
+            key,
+            index
           }
         }
       }

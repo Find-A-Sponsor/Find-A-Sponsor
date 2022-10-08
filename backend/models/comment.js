@@ -17,7 +17,8 @@ const commentSchema = new mongoose.Schema({
   },
   username: String,
   likedBy: Array,
-  belongsToPost: String
+  belongsToPost: String,
+  status: String
 })
 
 const Comment = mongoose.model('Comment', commentSchema)

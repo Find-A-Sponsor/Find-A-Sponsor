@@ -1,3 +1,5 @@
+/* eslint-disable array-callback-return */
+/* eslint-disable consistent-return */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-unused-expressions */
@@ -78,8 +80,11 @@ function Home() {
   const state = useSelector((wholeState) => wholeState);
   const stateOfPosts = state.posts;
   const stateOfComments = state.comments.storage;
-  const comments = sortBy(stateOfComments, "date").reverse();
-  const posts = [...new Set(sortBy(stateOfPosts, "date").reverse())];
+  const comments =
+    stateOfComments !== undefined && [...stateOfComments].reverse();
+  const posts = stateOfPosts !== undefined && [
+    ...new Set(sortBy(stateOfPosts, "date").reverse()),
+  ];
   const [savedUser, setSavedUser] = useState();
   const [mouseOver, setMouseOver] = useState();
   const [replies, setReplies] = useState(false);
@@ -96,7 +101,7 @@ function Home() {
   const [contentUrl, setContentUrl] = useState("");
   const ITEM_HEIGHT = 48;
   const options = ["Delete Post", "Edit Post", "Pin Post"];
-  const commentRef = useRef();
+  const [comment, setComment] = useState();
   const changesToggleRef = useRef();
   const filesRef = useRef();
   const indexRef = useRef();
@@ -110,9 +115,7 @@ function Home() {
     specificPost: [],
   });
   const [newText, setNewText] = useState("");
-  const [errorMessage, setErrorMessage] = useState(""); // Work paused here, set error message just in case someone tries to upload multiple media types on one post
-
-  // Fix issue where a gif that was deleted from a previous post continues to populate on new posts with videos after it was removed from previous post
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const initializer = async () => {
@@ -152,6 +155,12 @@ function Home() {
     const specificPost = posts.map(() => false);
     setEditPost({ specificPost });
   }, [editToggle]);
+
+  useEffect(() => {
+    const initialComments = [];
+    posts.forEach(() => initialComments.push(Array.from({ length: 10 })));
+    dispatch(numberOfCommentsRemaining(initialComments, "initial"));
+  }, [state.posts]);
 
   const configurePost = async (postId) => {
     if (changesToggleRef.current) {
@@ -320,22 +329,20 @@ function Home() {
   });
 
   const fetchMoreComments = (i) => {
-    if (state.posts[i].comments - state.commentsRemaining.length >= 10) {
-      dispatch(numberOfCommentsRemaining(Array.from({ length: 10 }), "concat"));
-    } else if (
-      state.posts[i].comments - state.commentsRemaining.length < 10 &&
-      state.posts[i].comments - state.commentsRemaining.length > 0
-    ) {
+    if (posts[i].comments - state.commentsRemaining[i].length >= 10) {
+      dispatch(
+        numberOfCommentsRemaining(Array.from({ length: 10 }), "concat", i)
+      );
+    } else if (posts[i].comments - state.commentsRemaining[i].length > 0) {
       dispatch(
         numberOfCommentsRemaining(
           Array.from({
-            length: state.posts[i].comments - state.commentsRemaining.length,
+            length: posts[i].comments - state.commentsRemaining[i].length,
           }),
-          "concat"
+          "concat",
+          i
         )
       );
-    } else {
-      dispatch(numberOfCommentsRemaining(Array.from({ length: 0 })));
     }
   };
 
@@ -428,7 +435,7 @@ function Home() {
 
   const handlePostingComment = async (e, postId, commentAmount) => {
     e.preventDefault();
-    await commentInformation.postComment(commentRef.current, postId, savedUser);
+    await commentInformation.postComment(comment, postId, savedUser);
     await postInformation.configurePost(
       postId,
       savedUser,
@@ -447,7 +454,7 @@ function Home() {
       dispatch(storePostInformation(post, i));
     });
     dispatch(storeComments(object));
-    commentRef.current = "";
+    setComment("");
   };
 
   const handleDeleteOfPost = async (postId) => {
@@ -467,9 +474,9 @@ function Home() {
     uniquePosts.forEach((post, i) => {
       dispatch(storePostInformation(post, i));
     });
-    state.comments.storage.map(async (comment) => {
-      if (comment.belongsToPost === postId) {
-        await commentInformation.removeComment(comment._id, savedUser);
+    state.comments.storage.map(async (eachComment) => {
+      if (eachComment.belongsToPost === postId) {
+        await commentInformation.removeComment(eachComment._id, savedUser);
       }
     });
     dispatch(createComment("", "newComment"));
@@ -496,10 +503,6 @@ function Home() {
       handleEditOfPost(postId, index);
     }
   };
-
-  /* const handleEditPostChanges = async () => {
-  //  let object
-  } */
 
   const fetchMorePosts = () => {
     if (
@@ -917,8 +920,8 @@ function Home() {
             alignContent="center"
             spacing={15}
           >
-            {state.comments.storage &&
-              // eslint-disable-next-line array-callback-return, consistent-return
+            {state.commentsRemaining.length > 0 &&
+              Object.values(state.comments).length > 0 &&
               numberOfPosts.map((key, i) => {
                 if (posts[i]) {
                   return (
@@ -1432,19 +1435,19 @@ function Home() {
                           inputProps={{
                             maxLength: 500,
                           }}
-                          defaultValue=""
+                          value={comment}
                           multiline
+                          // eslint-disable-next-line no-return-assign
+                          onChange={(e) => setComment(e.target.value)}
                           placeholder="Write your comment"
                           style={{ width: "100%" }}
                           // eslint-disable-next-line no-return-assign
-                          onBlur={(e) => (commentRef.current = e.target.value)}
                           onKeyPress={(e) => {
                             if (e.key === "Enter") {
                               e.preventDefault();
                             }
                           }}
                           onKeyUp={(e) => {
-                            commentRef.current = e.target.value;
                             if (e.key === "Enter") {
                               handlePostingComment(
                                 e,
@@ -1471,8 +1474,7 @@ function Home() {
                           }}
                           textAlign="center"
                         >
-                          {posts[i]?.comments <= 10 &&
-                          posts[i]?.comments > 0 ? (
+                          {posts[i].comments <= 10 && posts[i].comments > 0 ? (
                             comments.map((eachComment) =>
                               eachComment.belongsToPost === posts[i]._id ? (
                                 <Comment
@@ -1484,17 +1486,19 @@ function Home() {
                                 ""
                               )
                             )
-                          ) : posts[i]?.comments > 10 ? (
-                            state.commentsRemaining.map((eachComment, index) =>
-                              comments[index].belongsToPost === posts[i]._id ? (
-                                <Comment
-                                  eachComment={comments[index]}
-                                  savedUser={savedUser}
-                                  postInfo={posts[i]}
-                                />
-                              ) : (
-                                ""
-                              )
+                          ) : posts[i].comments > 10 ? (
+                            state.commentsRemaining[i].map(
+                              (eachComment, index) =>
+                                comments[index].belongsToPost ===
+                                posts[i]._id ? (
+                                  <Comment
+                                    eachComment={comments[index]}
+                                    savedUser={savedUser}
+                                    postInfo={posts[i]}
+                                  />
+                                ) : (
+                                  ""
+                                )
                             )
                           ) : replies[i] ? (
                             <Box sx={{ display: "block" }}>
@@ -1505,13 +1509,24 @@ function Home() {
                           ) : (
                             ""
                           )}
-                          {posts[i].comments - state.commentsRemaining.length >
-                            0 && posts[i] ? (
+                          {posts[i].comments -
+                            state.commentsRemaining[i].length >
+                            0 &&
+                          posts[i].comments -
+                            state.commentsRemaining[i].length <=
+                            10 &&
+                          posts[i] ? (
                             <Button onClick={() => fetchMoreComments(i)}>
                               Show{" "}
                               {posts[i].comments -
-                                state.commentsRemaining.length}{" "}
+                                state.commentsRemaining[i].length}{" "}
                               more comments
+                            </Button>
+                          ) : posts[i].comments -
+                              state.commentsRemaining[i].length >
+                              10 && posts[i] ? (
+                            <Button onClick={() => fetchMoreComments(i)}>
+                              Show 10 more comments
                             </Button>
                           ) : (
                             ""

@@ -36,7 +36,7 @@ const getComments = async (token) => {
   return response
 }
 
-const configureComment = async (commentId, token, likes, action) => {
+const configureComment = async (commentId, token, variable, action) => {
   const config = {
     headers: {
       'Authorization': token.token
@@ -44,12 +44,12 @@ const configureComment = async (commentId, token, likes, action) => {
   }
 
   if (action === 'increase') {
-    likes += 1
+    variable += 1
   } else if (action === 'decrease') {
-    likes -= 1
+    variable -= 1
   }
 
-  const response = await axios.put(`${baseUrl}/${commentId}`, {likes, action}, config)
+  const response = await axios.put(`${baseUrl}/${commentId}`, {variable, action}, config)
   return response;
 }
 

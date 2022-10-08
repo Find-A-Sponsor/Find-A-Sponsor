@@ -60,13 +60,33 @@ commentRouter.put('/:id', async (req, res) => {
   if (body.action === 'increase') {
 
     commentToUpdate = await Comment.findOneAndUpdate({_id: ObjectId(req.params.id)},
-  {$set: {likes: body.likes}, $addToSet: {likedBy: userWhoLikes._id}}, {new: true})
+  {$set: {likes: body.variable}, $addToSet: {likedBy: userWhoLikes._id}}, {new: true})
 
   } else if (body.action === 'decrease') {
 
     commentToUpdate = await Comment.findOneAndUpdate({_id: ObjectId(req.params.id)},
-  {$set: {likes: body.likes}, $pull: {likedBy: userWhoLikes._id}}, {new: true})
+  {$set: {likes: body.variable}, $pull: {likedBy: userWhoLikes._id}}, {new: true})
   
+  } else if (body.action === 'editComment') {
+    commentToUpdate = await Comment.findOneAndUpdate({_id: ObjectId(req.params.id)},
+  {$set: {text: body.variable, date: (moment(new Date()).format('LLLL')).toString(), "status": "edited"}}, {new: true})
+  } else if (body.action === 'addMedia') {
+    if (body.variable.type === "gif" || body.variable.type.includes("gif")) {
+      commentToUpdate = await Comment.findOneAndUpdate({_id: ObjectId(req.params.id)},
+  {$set: {gif: body.variable.url}}, {new: true})
+    } else if (body.variable.type === "images" || body.variable.type.includes("image")) {
+      commentToUpdate = await Comment.findOneAndUpdate({_id: ObjectId(req.params.id)},
+  {$push: {images: body.variable.url}}, {new: true})
+    }
+  } else if (body.action === 'removeMedia') {
+    const type = body.variable
+    if (type === "images") {
+      commentToUpdate = await Comment.findOneAndUpdate({_id: ObjectId(req.params.id)},
+  {$set: {images: []}}, {new: true})
+    } else if (type === "gif") {
+      commentToUpdate = await Comment.findOneAndUpdate({_id: ObjectId(req.params.id)},
+  {$unset: {gif: ""}}, {new: true})
+    }
   }
 
   res.status(200).json(commentToUpdate);
