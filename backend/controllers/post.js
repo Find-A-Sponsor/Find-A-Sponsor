@@ -12,6 +12,9 @@ const getTokenFrom = request => {
   return null
 }
 
+//this is a comment
+
+
 postRouter.post('/', async(req, res) => {
   const body = req.body
   const token = getTokenFrom(req)
