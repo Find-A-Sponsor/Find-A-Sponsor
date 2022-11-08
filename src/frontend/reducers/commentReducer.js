@@ -124,9 +124,9 @@ const commentSlice = createSlice({
           }
         }
       }
-    }
+    },
   }
 })
 
-export const { createComment, storeComments, resetState, changeCommentStatus, addImageOrGif, deleteMedia } = commentSlice.actions
+export const { createComment, storeComments, resetState, changeCommentStatus, addImageOrGif, deleteMedia, occupied } = commentSlice.actions
 export default commentSlice.reducer

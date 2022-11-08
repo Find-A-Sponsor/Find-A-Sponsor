@@ -23,9 +23,9 @@ commentRouter.post('/', async(req, res) => {
   }
 
   const user = await User.findById(verifiedToken.id)
-  const post = await Post.findById(body.postId)
+  const post = await Post.findById(body.nestedPosition > 1 ? body.originalPostId : body.postId)
 
-  const comment = new Comment({
+  const comment = new Comment(body.nestedPosition > 1 ? {
     text: body.newComment,
     images: body.images,
     gif: body.gif,
@@ -35,9 +35,24 @@ commentRouter.post('/', async(req, res) => {
     likes: 0,
     comments: 0,
     likedBy: [],
-    nestedPosition: 1,
+    nestedPosition: body.nestedPosition,
+    belongsToPost: post._id,
+    belongsToComment: body.postId
+  } : {
+    text: body.newComment,
+    images: body.images,
+    gif: body.gif,
+    date: (moment(new Date()).format('LLLL')).toString(),
+    owner: user._id,
+    username: user.username,
+    likes: 0,
+    comments: 0,
+    likedBy: [],
+    nestedPosition: body.nestedPosition,
     belongsToPost: post._id
   })
+
+  console.log(comment);
 
   const savedComment = await comment.save()
   user.commentsMade = user.commentsMade.concat(savedComment._id)

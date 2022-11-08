@@ -5,8 +5,9 @@ import axios from "axios";
 const baseUrl = process.env.NODE_ENV === "production" ? "/api/comments" : "http://localhost:3001/api/comments"
 
 
-const postComment = async (req, postId, token) => {
+const postComment = async (req, postId, token, position, originalPostId = "") => {
   const newComment  = req
+  console.log(newComment);
 
   const config = {
     headers: {
@@ -16,7 +17,9 @@ const postComment = async (req, postId, token) => {
 
   const object = {
     newComment,
-    postId
+    postId,
+    nestedPosition: position,
+    originalPostId
   }
 
   const response = await axios.post(baseUrl, object, config)

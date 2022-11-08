@@ -15,7 +15,7 @@ import { useDropzone } from "react-dropzone";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import ReactPlayer from "react-player";
-import { sortBy } from "lodash";
+import _, { sortBy } from "lodash";
 import axios from "axios";
 
 import userInformation from "../../services/userInformation";
@@ -82,6 +82,21 @@ function Home() {
   const stateOfComments = state.comments.storage;
   const comments =
     stateOfComments !== undefined && [...stateOfComments].reverse();
+  const groupedComments = _.partition(comments, (o) => o.belongsToComment);
+  while (groupedComments[0].length > 0) {
+    groupedComments[0].map((nestedComment, index) => {
+      let i = 0;
+      groupedComments[1].map((uniqueComment) => {
+        if (nestedComment.belongsToComment === uniqueComment._id) {
+          groupedComments[1].splice(i + 1, 0, nestedComment);
+          groupedComments[0].splice(index, 1);
+        }
+        i++;
+      });
+    });
+  }
+  groupedComments.splice(0, 1);
+  console.log(groupedComments);
   const posts = stateOfPosts !== undefined && [
     ...new Set(sortBy(stateOfPosts, "date").reverse()),
   ];
@@ -99,6 +114,9 @@ function Home() {
   const [lengthOfImages, setLengthOfImages] = useState(0);
   const [loading, setLoading] = useState(false);
   const [contentUrl, setContentUrl] = useState("");
+  const [disableComment, setDisableComment] = useState({
+    specificComment: [],
+  });
   const ITEM_HEIGHT = 48;
   const options = ["Delete Post", "Edit Post", "Pin Post"];
   const [comment, setComment] = useState();
@@ -116,6 +134,8 @@ function Home() {
   });
   const [newText, setNewText] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  let height = 0;
+  // Try to figure out why replies are not being posted and how to sort comments with their replies so they can displayed next to eachother.
 
   useEffect(() => {
     const initializer = async () => {
@@ -160,6 +180,8 @@ function Home() {
     const initialComments = [];
     posts.forEach(() => initialComments.push(Array.from({ length: 10 })));
     dispatch(numberOfCommentsRemaining(initialComments, "initial"));
+    const specificComment = posts.map(() => false);
+    setDisableComment({ specificComment });
   }, [state.posts]);
 
   const configurePost = async (postId) => {
@@ -435,7 +457,7 @@ function Home() {
 
   const handlePostingComment = async (e, postId, commentAmount) => {
     e.preventDefault();
-    await commentInformation.postComment(comment, postId, savedUser);
+    await commentInformation.postComment(comment, postId, savedUser, 1);
     await postInformation.configurePost(
       postId,
       savedUser,
@@ -922,6 +944,7 @@ function Home() {
           >
             {state.commentsRemaining.length > 0 &&
               Object.values(state.comments).length > 0 &&
+              disableComment.specificComment.length > 0 &&
               numberOfPosts.map((key, i) => {
                 if (posts[i]) {
                   return (
@@ -1437,9 +1460,14 @@ function Home() {
                           }}
                           value={comment}
                           multiline
+                          disabled={disableComment.specificComment[i]}
                           // eslint-disable-next-line no-return-assign
                           onChange={(e) => setComment(e.target.value)}
-                          placeholder="Write your comment"
+                          placeholder={
+                            disableComment.specificComment[i]
+                              ? "Finish editing your comment before making another comment"
+                              : "Write your comment"
+                          }
                           style={{ width: "100%" }}
                           // eslint-disable-next-line no-return-assign
                           onKeyPress={(e) => {
@@ -1464,6 +1492,21 @@ function Home() {
                         maxHeight="205px"
                         overflow="auto"
                       >
+                        {groupedComments[0].forEach((cmt, index) => {
+                          if (
+                            groupedComments[0][index - 1] &&
+                            cmt.nestedPosition >
+                              groupedComments[0][index - 1].nestedPosition
+                          ) {
+                            height = 100 * index;
+                          }
+                        })}
+                        <span
+                          style={{
+                            borderLeft: "3px solid lightgray",
+                            height,
+                          }}
+                        />
                         <Grid
                           item
                           xs={12}
@@ -1475,12 +1518,14 @@ function Home() {
                           textAlign="center"
                         >
                           {posts[i].comments <= 10 && posts[i].comments > 0 ? (
-                            comments.map((eachComment) =>
+                            groupedComments[0].map((eachComment) =>
                               eachComment.belongsToPost === posts[i]._id ? (
                                 <Comment
                                   eachComment={eachComment}
                                   savedUser={savedUser}
                                   postInfo={posts[i]}
+                                  disableComment={disableComment}
+                                  index={i}
                                 />
                               ) : (
                                 ""
@@ -1489,12 +1534,14 @@ function Home() {
                           ) : posts[i].comments > 10 ? (
                             state.commentsRemaining[i].map(
                               (eachComment, index) =>
-                                comments[index].belongsToPost ===
+                                groupedComments[0][index].belongsToPost ===
                                 posts[i]._id ? (
                                   <Comment
-                                    eachComment={comments[index]}
+                                    eachComment={groupedComments[0][index]}
                                     savedUser={savedUser}
                                     postInfo={posts[i]}
+                                    disableComment={disableComment}
+                                    index={i}
                                   />
                                 ) : (
                                   ""

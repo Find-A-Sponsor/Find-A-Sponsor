@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable no-nested-ternary */
@@ -18,6 +19,7 @@ import {
   Button,
   Dialog,
 } from "@mui/material";
+import WarningTwoToneIcon from "@mui/icons-material/WarningTwoTone";
 import { useDispatch, useSelector } from "react-redux";
 import FavoriteBorderTwoToneIcon from "@mui/icons-material/FavoriteBorderTwoTone";
 import ReplyTwoToneIcon from "@mui/icons-material/Reply";
@@ -36,12 +38,17 @@ import {
   addImageOrGif,
   changeCommentStatus,
   deleteMedia,
+  resetState,
   storeComments,
 } from "../../reducers/commentReducer";
-import { storePostInformation } from "../../reducers/storePostReducer";
+import {
+  storePostInformation,
+  resetState as resetPosts,
+} from "../../reducers/storePostReducer";
 import postInformation from "../../services/postInformation";
 
-function Comment({ eachComment, savedUser, postInfo }) {
+// eslint-disable-next-line no-unused-vars
+function Comment({ eachComment, savedUser, postInfo, disableComment, index }) {
   const [mouseOver, setMouseOver] = useState(false);
   const [open, setOpen] = useState(false);
   const [editCommentToggle, setEditCommentToggle] = useState(false);
@@ -49,10 +56,14 @@ function Comment({ eachComment, savedUser, postInfo }) {
   const [viewOpen, setViewOpen] = useState(false);
   const [contentUrl, setContentUrl] = useState("");
   const [addedMedia, setAddedMedia] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [replyText, setReplyText] = useState("");
   const state = useSelector((wholeState) => wholeState);
   const eachUser = state.users;
   const dispatch = useDispatch();
   const arrayOfUsers = Object.values(eachUser);
+  const positioning = eachComment.nestedPosition * 10;
+  // Work on error messaging for comment inputs when you wake up
 
   useEffect(() => {
     const getInitialComments = async () => {
@@ -102,7 +113,29 @@ function Comment({ eachComment, savedUser, postInfo }) {
     dispatch(storeComments(object));
   };
 
-  const handlePostingReply = async () => {};
+  const handlePostingReply = async (e) => {
+    e.preventDefault();
+    await commentInformation.postComment(
+      replyText,
+      eachComment._id,
+      savedUser,
+      eachComment.nestedPosition + 1,
+      postInfo._id
+    );
+    await postInformation.configurePost(
+      postInfo._id,
+      savedUser,
+      postInfo.comments,
+      "increaseCommentCount"
+    );
+    dispatch(resetState([]));
+    const response = await commentInformation.getComments(savedUser);
+    const storage = response.data;
+    const object = {
+      storage,
+    };
+    dispatch(storeComments(object));
+  };
 
   const handleDeleteOfMedia = async (event, type) => {
     event.preventDefault();
@@ -128,6 +161,8 @@ function Comment({ eachComment, savedUser, postInfo }) {
         postInfo.comments,
         "decreaseCommentCount"
       );
+      dispatch(resetState([]));
+      dispatch(resetPosts([]));
       const response = await commentInformation.getComments(savedUser);
       const storage = response.data;
       const object = {
@@ -142,311 +177,29 @@ function Comment({ eachComment, savedUser, postInfo }) {
     }
   };
 
-  const handleEditingOfComment = (buttonClick) => {
+  const handleEditingOfComment = async (buttonClick) => {
     buttonClick.preventDefault();
     if (eachComment.images.length > 0) {
       setContentUrl(eachComment.images[0]);
     } else {
       setContentUrl(eachComment.gif);
     }
+    // eslint-disable-next-line no-param-reassign
+    console.log(disableComment);
+    disableComment.specificComment[index] = true;
     setValueOfTextField(eachComment.text);
     setEditCommentToggle(!editCommentToggle);
   };
 
   return editCommentToggle ? (
-    <Card style={{ margin: "10px" }}>
-      <CardHeader
-        avatar={
-          <Avatar
-            src={
-              arrayOfUsers.filter((user) => user._id === eachComment.owner)[0]
-                .profileImageURL
-            }
-          />
-        }
-      />
-      Edit your comment here, add a GIF or image with your reply as well if you
-      so desire. (Text is required)
-      <CardContent>
-        {valueOfTextField ? (
-          <>
-            <IconButton
-              onClick={async () => {
-                if (addedMedia) {
-                  await commentInformation.configureComment(
-                    eachComment._id,
-                    savedUser,
-                    addedMedia.includes("gif") ? "gif" : "images",
-                    "removeMedia"
-                  );
-                }
-                await commentInformation.configureComment(
-                  eachComment._id,
-                  savedUser,
-                  {
-                    url: contentUrl,
-                    type: eachComment.images.length > 0 ? "images" : "gif",
-                  },
-                  "addMedia"
-                );
-                setEditCommentToggle(!editCommentToggle);
-              }}
-            >
-              <CancelTwoTone fontSize="large" sx={{ color: "red" }} />
-            </IconButton>
-            <IconButton
-              onClick={async () => {
-                await commentInformation.configureComment(
-                  eachComment._id,
-                  savedUser,
-                  valueOfTextField,
-                  "editComment"
-                );
-                dispatch(changeCommentStatus(eachComment._id, "edited"));
-
-                setEditCommentToggle(!editCommentToggle);
-              }}
-            >
-              <CheckCircleTwoToneIcon color="success" fontSize="large" />
-            </IconButton>
-            <br />
-            <TextField
-              value={valueOfTextField}
-              onChange={(evnt) => setValueOfTextField(evnt.target.value)}
-            />
-            <br />
-            {eachComment.images.length > 0 ? (
-              <>
-                <IconButton
-                  onClick={(evt) => handleDeleteOfMedia(evt, "images")}
-                >
-                  <DeleteTwoToneIcon />
-                </IconButton>
-                <img
-                  style={{
-                    paddingRight: "1em",
-                    objectFit: "contain",
-                    margin: "10px",
-                  }}
-                  height="200"
-                  alt="commentPicture"
-                  src={eachComment.images[0]}
-                />
-              </>
-            ) : eachComment.gif ? (
-              <>
-                <IconButton onClick={(evt) => handleDeleteOfMedia(evt, "gif")}>
-                  <DeleteTwoToneIcon />
-                </IconButton>
-                <img
-                  style={{
-                    paddingRight: "1em",
-                    objectFit: "contain",
-                    margin: "10px",
-                  }}
-                  height="200"
-                  alt="commentPicture"
-                  src={eachComment.gif}
-                />
-              </>
-            ) : (
-              ""
-            )}
-            <br />
-            {eachComment.images.length > 0 || eachComment.gif ? (
-              ""
-            ) : (
-              <Button
-                startIcon={<AddPhotoAlternateTwoToneIcon />}
-                variant="outlined"
-                sx={{ margin: "10px" }}
-                component="label"
-              >
-                Add GIF/IMG
-                <input
-                  style={{ pointerEvents: "none" }}
-                  accept="image/*"
-                  type="file"
-                  hidden
-                  onChange={async (file) => {
-                    const formData = new FormData();
-                    formData.append("file", file.target.files[0]);
-                    formData.append(
-                      "upload_preset",
-                      process.env.REACT_APP_CLOUDINARY_PRESET
-                    );
-                    formData.append(
-                      "api_key",
-                      process.env.REACT_APP_CLOUDINARY_APIKEY
-                    );
-                    let serverResponse;
-                    if (
-                      (file.target.files[0].type.indexOf("gif") > -1 ||
-                        file.target.files[0].type.indexOf("image") > -1) &&
-                      file.target.files[0].size < 10485760
-                    ) {
-                      // eslint-disable-next-line no-await-in-loop
-                      serverResponse = await axios.post(
-                        process.env.REACT_APP_CLOUDINARY_IMAGE_URL,
-                        formData,
-                        { withCredentials: false }
-                      );
-                      dispatch(
-                        addImageOrGif(
-                          eachComment._id,
-                          serverResponse.data.secure_url,
-                          file.target.files[0].type
-                        )
-                      );
-                      await commentInformation.configureComment(
-                        eachComment._id,
-                        savedUser,
-                        {
-                          url: serverResponse.data.secure_url,
-                          type: file.target.files[0].type,
-                        },
-                        "addMedia"
-                      );
-                    }
-                    setAddedMedia(serverResponse.data.secure_url);
-                  }}
-                />
-              </Button>
-            )}
-          </>
-        ) : (
-          <>
-            <IconButton
-              onClick={async () => {
-                if (addedMedia) {
-                  await commentInformation.configureComment(
-                    eachComment._id,
-                    savedUser,
-                    addedMedia.includes("gif") ? "gif" : "images",
-                    "removeMedia"
-                  );
-                }
-                await commentInformation.configureComment(
-                  eachComment._id,
-                  savedUser,
-                  {
-                    url: contentUrl,
-                    type: eachComment.images.length > 0 ? "images" : "gif",
-                  },
-                  "addMedia"
-                );
-                setEditCommentToggle(!editCommentToggle);
-              }}
-            >
-              <CancelTwoTone fontSize="large" sx={{ color: "red" }} />
-            </IconButton>
-            <br />
-            <TextField
-              value={valueOfTextField}
-              onChange={(value) => setValueOfTextField(value.target.value)}
-            />
-            <br />
-            {eachComment.images.length > 0 ? (
-              <>
-                <IconButton
-                  onClick={(evt) => handleDeleteOfMedia(evt, "images")}
-                >
-                  <DeleteTwoToneIcon />
-                </IconButton>
-                <img
-                  style={{
-                    paddingRight: "1em",
-                    objectFit: "contain",
-                    margin: "10px",
-                  }}
-                  height="200"
-                  alt="commentPicture"
-                  src={eachComment.images[0]}
-                />
-              </>
-            ) : eachComment.gif ? (
-              <>
-                <IconButton onClick={(evt) => handleDeleteOfMedia(evt, "gif")}>
-                  <DeleteTwoToneIcon />
-                </IconButton>
-                <img
-                  style={{
-                    paddingRight: "1em",
-                    objectFit: "contain",
-                    margin: "10px",
-                  }}
-                  height="200"
-                  alt="commentPicture"
-                  src={eachComment.gif}
-                />
-              </>
-            ) : (
-              ""
-            )}
-            <br />
-            <Button
-              startIcon={<AddPhotoAlternateTwoToneIcon />}
-              variant="outlined"
-              sx={{ margin: "10px" }}
-              component="label"
-            >
-              Add GIF/IMG
-              <input
-                style={{ pointerEvents: "none" }}
-                accept="image/*"
-                type="file"
-                hidden
-                onChange={async (file) => {
-                  const formData = new FormData();
-                  formData.append("file", file.target.files[0]);
-                  formData.append(
-                    "upload_preset",
-                    process.env.REACT_APP_CLOUDINARY_PRESET
-                  );
-                  formData.append(
-                    "api_key",
-                    process.env.REACT_APP_CLOUDINARY_APIKEY
-                  );
-                  let serverResponse;
-                  if (
-                    (file.target.files[0].type.indexOf("gif") > -1 ||
-                      file.target.files[0].type.indexOf("image") > -1) &&
-                    file.target.files[0].size < 10485760
-                  ) {
-                    // eslint-disable-next-line no-await-in-loop
-                    serverResponse = await axios.post(
-                      process.env.REACT_APP_CLOUDINARY_IMAGE_URL,
-                      formData,
-                      { withCredentials: false }
-                    );
-                    dispatch(
-                      addImageOrGif(
-                        eachComment._id,
-                        serverResponse.data.secure_url,
-                        file.target.files[0].type
-                      )
-                    );
-                    await commentInformation.configureComment(
-                      eachComment._id,
-                      savedUser,
-                      {
-                        url: serverResponse.data.secure_url,
-                        type: file.target.files[0].type,
-                      },
-                      "addMedia"
-                    );
-                  }
-                  setAddedMedia(serverResponse.data.secure_url);
-                }}
-              />
-            </Button>
-          </>
-        )}
-      </CardContent>
-    </Card>
-  ) : (
-    <>
-      <Card style={{ margin: "10px" }}>
+    <div>
+      <Card
+        style={{
+          position: "relative",
+          margin: "10px",
+          left: eachComment.nestedPosition === 1 ? "" : `${positioning}%`,
+        }}
+      >
         <CardHeader
           avatar={
             <Avatar
@@ -456,22 +209,412 @@ function Comment({ eachComment, savedUser, postInfo }) {
               }
             />
           }
-          title={
-            eachComment.status === "edited"
-              ? `${eachComment.date} (edited)`
-              : eachComment.date
-          }
         />
+        {errorMessage
+          ? ""
+          : "Edit your comment here, add a GIF or image with your reply as well if you so desire. (Text is required)"}
         <CardContent>
-          <Typography variant="body2" color="InfoText">
-            {eachComment.text}
-          </Typography>
-          {eachComment.images.length > 0 ? (
+          {valueOfTextField ? (
             <>
-              {eachComment.images.map((image) => (
-                // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
+              {errorMessage ? (
+                ""
+              ) : (
+                <IconButton
+                  onClick={async () => {
+                    if (addedMedia) {
+                      await commentInformation.configureComment(
+                        eachComment._id,
+                        savedUser,
+                        addedMedia.includes("gif") ? "gif" : "images",
+                        "removeMedia"
+                      );
+                    }
+                    await commentInformation.configureComment(
+                      eachComment._id,
+                      savedUser,
+                      {
+                        url: contentUrl,
+                        type: eachComment.images.length > 0 ? "images" : "gif",
+                      },
+                      "addMedia"
+                    );
+                    disableComment.specificComment[index] = false;
+                    setEditCommentToggle(!editCommentToggle);
+                  }}
+                >
+                  <CancelTwoTone fontSize="large" sx={{ color: "red" }} />
+                </IconButton>
+              )}
+              {errorMessage ? (
+                ""
+              ) : (
+                <IconButton
+                  onClick={async () => {
+                    await commentInformation.configureComment(
+                      eachComment._id,
+                      savedUser,
+                      valueOfTextField,
+                      "editComment"
+                    );
+                    dispatch(changeCommentStatus(eachComment._id, "edited"));
+                    disableComment.specificComment[index] = false;
+                    setEditCommentToggle(!editCommentToggle);
+                  }}
+                >
+                  <CheckCircleTwoToneIcon color="success" fontSize="large" />
+                </IconButton>
+              )}
+              <br />
+              {errorMessage ? (
+                <div>
+                  <h3>
+                    <b>{errorMessage}</b>
+                  </h3>
+                </div>
+              ) : (
+                <TextField
+                  value={valueOfTextField}
+                  onChange={(evnt) => setValueOfTextField(evnt.target.value)}
+                />
+              )}
+              <br />
+              {eachComment.images.length > 0 ? (
+                <>
+                  <IconButton
+                    onClick={(evt) => handleDeleteOfMedia(evt, "images")}
+                  >
+                    <DeleteTwoToneIcon />
+                  </IconButton>
+                  <img
+                    style={{
+                      paddingRight: "1em",
+                      objectFit: "contain",
+                      margin: "10px",
+                    }}
+                    height="200"
+                    alt="commentPicture"
+                    src={eachComment.images[0]}
+                  />
+                </>
+              ) : eachComment.gif ? (
+                <>
+                  <IconButton
+                    onClick={(evt) => handleDeleteOfMedia(evt, "gif")}
+                  >
+                    <DeleteTwoToneIcon />
+                  </IconButton>
+                  <img
+                    style={{
+                      paddingRight: "1em",
+                      objectFit: "contain",
+                      margin: "10px",
+                    }}
+                    height="200"
+                    alt="commentPicture"
+                    src={eachComment.gif}
+                  />
+                </>
+              ) : (
+                ""
+              )}
+              <br />
+              {eachComment.images.length > 0 || eachComment.gif ? (
+                ""
+              ) : errorMessage ? (
+                <WarningTwoToneIcon fontSize="large" sx={{ color: "red" }} />
+              ) : (
+                <Button
+                  disabled={errorMessage}
+                  startIcon={<AddPhotoAlternateTwoToneIcon />}
+                  variant="outlined"
+                  sx={{ margin: "10px" }}
+                  component="label"
+                >
+                  Add GIF/IMG
+                  <input
+                    onFocus={() => setAddedMedia("")}
+                    style={{ pointerEvents: "none" }}
+                    accept="image/*"
+                    value={addedMedia}
+                    type="file"
+                    hidden
+                    onChange={async (file) => {
+                      const formData = new FormData();
+                      formData.append("file", file.target.files[0]);
+                      formData.append(
+                        "upload_preset",
+                        process.env.REACT_APP_CLOUDINARY_PRESET
+                      );
+                      formData.append(
+                        "api_key",
+                        process.env.REACT_APP_CLOUDINARY_APIKEY
+                      );
+                      let serverResponse;
+                      if (
+                        (file.target.files[0].type.indexOf("gif") > -1 ||
+                          file.target.files[0].type.indexOf("image") > -1) &&
+                        file.target.files[0].size < 10485760
+                      ) {
+                        // eslint-disable-next-line no-await-in-loop
+                        serverResponse = await axios.post(
+                          process.env.REACT_APP_CLOUDINARY_IMAGE_URL,
+                          formData,
+                          { withCredentials: false }
+                        );
+                        dispatch(
+                          addImageOrGif(
+                            eachComment._id,
+                            serverResponse.data.secure_url,
+                            file.target.files[0].type
+                          )
+                        );
+                        await commentInformation.configureComment(
+                          eachComment._id,
+                          savedUser,
+                          {
+                            url: serverResponse.data.secure_url,
+                            type: file.target.files[0].type,
+                          },
+                          "addMedia"
+                        );
+                        setAddedMedia(serverResponse.data.secure_url);
+                      } else if (
+                        file.target.files[0].type.indexOf("video") > -1
+                      ) {
+                        setErrorMessage(
+                          "You cannot post videos within your comment, only an image or a gif is allowed."
+                        );
+                        setTimeout(() => {
+                          setErrorMessage("");
+                        }, [5000]);
+                      }
+                    }}
+                  />
+                </Button>
+              )}
+            </>
+          ) : (
+            <>
+              <IconButton
+                onClick={async () => {
+                  if (addedMedia) {
+                    await commentInformation.configureComment(
+                      eachComment._id,
+                      savedUser,
+                      addedMedia.includes("gif") ? "gif" : "images",
+                      "removeMedia"
+                    );
+                  }
+                  await commentInformation.configureComment(
+                    eachComment._id,
+                    savedUser,
+                    {
+                      url: contentUrl,
+                      type: eachComment.images.length > 0 ? "images" : "gif",
+                    },
+                    "addMedia"
+                  );
+                  disableComment.specificComment[index] = false;
+                  setEditCommentToggle(!editCommentToggle);
+                }}
+              >
+                <CancelTwoTone fontSize="large" sx={{ color: "red" }} />
+              </IconButton>
+              <br />
+              {errorMessage ? (
+                <div>
+                  <h3>{errorMessage}</h3>
+                </div>
+              ) : (
+                <TextField
+                  value={valueOfTextField}
+                  onChange={(value) => setValueOfTextField(value.target.value)}
+                />
+              )}
+              <br />
+              {eachComment.images.length > 0 ? (
+                <>
+                  <IconButton
+                    onClick={(evt) => handleDeleteOfMedia(evt, "images")}
+                  >
+                    <DeleteTwoToneIcon />
+                  </IconButton>
+                  <img
+                    style={{
+                      paddingRight: "1em",
+                      objectFit: "contain",
+                      margin: "10px",
+                    }}
+                    height="200"
+                    alt="commentPicture"
+                    src={eachComment.images[0]}
+                  />
+                </>
+              ) : eachComment.gif ? (
+                <>
+                  <IconButton
+                    onClick={(evt) => handleDeleteOfMedia(evt, "gif")}
+                  >
+                    <DeleteTwoToneIcon />
+                  </IconButton>
+                  <img
+                    style={{
+                      paddingRight: "1em",
+                      objectFit: "contain",
+                      margin: "10px",
+                    }}
+                    height="200"
+                    alt="commentPicture"
+                    src={eachComment.gif}
+                  />
+                </>
+              ) : (
+                ""
+              )}
+              <br />
+              {errorMessage ? (
+                <WarningTwoToneIcon fontSize="large" sx={{ color: "red" }} />
+              ) : (
+                <Button
+                  disabled={errorMessage}
+                  startIcon={<AddPhotoAlternateTwoToneIcon />}
+                  variant="outlined"
+                  sx={{ margin: "10px" }}
+                  component="label"
+                >
+                  Add GIF/IMG
+                  <input
+                    style={{ pointerEvents: "none" }}
+                    accept="image/*"
+                    type="file"
+                    hidden
+                    onChange={async (file) => {
+                      const formData = new FormData();
+                      formData.append("file", file.target.files[0]);
+                      formData.append(
+                        "upload_preset",
+                        process.env.REACT_APP_CLOUDINARY_PRESET
+                      );
+                      formData.append(
+                        "api_key",
+                        process.env.REACT_APP_CLOUDINARY_APIKEY
+                      );
+                      let serverResponse;
+                      if (
+                        (file.target.files[0].type.indexOf("gif") > -1 ||
+                          file.target.files[0].type.indexOf("image") > -1) &&
+                        file.target.files[0].size < 10485760
+                      ) {
+                        // eslint-disable-next-line no-await-in-loop
+                        serverResponse = await axios.post(
+                          process.env.REACT_APP_CLOUDINARY_IMAGE_URL,
+                          formData,
+                          { withCredentials: false }
+                        );
+                        dispatch(
+                          addImageOrGif(
+                            eachComment._id,
+                            serverResponse.data.secure_url,
+                            file.target.files[0].type
+                          )
+                        );
+                        await commentInformation.configureComment(
+                          eachComment._id,
+                          savedUser,
+                          {
+                            url: serverResponse.data.secure_url,
+                            type: file.target.files[0].type,
+                          },
+                          "addMedia"
+                        );
+                        setAddedMedia(serverResponse.data.secure_url);
+                      } else if (
+                        file.target.files[0].type.indexOf("video") > -1
+                      ) {
+                        setErrorMessage(
+                          "You cannot post videos with your comment, only an image or a gif is allowed."
+                        );
+                        setTimeout(() => {
+                          setErrorMessage("");
+                        }, [5000]);
+                      }
+                    }}
+                  />
+                </Button>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  ) : (
+    <>
+      <div>
+        <Card
+          style={{
+            position: "relative",
+            margin: "10px",
+            marginLeft:
+              eachComment.nestedPosition === 1 ? "" : `${positioning}%`,
+          }}
+        >
+          <CardHeader
+            avatar={
+              <Avatar
+                src={
+                  arrayOfUsers.filter(
+                    (user) => user._id === eachComment.owner
+                  )[0].profileImageURL
+                }
+              />
+            }
+            title={
+              eachComment.status === "edited"
+                ? `${eachComment.date} (edited)`
+                : eachComment.date
+            }
+          />
+          <CardContent>
+            <Typography variant="body2" color="InfoText">
+              {eachComment.text}
+            </Typography>
+            {eachComment.images.length > 0 ? (
+              <>
+                {eachComment.images.map((image) => (
+                  // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
+                  <img
+                    src={image}
+                    alt="title"
+                    loading="lazy"
+                    style={{
+                      paddingRight: "1em",
+                      objectFit: "contain",
+                      margin: "10px",
+                    }}
+                    onClick={handleOpen}
+                    height="200"
+                  />
+                ))}
+                <Dialog
+                  open={viewOpen}
+                  onClose={handleClose}
+                  style={{
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                  }}
+                  BackdropProps={{ invisible: true }}
+                >
+                  <img
+                    style={{ width: "auto", height: "100%" }}
+                    src={eachComment.images[0]}
+                    alt="presentedImage"
+                  />
+                </Dialog>
+              </>
+            ) : eachComment.gif ? (
+              <>
                 <img
-                  src={image}
+                  src={eachComment.gif}
                   alt="title"
                   loading="lazy"
                   style={{
@@ -482,101 +625,71 @@ function Comment({ eachComment, savedUser, postInfo }) {
                   onClick={handleOpen}
                   height="200"
                 />
-              ))}
-              <Dialog
-                open={viewOpen}
-                onClose={handleClose}
-                style={{
-                  maxWidth: "100%",
-                  maxHeight: "100%",
-                }}
-                BackdropProps={{ invisible: true }}
-              >
-                <img
-                  style={{ width: "auto", height: "100%" }}
-                  src={eachComment.images[0]}
-                  alt="presentedImage"
-                />
-              </Dialog>
-            </>
-          ) : eachComment.gif ? (
-            <>
-              <img
-                src={eachComment.gif}
-                alt="title"
-                loading="lazy"
-                style={{
-                  paddingRight: "1em",
-                  objectFit: "contain",
-                  margin: "10px",
-                }}
-                onClick={handleOpen}
-                height="200"
-              />
 
-              <Dialog
-                open={viewOpen}
-                onClose={handleClose}
-                style={{
-                  maxWidth: "100%",
-                  maxHeight: "100%",
-                }}
-                BackdropProps={{ invisible: true }}
-              >
-                <img
-                  style={{ width: "auto", height: "100%" }}
-                  src={eachComment.gif}
-                  alt="presentedGif"
-                />
-              </Dialog>
-            </>
-          ) : (
-            ""
-          )}
-        </CardContent>
-        <CardActions>
-          {eachComment.likedBy.includes(state.storage.id) ? (
-            <>
-              <IconButton
-                onClick={handleDecreasedLike}
-                onMouseOver={() => setMouseOver(true)}
-                onMouseLeave={() => setMouseOver(false)}
-              >
-                {mouseOver ? (
-                  <HeartBrokenTwoToneIcon sx={{ color: "red" }} />
-                ) : (
-                  <FavoriteTwoToneIcon sx={{ color: "red" }} />
-                )}
-              </IconButton>
-              <p>{eachComment.likes}</p>
-            </>
-          ) : (
-            <>
-              <IconButton onClick={handleIncreasedLike}>
-                <FavoriteBorderTwoToneIcon color="primary" />
-              </IconButton>
-              <p>{eachComment.likes}</p>
-            </>
-          )}
-          <IconButton onClick={() => setOpen(!open)}>
-            <ReplyTwoToneIcon color="primary" />
-          </IconButton>
-          <IconButton
-            onClick={(buttonClick) =>
-              handleEditingOfComment(buttonClick, eachComment._id)
-            }
-          >
-            <EditTwoToneIcon color="primary" />
-          </IconButton>
-          <IconButton
-            onClick={(buttonClick) =>
-              handleDeleteOfComment(buttonClick, eachComment._id)
-            }
-          >
-            <DeleteTwoToneIcon sx={{ color: "red" }} />
-          </IconButton>
-        </CardActions>
-      </Card>
+                <Dialog
+                  open={viewOpen}
+                  onClose={handleClose}
+                  style={{
+                    maxWidth: "100%",
+                    maxHeight: "100%",
+                  }}
+                  BackdropProps={{ invisible: true }}
+                >
+                  <img
+                    style={{ width: "auto", height: "100%" }}
+                    src={eachComment.gif}
+                    alt="presentedGif"
+                  />
+                </Dialog>
+              </>
+            ) : (
+              ""
+            )}
+          </CardContent>
+          <CardActions>
+            {eachComment.likedBy.includes(state.storage.id) ? (
+              <>
+                <IconButton
+                  onClick={handleDecreasedLike}
+                  onMouseOver={() => setMouseOver(true)}
+                  onMouseLeave={() => setMouseOver(false)}
+                >
+                  {mouseOver ? (
+                    <HeartBrokenTwoToneIcon sx={{ color: "red" }} />
+                  ) : (
+                    <FavoriteTwoToneIcon sx={{ color: "red" }} />
+                  )}
+                </IconButton>
+                <p>{eachComment.likes}</p>
+              </>
+            ) : (
+              <>
+                <IconButton onClick={handleIncreasedLike}>
+                  <FavoriteBorderTwoToneIcon color="primary" />
+                </IconButton>
+                <p>{eachComment.likes}</p>
+              </>
+            )}
+            <IconButton onClick={() => setOpen(!open)}>
+              <ReplyTwoToneIcon color="primary" />
+            </IconButton>
+            <IconButton
+              onClick={(buttonClick) =>
+                handleEditingOfComment(buttonClick, eachComment._id)
+              }
+            >
+              <EditTwoToneIcon color="primary" />
+            </IconButton>
+            <IconButton
+              onClick={(buttonClick) =>
+                handleDeleteOfComment(buttonClick, eachComment._id)
+              }
+            >
+              <DeleteTwoToneIcon sx={{ color: "red" }} />
+            </IconButton>
+          </CardActions>
+        </Card>
+      </div>
       {open ? (
         <TextField
           inputProps={{ maxLength: 500 }}
@@ -592,9 +705,11 @@ function Comment({ eachComment, savedUser, postInfo }) {
               </InputAdornment>
             ),
           }}
+          value={replyText}
+          onChange={(e) => setReplyText(e.target.value)}
           multiline
           placeholder="Write your reply"
-          sx={{ width: "50%" }}
+          sx={{ width: "50%", backgroundColor: "white" }}
         />
       ) : (
         ""
