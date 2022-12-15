@@ -96,7 +96,6 @@ function Home() {
     });
   }
   groupedComments.splice(0, 1);
-  console.log(groupedComments);
   const posts = stateOfPosts !== undefined && [
     ...new Set(sortBy(stateOfPosts, "date").reverse()),
   ];
@@ -134,7 +133,11 @@ function Home() {
   });
   const [newText, setNewText] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  let height = 0;
+  const [heightOfEachLine, setHeightOfEachLine] = useState({
+    lines: [],
+  });
+  console.log(groupedComments);
+  console.log(heightOfEachLine);
   // Try to figure out why replies are not being posted and how to sort comments with their replies so they can displayed next to eachother.
 
   useEffect(() => {
@@ -167,6 +170,8 @@ function Home() {
       dispatch(storeComments(object));
       const menus = posts.map(() => false);
       setControl({ menus });
+      const lines = groupedComments[0].map(() => 0);
+      setHeightOfEachLine({ lines });
     };
     initializer();
   }, [changesToggleRef]);
@@ -1495,18 +1500,14 @@ function Home() {
                         {groupedComments[0].forEach((cmt, index) => {
                           if (
                             groupedComments[0][index - 1] &&
+                            groupedComments[0][index - 1].belongsToPost ===
+                              posts[i]._id &&
                             cmt.nestedPosition >
                               groupedComments[0][index - 1].nestedPosition
                           ) {
-                            height = 100 * index;
+                            heightOfEachLine.lines[index] = 100 * index;
                           }
                         })}
-                        <span
-                          style={{
-                            borderLeft: "3px solid lightgray",
-                            height,
-                          }}
-                        />
                         <Grid
                           item
                           xs={12}
