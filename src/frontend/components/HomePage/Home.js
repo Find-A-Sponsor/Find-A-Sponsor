@@ -52,7 +52,6 @@ import {
   ImageList,
   ImageListItem,
   InputAdornment,
-  Box,
   MenuItem,
   Menu,
   TextField,
@@ -70,7 +69,7 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import CancelIcon from "@mui/icons-material/Cancel";
 import DeleteTwoTone from "@mui/icons-material/DeleteTwoTone";
 
-import Comment from "./Comment";
+// import Comment from "./Comment";
 import ViewProfileBox from "./ViewProfileBox";
 import AvatarPicture from "../../images/AvatarPicture.png";
 import VectorIllustration from "./VectorIllustration";
@@ -96,7 +95,6 @@ function Home() {
     });
   }
   groupedComments.splice(0, 1);
-  console.log(groupedComments);
   const posts = stateOfPosts !== undefined && [
     ...new Set(sortBy(stateOfPosts, "date").reverse()),
   ];
@@ -134,8 +132,9 @@ function Home() {
   });
   const [newText, setNewText] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  let height = 0;
-  console.log(posts);
+  // const [heightOfEachLine, setHeightOfEachLine] = useState({
+  //   lines: [],
+  // });
   // Try to figure out why replies are not being posted and how to sort comments with their replies so they can displayed next to eachother.
 
   useEffect(() => {
@@ -168,6 +167,8 @@ function Home() {
       dispatch(storeComments(object));
       const menus = posts.map(() => false);
       setControl({ menus });
+      // const lines = groupedComments[0].map(() => 0);
+      // setHeightOfEachLine({ lines });
     };
     initializer();
   }, [changesToggleRef]);
@@ -351,23 +352,23 @@ function Home() {
     onDrop,
   });
 
-  const fetchMoreComments = (i) => {
-    if (posts[i].comments - state.commentsRemaining[i].length >= 10) {
-      dispatch(
-        numberOfCommentsRemaining(Array.from({ length: 10 }), "concat", i)
-      );
-    } else if (posts[i].comments - state.commentsRemaining[i].length > 0) {
-      dispatch(
-        numberOfCommentsRemaining(
-          Array.from({
-            length: posts[i].comments - state.commentsRemaining[i].length,
-          }),
-          "concat",
-          i
-        )
-      );
-    }
-  };
+  // const fetchMoreComments = (i) => {
+  //   if (posts[i].comments - state.commentsRemaining[i].length >= 10) {
+  //     dispatch(
+  //       numberOfCommentsRemaining(Array.from({ length: 10 }), "concat", i)
+  //     );
+  //   } else if (posts[i].comments - state.commentsRemaining[i].length > 0) {
+  //     dispatch(
+  //       numberOfCommentsRemaining(
+  //         Array.from({
+  //           length: posts[i].comments - state.commentsRemaining[i].length,
+  //         }),
+  //         "concat",
+  //         i
+  //       )
+  //     );
+  //   }
+  // };
 
   const handleMenuClick = (event, index) => {
     const { menus } = control;
@@ -1487,7 +1488,7 @@ function Home() {
                           }}
                         />
                       </Grid>
-                      <Grid
+                      {/* <Grid
                         container
                         wrap="nowrap"
                         maxHeight="205px"
@@ -1496,26 +1497,18 @@ function Home() {
                         {groupedComments[0].forEach((cmt, index) => {
                           if (
                             groupedComments[0][index - 1] &&
+                            groupedComments[0][index - 1].belongsToPost ===
+                              posts[i]._id &&
                             cmt.nestedPosition >
                               groupedComments[0][index - 1].nestedPosition
                           ) {
-                            height = 100 * index;
+                            heightOfEachLine.lines[index] = 100 * index;
                           }
                         })}
-                        <span
-                          style={{
-                            borderLeft: "3px solid lightgray",
-                            height,
-                          }}
-                        />
                         <Grid
                           item
                           xs={12}
                           className="indent2"
-                          style={{
-                            backgroundColor: "white",
-                            borderRadius: "16px",
-                          }}
                           textAlign="center"
                         >
                           {posts[i].comments <= 10 && posts[i].comments > 0 ? (
@@ -1580,7 +1573,7 @@ function Home() {
                             ""
                           )}
                         </Grid>
-                      </Grid>
+                      </Grid> */}
                     </Grid>
                   );
                 }
