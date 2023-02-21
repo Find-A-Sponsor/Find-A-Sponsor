@@ -135,6 +135,7 @@ function Home() {
   const [newText, setNewText] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   let height = 0;
+  console.log(posts);
   // Try to figure out why replies are not being posted and how to sort comments with their replies so they can displayed next to eachother.
 
   useEffect(() => {
