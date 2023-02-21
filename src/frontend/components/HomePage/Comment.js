@@ -54,7 +54,7 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, index }) {
   const [editCommentToggle, setEditCommentToggle] = useState(false);
   const [valueOfTextField, setValueOfTextField] = useState();
   const [viewOpen, setViewOpen] = useState(false);
-  const [contentUrl, setContentUrl] = useState("");
+  // const [contentUrl, setContentUrl] = useState("");
   const [addedMedia, setAddedMedia] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [replyText, setReplyText] = useState("");
@@ -63,7 +63,7 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, index }) {
   const dispatch = useDispatch();
   const arrayOfUsers = Object.values(eachUser);
   const positioning = eachComment.nestedPosition * 10;
-  // Work on error messaging for comment inputs when you wake up
+  // I will have to come back to fixing the nested comment section later, it is too time-consuming...
 
   useEffect(() => {
     const getInitialComments = async () => {
@@ -179,13 +179,12 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, index }) {
 
   const handleEditingOfComment = async (buttonClick) => {
     buttonClick.preventDefault();
-    if (eachComment.images.length > 0) {
-      setContentUrl(eachComment.images[0]);
-    } else {
-      setContentUrl(eachComment.gif);
-    }
+    // if (eachComment.images.length > 0) {
+    //   setContentUrl(eachComment.images[0]);
+    // } else {
+    //   setContentUrl(eachComment.gif);
+    // }
     // eslint-disable-next-line no-param-reassign
-    console.log(disableComment);
     disableComment.specificComment[index] = true;
     setValueOfTextField(eachComment.text);
     setEditCommentToggle(!editCommentToggle);
@@ -193,6 +192,13 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, index }) {
 
   return editCommentToggle ? (
     <div>
+      <hr
+        style={{
+          color: "red",
+          backgroundColor: "red",
+          height: 5,
+        }}
+      />
       <Card
         style={{
           position: "relative",
@@ -229,15 +235,15 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, index }) {
                         "removeMedia"
                       );
                     }
-                    await commentInformation.configureComment(
-                      eachComment._id,
-                      savedUser,
-                      {
-                        url: contentUrl,
-                        type: eachComment.images.length > 0 ? "images" : "gif",
-                      },
-                      "addMedia"
-                    );
+                    // await commentInformation.configureComment(
+                    //   eachComment._id,
+                    //   savedUser,
+                    //   {
+                    //     url: contentUrl,
+                    //     type: eachComment.images.length > 0 ? "images" : "gif",
+                    //   },
+                    //   "addMedia"
+                    // );
                     disableComment.specificComment[index] = false;
                     setEditCommentToggle(!editCommentToggle);
                   }}
@@ -275,6 +281,8 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, index }) {
                 <TextField
                   value={valueOfTextField}
                   onChange={(evnt) => setValueOfTextField(evnt.target.value)}
+                  fullWidth
+                  multiline
                 />
               )}
               <br />
@@ -335,10 +343,10 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, index }) {
                     onFocus={() => setAddedMedia("")}
                     style={{ pointerEvents: "none" }}
                     accept="image/*"
-                    value={addedMedia}
                     type="file"
                     hidden
                     onChange={async (file) => {
+                      const typeOfFile = file.target.files[0].type;
                       const formData = new FormData();
                       formData.append("file", file.target.files[0]);
                       formData.append(
@@ -351,8 +359,8 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, index }) {
                       );
                       let serverResponse;
                       if (
-                        (file.target.files[0].type.indexOf("gif") > -1 ||
-                          file.target.files[0].type.indexOf("image") > -1) &&
+                        (typeOfFile.indexOf("gif") > -1 ||
+                          typeOfFile.indexOf("image") > -1) &&
                         file.target.files[0].size < 10485760
                       ) {
                         // eslint-disable-next-line no-await-in-loop
@@ -365,7 +373,7 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, index }) {
                           addImageOrGif(
                             eachComment._id,
                             serverResponse.data.secure_url,
-                            file.target.files[0].type
+                            typeOfFile
                           )
                         );
                         await commentInformation.configureComment(
@@ -373,14 +381,12 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, index }) {
                           savedUser,
                           {
                             url: serverResponse.data.secure_url,
-                            type: file.target.files[0].type,
+                            type: typeOfFile,
                           },
                           "addMedia"
                         );
                         setAddedMedia(serverResponse.data.secure_url);
-                      } else if (
-                        file.target.files[0].type.indexOf("video") > -1
-                      ) {
+                      } else if (typeOfFile.indexOf("video") > -1) {
                         setErrorMessage(
                           "You cannot post videos within your comment, only an image or a gif is allowed."
                         );
@@ -405,15 +411,15 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, index }) {
                       "removeMedia"
                     );
                   }
-                  await commentInformation.configureComment(
-                    eachComment._id,
-                    savedUser,
-                    {
-                      url: contentUrl,
-                      type: eachComment.images.length > 0 ? "images" : "gif",
-                    },
-                    "addMedia"
-                  );
+                  // await commentInformation.configureComment(
+                  //   eachComment._id,
+                  //   savedUser,
+                  //   {
+                  //     url: contentUrl,
+                  //     type: eachComment.images.length > 0 ? "images" : "gif",
+                  //   },
+                  //   "addMedia"
+                  // );
                   disableComment.specificComment[index] = false;
                   setEditCommentToggle(!editCommentToggle);
                 }}
@@ -553,9 +559,8 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, index }) {
         <Card
           style={{
             position: "relative",
-            margin: "10px",
-            marginLeft:
-              eachComment.nestedPosition === 1 ? "" : `${positioning}%`,
+            marginBottom: "10px",
+            left: eachComment.nestedPosition === 1 ? "" : `${positioning}%`,
           }}
         >
           <CardHeader
@@ -575,7 +580,17 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, index }) {
             }
           />
           <CardContent>
-            <Typography variant="body2" color="InfoText">
+            <Typography
+              variant="body2"
+              color="InfoText"
+              style={{
+                padding: "1em",
+                backgroundColor: "#F0F2F5",
+                borderRadius: "20px",
+                margin: "1%",
+                wordBreak: "break-all",
+              }}
+            >
               {eachComment.text}
             </Typography>
             {eachComment.images.length > 0 ? (
@@ -707,6 +722,7 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, index }) {
           }}
           value={replyText}
           onChange={(e) => setReplyText(e.target.value)}
+          fullWidth
           multiline
           placeholder="Write your reply"
           sx={{ width: "50%", backgroundColor: "white" }}
