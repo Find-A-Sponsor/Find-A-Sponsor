@@ -51,7 +51,6 @@ import {
   IconButton,
   ImageList,
   ImageListItem,
-  InputAdornment,
   MenuItem,
   Menu,
   TextField,
@@ -60,20 +59,17 @@ import {
 import FavoriteBorderTwoToneIcon from "@mui/icons-material/FavoriteBorderTwoTone";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import HeartBrokenIcon from "@mui/icons-material/HeartBroken";
-import MessageIcon from "@mui/icons-material/Message";
 import IosShareOutlinedIcon from "@mui/icons-material/IosShareOutlined";
-import MessageOutlinedIcon from "@mui/icons-material/MessageOutlined";
 import InfiniteScroll from "react-infinite-scroll-component";
-import AddCommentTwoToneIcon from "@mui/icons-material/AddCommentTwoTone";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import CancelIcon from "@mui/icons-material/Cancel";
 import DeleteTwoTone from "@mui/icons-material/DeleteTwoTone";
 
-// import Comment from "./Comment";
 import ViewProfileBox from "./ViewProfileBox";
 import AvatarPicture from "../../images/AvatarPicture.png";
 import VectorIllustration from "./VectorIllustration";
 import "../../style-sheets/Home.css";
+import Comment from "./Comment";
 
 function Home() {
   const state = useSelector((wholeState) => wholeState);
@@ -100,7 +96,6 @@ function Home() {
   ];
   const [savedUser, setSavedUser] = useState();
   const [mouseOver, setMouseOver] = useState();
-  const [replies, setReplies] = useState(false);
   const [numberOfPosts, setNumberOfPosts] = useState(Array.from({ length: 5 }));
   const [hasMorePosts, setHasMorePosts] = useState(true);
   const [open, setOpen] = useState(false);
@@ -117,7 +112,6 @@ function Home() {
   });
   const ITEM_HEIGHT = 48;
   const options = ["Delete Post", "Edit Post", "Pin Post"];
-  const [comment, setComment] = useState();
   const changesToggleRef = useRef();
   const filesRef = useRef();
   const indexRef = useRef();
@@ -132,10 +126,6 @@ function Home() {
   });
   const [newText, setNewText] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  // const [heightOfEachLine, setHeightOfEachLine] = useState({
-  //   lines: [],
-  // });
-  // Try to figure out why replies are not being posted and how to sort comments with their replies so they can displayed next to eachother.
 
   useEffect(() => {
     const initializer = async () => {
@@ -410,20 +400,6 @@ function Home() {
     setImageToView(e);
   };
 
-  const handleReplies = async (index) => {
-    // eslint-disable-next-line no-shadow
-    setReplies((replies) => ({
-      ...replies,
-      [index]: !replies[index],
-    }));
-    const response = await commentInformation.getComments(savedUser);
-    const storage = response.data;
-    const object = {
-      storage,
-    };
-    dispatch(storeComments(object));
-  };
-
   const handleClose = () => setOpen(false);
 
   const handleCancelEdit = async (postId) => {
@@ -455,30 +431,6 @@ function Home() {
       changesToggleRef.current = false;
       configurePost();
     }
-  };
-
-  const handlePostingComment = async (e, postId, commentAmount) => {
-    e.preventDefault();
-    await commentInformation.postComment(comment, postId, savedUser, 1);
-    await postInformation.configurePost(
-      postId,
-      savedUser,
-      commentAmount,
-      "increaseCommentCount"
-    );
-    const allPosts = await postInformation.getPosts(savedUser.token);
-    const response = await commentInformation.getComments(savedUser);
-    const storage = response.data;
-    const object = {
-      storage,
-    };
-    dispatch(resetState([]));
-    // eslint-disable-next-line array-callback-return
-    await allPosts.data.map((post, i) => {
-      dispatch(storePostInformation(post, i));
-    });
-    dispatch(storeComments(object));
-    setComment("");
   };
 
   const handleDeleteOfPost = async (postId) => {
@@ -1399,16 +1351,13 @@ function Home() {
                             {posts[i]?.likes}
                           </Grid>
                           <Grid item>
-                            {replies[i] ? (
-                              <IconButton onClick={() => handleReplies(i)}>
-                                <MessageIcon color="primary" />
-                              </IconButton>
-                            ) : (
-                              <IconButton onClick={() => handleReplies(i)}>
-                                <MessageOutlinedIcon color="primary" />
-                              </IconButton>
-                            )}{" "}
-                            {posts[i]?.comments}
+                            <Comment
+                              eachComment={posts[i]?.comments}
+                              savedUser={savedUser}
+                              postInfo={posts[i]}
+                              disableComment={disableComment}
+                              i={i}
+                            />
                           </Grid>
                           <Grid item>
                             <IconButton>
@@ -1417,76 +1366,6 @@ function Home() {
                             {posts[i]?.shares}
                           </Grid>
                         </Grid>
-                      </Grid>
-                      <Grid
-                        item
-                        xs={12}
-                        className="indent2"
-                        style={{
-                          backgroundColor: "white",
-                          borderRadius: "16px",
-                        }}
-                      >
-                        {/* comment */}
-                        <TextField
-                          InputProps={{
-                            startAdornment: (
-                              <InputAdornment>
-                                <Avatar
-                                  src={state.storage.profileImageURL}
-                                  style={{ marginRight: 12 }}
-                                />
-                              </InputAdornment>
-                            ),
-                            endAdornment: (
-                              <IconButton
-                                onClick={(e) => {
-                                  handleReplies(i);
-                                  handlePostingComment(
-                                    e,
-                                    posts[i]._id,
-                                    posts[i].comments
-                                  );
-                                }}
-                              >
-                                <AddCommentTwoToneIcon color="primary" />
-                              </IconButton>
-                            ),
-                            classes: {
-                              notchedOutline: "notched-outline-border-radius",
-                            },
-                          }}
-                          // eslint-disable-next-line react/jsx-no-duplicate-props
-                          inputProps={{
-                            maxLength: 500,
-                          }}
-                          value={comment}
-                          multiline
-                          disabled={disableComment.specificComment[i]}
-                          // eslint-disable-next-line no-return-assign
-                          onChange={(e) => setComment(e.target.value)}
-                          placeholder={
-                            disableComment.specificComment[i]
-                              ? "Finish editing your comment before making another comment"
-                              : "Write your comment"
-                          }
-                          style={{ width: "100%" }}
-                          // eslint-disable-next-line no-return-assign
-                          onKeyPress={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                            }
-                          }}
-                          onKeyUp={(e) => {
-                            if (e.key === "Enter") {
-                              handlePostingComment(
-                                e,
-                                posts[i]._id,
-                                posts[i].comments
-                              ); // Fix functionality when user press 'Enter', the comment submits current text to database.
-                            }
-                          }}
-                        />
                       </Grid>
                       {/* <Grid
                         container
