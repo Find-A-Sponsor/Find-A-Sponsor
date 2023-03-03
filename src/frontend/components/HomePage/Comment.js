@@ -1,3 +1,6 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/img-redundant-alt */
+/* eslint-disable react/no-array-index-key */
 /* eslint-disable no-param-reassign */
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
@@ -46,22 +49,30 @@
 //   resetState as resetPosts,
 // } from "../../reducers/storePostReducer";
 // import postInformation from "../../services/postInformation";
-import { Card, DialogTitle } from "@material-ui/core";
 import {
+  Card,
   CardHeader,
   Avatar,
   Dialog,
   DialogContent,
+  DialogTitle,
   IconButton,
+  Typography,
+  CardContent,
+  CardMedia,
+  Grid,
 } from "@mui/material";
 import MessageIcon from "@mui/icons-material/Message";
 import MessageOutlinedIcon from "@mui/icons-material/MessageOutlined";
+import PublicIcon from "@mui/icons-material/Public";
+import LockIcon from "@mui/icons-material/Lock";
 
 import "../../style-sheets/Comment.css";
 
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { sortBy } from "lodash";
+import moment from "moment/moment";
 
 import commentInformation from "../../services/commentInformation";
 
@@ -72,6 +83,7 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, i }) {
   const [showComments, setShowComments] = useState(false);
   const [replies, setReplies] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
+  const publicOrPrivate = "Public";
   const dispatch = useDispatch();
   const state = useSelector((wholeState) => wholeState);
   const stateOfPosts = state.posts;
@@ -298,14 +310,71 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, i }) {
           style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}
           onClose={handleDialogClose}
         >
-          <DialogTitle>c</DialogTitle>
+          <DialogTitle
+            style={{
+              textAlign: "center",
+              fontWeight: "bold",
+              fontSize: "1.5rem",
+            }}
+          >{`${postInfo.username}'s post`}</DialogTitle>
           <DialogContent>
             <Card>
               <CardHeader
                 avatar={
                   <Avatar src={savedUser.user.profileImageURL.toString()} />
                 }
+                title={
+                  <Typography
+                    variant="subtitle1"
+                    style={{ whiteSpace: "pre-wrap" }}
+                  >
+                    {`@${postInfo.username}\n`}
+                    <span style={{ display: "flex", alignItems: "center" }}>
+                      {moment(postInfo.date).format("MMMM Do YYYY [at] h:mm a")}
+                      <span
+                        style={{ marginLeft: "0.5em", marginRight: "0.5em" }}
+                      >
+                        {"\u2022"}
+                      </span>
+                      <span
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        {publicOrPrivate === "Public" ? (
+                          <PublicIcon fontSize="small" />
+                        ) : (
+                          <LockIcon fontSize="small" />
+                        )}
+                      </span>
+                    </span>
+                  </Typography>
+                }
               />
+              <CardContent>
+                <Typography>{postInfo.text}</Typography>
+                <Grid container spacing={1}>
+                  {postInfo.images.map((image, index) => (
+                    <Grid item key={index} xs={12} sm={6} md={4}>
+                      <img
+                        src={image}
+                        alt={`post-image-${index}`}
+                        style={{ width: "100%", height: "auto" }}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+                {postInfo.gif && <img src={postInfo.gif} alt="gif" />}
+                {postInfo.video && (
+                  <CardMedia
+                    component="video"
+                    src={postInfo.video}
+                    controls
+                    autoPlay={false}
+                  />
+                )}
+              </CardContent>
             </Card>
           </DialogContent>
         </Dialog>

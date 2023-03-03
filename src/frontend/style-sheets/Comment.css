@@ -7,3 +7,11 @@
   height: 100%; 
   z-index: 1;
 }
+
+@media only screen and (max-width: 600px) {
+  video,
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+}
