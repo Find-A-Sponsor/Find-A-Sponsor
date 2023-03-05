@@ -53,6 +53,7 @@ import {
   Card,
   CardHeader,
   Avatar,
+  Modal,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -75,13 +76,14 @@ import { sortBy } from "lodash";
 import moment from "moment/moment";
 
 import commentInformation from "../../services/commentInformation";
-
 import { storeComments } from "../../reducers/commentReducer";
+import LightboxGallery from "./LightboxGallery";
 
 // eslint-disable-next-line no-unused-vars
 function Comment({ eachComment, savedUser, postInfo, disableComment, i }) {
   const [showComments, setShowComments] = useState(false);
   const [replies, setReplies] = useState([]);
+  const [openModal, setOpenModal] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const publicOrPrivate = "Public";
   const dispatch = useDispatch();
@@ -90,6 +92,13 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, i }) {
   const posts = stateOfPosts !== undefined && [
     ...new Set(sortBy(stateOfPosts, "date").reverse()),
   ];
+
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  const handleImageClick = (imageUrl) => {
+    setSelectedImage(imageUrl);
+    setOpenModal(true);
+  };
   // const [mouseOver, setMouseOver] = useState(false);
   // const [open, setOpen] = useState(false);
   // const [editCommentToggle, setEditCommentToggle] = useState(false);
@@ -306,9 +315,12 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, i }) {
       {showComments && replies[i] && (
         <Dialog
           open={openDialog}
-          hideBackdrop
-          style={{ backgroundColor: "rgba(255, 255, 255, 0.1)" }}
           onClose={handleDialogClose}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
         >
           <DialogTitle
             style={{
@@ -316,9 +328,11 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, i }) {
               fontWeight: "bold",
               fontSize: "1.5rem",
             }}
-          >{`${postInfo.username}'s post`}</DialogTitle>
+          >
+            {`${postInfo.username}'s post`}
+          </DialogTitle>
           <DialogContent>
-            <Card>
+            <Card style={{ width: "100%", height: "100%" }}>
               <CardHeader
                 avatar={
                   <Avatar src={savedUser.user.profileImageURL.toString()} />
@@ -336,12 +350,7 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, i }) {
                       >
                         {"\u2022"}
                       </span>
-                      <span
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                        }}
-                      >
+                      <span style={{ display: "flex", alignItems: "center" }}>
                         {publicOrPrivate === "Public" ? (
                           <PublicIcon fontSize="small" />
                         ) : (
@@ -353,25 +362,88 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, i }) {
                 }
               />
               <CardContent>
-                <Typography>{postInfo.text}</Typography>
-                <Grid container spacing={1}>
-                  {postInfo.images.map((image, index) => (
-                    <Grid item key={index} xs={12} sm={6} md={4}>
+                <Typography
+                  style={{
+                    fontSize: "1.2rem",
+                    backgroundColor: "#FFFBEE",
+                    marginBottom: "2rem",
+                  }}
+                >
+                  {postInfo.text}
+                </Typography>
+                {postInfo.images.length > 0 ? (
+                  <Grid container spacing={1}>
+                    <Grid item xs={12}>
                       <img
-                        src={image}
-                        alt={`post-image-${index}`}
-                        style={{ width: "100%", height: "auto" }}
+                        src={postInfo.images[0]}
+                        alt="post image"
+                        onClick={() => handleImageClick(postInfo.images[0])}
+                        onLoad={(e) => {
+                          const { naturalHeight, naturalWidth } = e.target;
+                          if (naturalHeight > naturalWidth) {
+                            e.target.classList.add("portrait"); // adds the 'portrait' class if the image is taller than it is wide
+                          } else {
+                            e.target.classList.add("landscape"); // adds the 'landscape' class if the image is wider than it is tall
+                          }
+                        }}
+                        style={{
+                          cursor: "pointer",
+                          maxWidth: "100%", // ensures the image doesn't exceed the width of its container
+                          height: "auto", // allows the image to scale proportionally
+                        }}
                       />
                     </Grid>
-                  ))}
-                </Grid>
-                {postInfo.gif && <img src={postInfo.gif} alt="gif" />}
+                  </Grid>
+                ) : (
+                  ""
+                )}
+                <Modal
+                  open={openModal}
+                  onClose={() => setOpenModal(false)}
+                  style={{
+                    backgroundColor: "rgba(0, 0, 0, 0.85)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    zIndex: 9999,
+                  }}
+                >
+                  <DialogContent
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      padding: "0",
+                    }}
+                  >
+                    {selectedImage != null && (
+                      <LightboxGallery imageUrl={selectedImage} />
+                    )}
+                  </DialogContent>
+                </Modal>
+
+                {postInfo.gif && (
+                  <img
+                    src={postInfo.gif}
+                    alt="gif"
+                    style={{ maxWidth: "100%", height: "auto" }}
+                  />
+                )}
                 {postInfo.video && (
                   <CardMedia
                     component="video"
                     src={postInfo.video}
                     controls
                     autoPlay={false}
+                    style={{
+                      maxWidth: "100%",
+                      height: "auto",
+                    }}
                   />
                 )}
               </CardContent>

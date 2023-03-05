@@ -9,9 +9,15 @@
 }
 
 @media only screen and (max-width: 600px) {
-  video,
-  img {
-    max-width: 100%;
-    height: auto;
+  .portrait,
+  .landscape {
+    max-width: 100%; /* ensures the image doesn't exceed the width of the screen */
+    height: auto; /* allows the image to scale proportionally */
+  }
+}
+
+@media screen and (min-width: 600px) {
+  .landscape {
+    max-width: 50%; /* limits the width of landscape images to 50% of their container on screens wider than 600px */
   }
 }
