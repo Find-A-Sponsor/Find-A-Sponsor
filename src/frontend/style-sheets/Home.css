@@ -6,3 +6,14 @@
   transform: scale(2);
 }
 
+.icon-bar {
+  margin-bottom: 1em; /* adds some space between the icon bar and comment box */
+}
+
+@media screen and (max-width: 600px) {
+  .icon-bar {
+    margin-bottom: 2%; /* adjusts margin for smaller screens */
+  }
+}
+
+

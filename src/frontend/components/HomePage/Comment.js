@@ -62,11 +62,13 @@ import {
   CardContent,
   CardMedia,
   Grid,
+  TextField,
 } from "@mui/material";
 import MessageIcon from "@mui/icons-material/Message";
 import MessageOutlinedIcon from "@mui/icons-material/MessageOutlined";
 import PublicIcon from "@mui/icons-material/Public";
 import LockIcon from "@mui/icons-material/Lock";
+import { styled } from "@mui/material/styles";
 
 import "../../style-sheets/Comment.css";
 
@@ -78,6 +80,35 @@ import moment from "moment/moment";
 import commentInformation from "../../services/commentInformation";
 import { storeComments } from "../../reducers/commentReducer";
 import LightboxGallery from "./LightboxGallery";
+
+const CommentBoxContainer = styled(Grid)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  padding: theme.spacing(2),
+  backgroundColor: "#f5f5f5",
+  borderRadius: theme.spacing(1),
+  "& .MuiAvatar-root": {
+    marginRight: theme.spacing(2),
+  },
+  [theme.breakpoints.down("sm")]: {
+    padding: theme.spacing(1),
+  },
+}));
+
+const CommentTextField = styled(TextField)(({ theme }) => ({
+  "& .MuiOutlinedInput-root": {
+    backgroundColor: "#fff",
+    borderRadius: `${theme.spacing(1) / 16}em`,
+    padding: `${theme.spacing(1.5) / 16}em ${theme.spacing(2) / 16}em`,
+    [theme.breakpoints.down("sm")]: {
+      fontSize: "0.875em",
+      padding: `${theme.spacing(1) / 16}em ${theme.spacing(1.5) / 16}em`,
+    },
+    "& .Mui-focused .MuiOutlinedInput-notchedOutline::before": {
+      borderBottom: "none",
+    },
+  },
+}));
 
 // eslint-disable-next-line no-unused-vars
 function Comment({ eachComment, savedUser, postInfo, disableComment, i }) {
@@ -449,6 +480,23 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, i }) {
               </CardContent>
             </Card>
           </DialogContent>
+          <CommentBoxContainer container wrap="nowrap" alignItems="center">
+            <Grid item>
+              <Avatar
+                src={savedUser.user.profileImageURL.toString()}
+                alt="User Avatar"
+              />
+            </Grid>
+            <Grid item xs>
+              <CommentTextField
+                id="outlined-multiline-static"
+                label="Write your comment"
+                multiline
+                variant="outlined"
+                fullWidth
+              />
+            </Grid>
+          </CommentBoxContainer>
         </Dialog>
       )}
     </>

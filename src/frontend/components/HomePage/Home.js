@@ -64,12 +64,30 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import CancelIcon from "@mui/icons-material/Cancel";
 import DeleteTwoTone from "@mui/icons-material/DeleteTwoTone";
+import { styled } from "@mui/material/styles";
 
 import ViewProfileBox from "./ViewProfileBox";
 import AvatarPicture from "../../images/AvatarPicture.png";
 import VectorIllustration from "./VectorIllustration";
 import "../../style-sheets/Home.css";
 import Comment from "./Comment";
+
+const StyledGrid = styled(Grid)(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  borderRadius: `${theme.spacing(1) / 16}em`,
+  padding: `${theme.spacing(0)} ${theme.spacing(2) / 16}em ${
+    theme.spacing(2) / 16
+  }em ${theme.spacing(1) / 16}em`,
+  backgroundColor: "white",
+  "& .comment-box": {
+    flex: "0.95",
+    marginRight: `${theme.spacing(1) / 16}em`,
+  },
+  [theme.breakpoints.down("sm")]: {
+    padding: `${theme.spacing(1) / 16}em ${theme.spacing(2) / 16}em`,
+  },
+}));
 
 function Home() {
   const state = useSelector((wholeState) => wholeState);
@@ -1321,7 +1339,11 @@ function Home() {
                         style={{ backgroundColor: "white" }}
                       >
                         {/* icon bar */}
-                        <Grid container style={{ padding: 12, gap: 20 }}>
+                        <Grid
+                          container
+                          style={{ gap: 20 }}
+                          className="icon-bar"
+                        >
                           <Grid item>
                             {mouseOver === i &&
                             posts[i]?.likedBy.includes(state.storage.id) ? (
@@ -1367,92 +1389,29 @@ function Home() {
                           </Grid>
                         </Grid>
                       </Grid>
-                      {/* <Grid
-                        container
-                        wrap="nowrap"
-                        maxHeight="205px"
-                        overflow="auto"
-                      >
-                        {groupedComments[0].forEach((cmt, index) => {
-                          if (
-                            groupedComments[0][index - 1] &&
-                            groupedComments[0][index - 1].belongsToPost ===
-                              posts[i]._id &&
-                            cmt.nestedPosition >
-                              groupedComments[0][index - 1].nestedPosition
-                          ) {
-                            heightOfEachLine.lines[index] = 100 * index;
-                          }
-                        })}
-                        <Grid
-                          item
-                          xs={12}
-                          className="indent2"
-                          textAlign="center"
-                        >
-                          {posts[i].comments <= 10 && posts[i].comments > 0 ? (
-                            groupedComments[0].map((eachComment) =>
-                              eachComment.belongsToPost === posts[i]._id ? (
-                                <Comment
-                                  eachComment={eachComment}
-                                  savedUser={savedUser}
-                                  postInfo={posts[i]}
-                                  disableComment={disableComment}
-                                  index={i}
-                                />
-                              ) : (
-                                ""
-                              )
-                            )
-                          ) : posts[i].comments > 10 ? (
-                            state.commentsRemaining[i].map(
-                              (eachComment, index) =>
-                                groupedComments[0][index].belongsToPost ===
-                                posts[i]._id ? (
-                                  <Comment
-                                    eachComment={groupedComments[0][index]}
-                                    savedUser={savedUser}
-                                    postInfo={posts[i]}
-                                    disableComment={disableComment}
-                                    index={i}
-                                  />
-                                ) : (
-                                  ""
-                                )
-                            )
-                          ) : replies[i] ? (
-                            <Box sx={{ display: "block" }}>
-                              <h1>
-                                There seems to be no comments on this post :/
-                              </h1>
-                            </Box>
-                          ) : (
-                            ""
-                          )}
-                          {posts[i].comments -
-                            state.commentsRemaining[i].length >
-                            0 &&
-                          posts[i].comments -
-                            state.commentsRemaining[i].length <=
-                            10 &&
-                          posts[i] ? (
-                            <Button onClick={() => fetchMoreComments(i)}>
-                              Show{" "}
-                              {posts[i].comments -
-                                state.commentsRemaining[i].length}{" "}
-                              more comments
-                            </Button>
-                          ) : posts[i].comments -
-                              state.commentsRemaining[i].length >
-                              10 && posts[i] ? (
-                            <Button onClick={() => fetchMoreComments(i)}>
-                              Show 10 more comments
-                            </Button>
-                          ) : (
-                            ""
-                          )}
-                        </Grid>
-                      </Grid> */}
+                      {posts[i].comments <= 5 ? (
+                        <StyledGrid container alignItems="center" spacing={2}>
+                          <Grid item>
+                            <Avatar
+                              src={savedUser.user.profileImageURL.toString()}
+                              alt="User Avatar"
+                              style={{ marginLeft: "1em" }}
+                            />
+                          </Grid>
+                          <Grid item xs className="comment-box">
+                            <TextField
+                              id="outlined-multiline-static"
+                              label="Write your comment"
+                              multiline
+                              fullWidth
+                              variant="outlined"
+                              style={{ backgroundColor: "#f5f5f5" }}
+                            />
+                          </Grid>
+                        </StyledGrid>
+                      ) : (
+                        ""
+                      )}
                     </Grid>
                   );
                 }
