@@ -9,46 +9,6 @@
 /* eslint-disable react/react-in-jsx-scope */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable react/prop-types */
-// import {
-//   Avatar,
-//   Card,
-//   CardActions,
-//   CardContent,
-//   CardHeader,
-//   IconButton,
-//   InputAdornment,
-//   TextField,
-//   Typography,
-//   Button,
-//   Dialog,
-// } from "@mui/material";
-// import WarningTwoToneIcon from "@mui/icons-material/WarningTwoTone";
-// import { useDispatch, useSelector } from "react-redux";
-// import FavoriteBorderTwoToneIcon from "@mui/icons-material/FavoriteBorderTwoTone";
-// import ReplyTwoToneIcon from "@mui/icons-material/Reply";
-// import EditTwoToneIcon from "@mui/icons-material/EditTwoTone";
-// import DeleteTwoToneIcon from "@mui/icons-material/DeleteTwoTone";
-// import FavoriteTwoToneIcon from "@mui/icons-material/FavoriteTwoTone";
-// import { useEffect, useState } from "react";
-// import HeartBrokenTwoToneIcon from "@mui/icons-material/HeartBrokenTwoTone";
-// import AddCommentTwoToneIcon from "@mui/icons-material/AddCommentTwoTone";
-// import CheckCircleTwoToneIcon from "@mui/icons-material/CheckCircleTwoTone";
-// import { CancelTwoTone } from "@mui/icons-material";
-// import AddPhotoAlternateTwoToneIcon from "@mui/icons-material/AddPhotoAlternateTwoTone";
-// import axios from "axios";
-// import commentInformation from "../../services/commentInformation";
-// import {
-//   addImageOrGif,
-//   changeCommentStatus,
-//   deleteMedia,
-//   resetState,
-//   storeComments,
-// } from "../../reducers/commentReducer";
-// import {
-//   storePostInformation,
-//   resetState as resetPosts,
-// } from "../../reducers/storePostReducer";
-// import postInformation from "../../services/postInformation";
 import {
   Card,
   CardHeader,
@@ -72,14 +32,20 @@ import { styled } from "@mui/material/styles";
 
 import "../../style-sheets/Comment.css";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { sortBy } from "lodash";
 import moment from "moment/moment";
 
-import commentInformation from "../../services/commentInformation";
-import { storeComments } from "../../reducers/commentReducer";
+import FavoriteBorderTwoToneIcon from "@mui/icons-material/FavoriteBorderTwoTone";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import HeartBrokenIcon from "@mui/icons-material/HeartBroken";
+import IosShareOutlinedIcon from "@mui/icons-material/IosShareOutlined";
+import postInformation from "../../services/postInformation";
+import { configureLikes } from "../../reducers/storePostReducer";
 import LightboxGallery from "./LightboxGallery";
+import { storeComments } from "../../reducers/commentReducer";
+import commentInformation from "../../services/commentInformation";
 
 const CommentBoxContainer = styled(Grid)(({ theme }) => ({
   display: "flex",
@@ -112,10 +78,15 @@ const CommentTextField = styled(TextField)(({ theme }) => ({
 
 // eslint-disable-next-line no-unused-vars
 function Comment({ eachComment, savedUser, postInfo, disableComment, i }) {
+  const commentTextFieldRef = useRef(null);
+  const commentTextRef = useRef("");
   const [showComments, setShowComments] = useState(false);
   const [replies, setReplies] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
+  const [activeCommentBox, setActiveCommentBox] = useState(false);
+  const [mouseOver, setMouseOver] = useState();
+  const [isFocused, setIsFocused] = useState(false);
   const publicOrPrivate = "Public";
   const dispatch = useDispatch();
   const state = useSelector((wholeState) => wholeState);
@@ -123,31 +94,37 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, i }) {
   const posts = stateOfPosts !== undefined && [
     ...new Set(sortBy(stateOfPosts, "date").reverse()),
   ];
-
   const [selectedImage, setSelectedImage] = useState(null);
+
+  useEffect(() => {
+    if (openDialog) {
+      // Set activeCommentBox to true when dialog is opened
+      setActiveCommentBox(true);
+    }
+
+    return () => {
+      setActiveCommentBox(false);
+    };
+  }, [openDialog]);
+
+  useEffect(() => {
+    if (activeCommentBox && commentTextFieldRef.current) {
+      commentTextFieldRef.current.focus();
+      commentTextFieldRef.current.setSelectionRange(
+        commentTextFieldRef.current.value.length,
+        commentTextFieldRef.current.value.length
+      );
+    }
+  }, [activeCommentBox]);
+
+  useEffect(() => {
+    setActiveCommentBox(isFocused);
+  }, [isFocused]);
 
   const handleImageClick = (imageUrl) => {
     setSelectedImage(imageUrl);
     setOpenModal(true);
   };
-  // const [mouseOver, setMouseOver] = useState(false);
-  // const [open, setOpen] = useState(false);
-  // const [editCommentToggle, setEditCommentToggle] = useState(false);
-  // const [valueOfTextField, setValueOfTextField] = useState();
-  // const [viewOpen, setViewOpen] = useState(false);
-  // // const [contentUrl, setContentUrl] = useState("");
-  // const [addedMedia, setAddedMedia] = useState("");
-  // const [errorMessage, setErrorMessage] = useState("");
-  // const [replyText, setReplyText] = useState("");
-  // const state = useSelector((wholeState) => wholeState);
-  // const eachUser = state.users;
-  // const dispatch = useDispatch();
-  // // const arrayOfUsers = Object.values(eachUser);
-  // // const positioning = eachComment.nestedPosition * 10;
-  console.log(postInfo);
-  console.log(eachComment);
-  console.log(disableComment);
-  console.log(i);
 
   // useEffect(() => {
   //   const getInitialComments = async () => {
@@ -166,7 +143,31 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, i }) {
       setShowComments(false);
       setOpenDialog(false);
       setReplies((prevReplies) => ({ ...prevReplies, [i]: false }));
+      setActiveCommentBox(false);
     }
+  };
+
+  const handleLike = async (message, index) => {
+    const currentId = state.storage.id;
+    const object = {
+      index,
+      message,
+      currentId,
+    };
+    dispatch(configureLikes(object));
+
+    await postInformation.configurePost(
+      // eslint-disable-next-line no-underscore-dangle
+      posts[index]._id,
+      savedUser,
+      posts[index].likes,
+      message
+    );
+  };
+
+  const handleCommentChange = (event) => {
+    commentTextRef.current = event.target.value;
+    setActiveCommentBox(true);
   };
 
   const handleReplies = async (index) => {
@@ -366,8 +367,12 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, i }) {
             <Card style={{ width: "100%", height: "100%" }}>
               <CardHeader
                 avatar={
-                  <Avatar src={savedUser.user.profileImageURL.toString()} />
-                }
+                  <Avatar
+                    src={
+                      postInfo.profileImageURL ? postInfo.profileImageURL : ""
+                    }
+                  />
+                } // I need to add the original posters avatar to postInfo so I can add that avatar to each post made by them
                 title={
                   <Typography
                     variant="subtitle1"
@@ -477,9 +482,64 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, i }) {
                     }}
                   />
                 )}
+                <Grid
+                  container
+                  style={{ justifyContent: "space-between" }}
+                  className="icon-bar"
+                >
+                  <Grid item style={{ marginLeft: "1em", marginTop: "1em" }}>
+                    {mouseOver === i &&
+                    posts[i]?.likedBy.includes(state.storage.id) ? (
+                      <IconButton
+                        // eslint-disable-next-line react/no-array-index-key
+                        key={i}
+                        onClick={() => handleLike("decrease", i)}
+                        onMouseLeave={() => setMouseOver(-1)}
+                        onMouseOver={() => setMouseOver(i)}
+                      >
+                        <HeartBrokenIcon style={{ color: "red" }} />
+                      </IconButton>
+                    ) : posts[i]?.likedBy.includes(state.storage.id) ? (
+                      <IconButton
+                        onMouseLeave={() => setMouseOver(-1)}
+                        onMouseOver={() => setMouseOver(i)}
+                      >
+                        <FavoriteIcon style={{ color: "red" }} />
+                      </IconButton>
+                    ) : (
+                      <IconButton onClick={() => handleLike("increase", i)}>
+                        <FavoriteBorderTwoToneIcon color="primary" />
+                      </IconButton>
+                    )}{" "}
+                    {posts[i]?.likes}
+                  </Grid>
+                  <Grid item style={{ marginTop: "1em" }}>
+                    {activeCommentBox || isFocused ? (
+                      <IconButton
+                        onClick={() => setActiveCommentBox(!activeCommentBox)}
+                      >
+                        <MessageIcon color="primary" />
+                      </IconButton>
+                    ) : (
+                      <IconButton
+                        onClick={() => setActiveCommentBox(!activeCommentBox)}
+                      >
+                        <MessageOutlinedIcon color="primary" />
+                      </IconButton>
+                    )}{" "}
+                    {posts[i].comments}
+                  </Grid>
+                  <Grid item style={{ marginRight: "1em", marginTop: "1em" }}>
+                    <IconButton>
+                      <IosShareOutlinedIcon color="primary" />
+                    </IconButton>{" "}
+                    {posts[i]?.shares}
+                  </Grid>
+                </Grid>
               </CardContent>
             </Card>
           </DialogContent>
+
           <CommentBoxContainer container wrap="nowrap" alignItems="center">
             <Grid item>
               <Avatar
@@ -494,6 +554,13 @@ function Comment({ eachComment, savedUser, postInfo, disableComment, i }) {
                 multiline
                 variant="outlined"
                 fullWidth
+                focused={activeCommentBox}
+                inputRef={commentTextFieldRef}
+                autoFocus={activeCommentBox}
+                onChange={handleCommentChange}
+                defaultValue={commentTextRef.current}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
               />
             </Grid>
           </CommentBoxContainer>
